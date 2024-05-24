@@ -1,0 +1,23 @@
+version: '3.8'
+
+services:
+  mongo_db:
+    container_name: database_container
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_db:/data/database_container
+  
+  app:
+    build: .
+    ports:
+      - 4000:3000
+    environment:
+      APP_NAME: officeerpserver
+      PORT: 3000
+      DATABASE: mongodb://mongo_db:27017/Test123
+    depends_on:
+      - mongo_db
+
+volumes:
+  mongo_db: {}
