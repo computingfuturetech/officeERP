@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
-const memberListSchema = new Schema({
+const delistedMemberListSchema = new Schema({
     srNo: {
         type: Number,
     },
@@ -34,8 +34,16 @@ const memberListSchema = new Schema({
     block: {
         type: String,
     },
+    delistedDate: {
+        type: Date,
+        default: Date.now,
+    },
+    status: {
+        type: String,
+        default: 'Delisted',
+    },
 });
 
-const MemberList = mongoose.model('MemberList', memberListSchema);
+const DelistedMemberList = mongoose.model('DelistedMemberList', delistedMemberListSchema);
 
-module.exports = MemberList;
+module.exports = DelistedMemberList;
