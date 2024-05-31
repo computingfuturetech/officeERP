@@ -22,7 +22,7 @@ module.exports = {
       if (!ms_no || !phase || !purchase_name || !address || !cnic_no) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      if (cnic_no.length !== 13) {
+      if (cnic_no.length !== 15) {
         return res.status(400).json({ message: "Invalid CNIC number" });
       }
       const memberList = await MemberList.find({ msNo: ms_no });

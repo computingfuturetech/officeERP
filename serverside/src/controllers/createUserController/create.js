@@ -5,6 +5,7 @@ const admin=require('../../models/coreModels/Admin')
 
 module.exports={
   get:(req,res)=>{
+    console.log(req.body)
     res.send("Hello World123");
   },
 
@@ -50,13 +51,15 @@ module.exports={
         password: passwordHash,
         salt: salt,
       }).save();
+
+      console.log(result)
     
       
       if (!result) {
         return res.status(403).json({
           success: false,
           result: null,
-          message: "document couldn't save correctly",
+          message: "Something went wrong",
         });
       }
     
