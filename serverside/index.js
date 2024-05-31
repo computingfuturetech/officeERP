@@ -8,6 +8,11 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const MemberList = require("./src/models/memberModels/memberList");
 const DelistedMemberList = require("./src/models/memberModels/delistedMember");
+const MemberDeposit = require("./src/models/memberModels/memberDeposit");
+const BankLedger = require("./src/models/ledgerModels/bankLedger");
+const GeneralLedger = require("./src/models/ledgerModels/generalLedger");
+const CashBook = require("./src/models/ledgerModels/cashBookLedger");
+
 
 dotenv.config();
 

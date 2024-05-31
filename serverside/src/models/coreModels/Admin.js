@@ -27,6 +27,12 @@ const adminSchema = new schema({
         type:String,
         required:true,
     },
+
+    role:{
+        type:String,
+        required:true,
+    },
+
     salt:{
         type:String,
         required:true,

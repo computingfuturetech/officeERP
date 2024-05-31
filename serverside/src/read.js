@@ -1,11 +1,10 @@
 const fs = require('fs');
 const csvParser = require('csv-parser');
 
-const filePath = 'uploads/Book1.csv';
+const filePath = 'uploads/NewMemberList.csv';
 
 const memberModel = require('./models/memberModels/memberList');
 const mongoose = require('mongoose');
-// Connect to MongoDB
 mongoose.connect('mongodb://localhost:27017/Test123', {
 });
 
@@ -26,11 +25,6 @@ fs.createReadStream(filePath)
         };
         const member = new memberModel(data);
         member.save();
-
-       
-        
-        
-    
   })
   .on('end', () => {
     console.log('CSV file successfully processed');
