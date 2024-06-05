@@ -10,7 +10,6 @@ const checkRole = (roles) => {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      // Extract user role from the token
       const userRole = await admin.findOne({ _id: userId });
 
       if (!roles.includes(userRole.role)) {

@@ -12,6 +12,9 @@ const MemberDeposit = require("./src/models/memberModels/memberDeposit");
 const BankLedger = require("./src/models/ledgerModels/bankLedger");
 const GeneralLedger = require("./src/models/ledgerModels/generalLedger");
 const CashBook = require("./src/models/ledgerModels/cashBookLedger");
+const HeadOfAccount = require("./src/models/headOfAccountModel/headOfAccountModel");
+const ForgetPassword = require("./src/models/coreModels/forgetPassword")
+const BankList = require("./src/models/ledgerModels/bankList")
 
 
 dotenv.config();
@@ -33,10 +36,10 @@ app.use((req, res, next) => {
 app.use("/user", coreRouter);
 
 
-const port = 3000;
-const ip = "http://127.0.0.1";
+const port = 3001;
+const ip = '192.168.0.189';
 app.get("/", function (req, res) {
   res.send("Hello World!");
 });
 
-app.listen(port, () => console.log(`Server is running ${ip}:${port}`));
+app.listen(port, ip, () => console.log(`Server is running ${ip}:${port}`));

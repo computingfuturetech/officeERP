@@ -8,7 +8,7 @@ const generalLedgerSchema = new Schema({
     headOfAccount:{
         type: String,
     },
-    particulor:{
+    particular:{
         type: String,
     },
     chequeNo:{

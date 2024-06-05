@@ -5,6 +5,12 @@ const cashBookSchema = new Schema({
     date:{
         type: Date,
     },
+    headOfAccount:{
+        type: String,
+    },
+    particulor:{
+        type: String,
+    },
     voucherNo:{
         type: Number,
     },
