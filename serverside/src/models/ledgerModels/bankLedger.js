@@ -18,6 +18,12 @@ const bankLedgerSchema = new Schema({
         type: String,
     },
     voucherNo:{
+        type: String,
+    },
+    chequeNo:{
+        type: Number,
+    },
+    challanNo:{
         type: Number,
     },
     credit:{
@@ -31,7 +37,10 @@ const bankLedgerSchema = new Schema({
     },  
     closingBalance:{
         type: Number,
-    },  
+    },
+    bankName:{
+        type: String,
+    },
 })
 
 const BankLedger = mongoose.model('BankLedger',bankLedgerSchema)
