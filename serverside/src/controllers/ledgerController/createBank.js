@@ -3,15 +3,15 @@ const BankList=require('../../models/ledgerModels/bankList')
 
 module.exports={
   createBank: async (req, res) => {
-    const {name,accountNo,branch} = req.body
+    const {bankName,accountNo,branch} = req.body
 
-      if (!name)
+      if (!bankName)
         return res.status(400).json({
           message: "Name is not entered.",
         });
 
       const result = await new BankList({
-        name,
+        bankName,
         accountNo,
         branch,
       }).save();
@@ -30,7 +30,7 @@ module.exports={
       return res.status(200).send({
         success: true,
         result: {
-          name: result.name,
+          bankName: result.bankName,
           accountNo: result.accountNo,
           branch: result.branch
         },
