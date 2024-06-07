@@ -20,6 +20,8 @@ const forgetPassword = require('../../controllers/userController/forgetPassword'
 const otpVerify = require('../../controllers/userController/otpVerify')
 const newPasswordSet = require('../../controllers/userController/newPasswordSet')
 const createBank = require('../../controllers/ledgerController/createBank')
+const bankList = require('../../controllers/ledgerController/bankList')
+const createGeneralLedger = require('../../controllers/ledgerController/generalLedger')
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -37,5 +39,7 @@ router.post('/forgetPassword', forgetPassword.forgetPassword);
 router.post('/otpVerify', otpVerify.otpVerify);
 router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);
+router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
+router.post('/createGeneralLedger',authenticateJWT,checkRole(['admin','employee']), createGeneralLedger.createGeneralLedger);
 
 module.exports = router

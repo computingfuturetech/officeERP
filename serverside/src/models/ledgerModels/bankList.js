@@ -4,6 +4,7 @@ const Schema=mongoose.Schema
 const bankListSchema = new Schema({
     date:{
         type: Date,
+        default:Date.now,
     },
     bankName:{
         type: String,

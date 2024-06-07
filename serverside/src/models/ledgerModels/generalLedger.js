@@ -4,9 +4,13 @@ const Schema = mongoose.Schema
 const generalLedgerSchema = new Schema({
     date:{
         type: Date,
+        default:Date.now,
     },
     headOfAccount:{
         type: String,
+    },
+    accountNumber:{
+        type: Number,
     },
     particular:{
         type: String,
@@ -18,7 +22,7 @@ const generalLedgerSchema = new Schema({
         type: Number,
     },
     voucherNo:{
-        type: Number,
+        type: String,
     },
     credit:{
         type: Number,
@@ -26,6 +30,9 @@ const generalLedgerSchema = new Schema({
     debit:{
         type: Number,
     },  
+    amount:{
+        type: Number,
+    },
     type:{
         type:String,
         enum:['cash','bank'],
