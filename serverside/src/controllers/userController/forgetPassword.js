@@ -1,7 +1,7 @@
 const ForgetPassword = require('../../models/coreModels/forgetPassword');
 const UserModel = require('../../models/coreModels/Admin');
 const nodemailer = require('nodemailer');
-require('dotenv').config();
+
 
 module.exports = {
     forgetPassword: async (req, res) => {
