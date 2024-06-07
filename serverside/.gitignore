@@ -1,1 +1,6 @@
 *.env
+node_modules
+./env
+.env
+.vscode/*
+!.vscode/extension.json
