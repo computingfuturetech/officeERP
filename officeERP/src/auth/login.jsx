@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useState } from "react";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -27,6 +27,10 @@ export default function Login() {
   const togglePasswordVisiblity = () => {
     setPasswordShown(passwordShown ? false : true);
   };
+
+  useEffect(() => {
+    console.log(localStorage.getItem("token"));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

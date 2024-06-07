@@ -13,7 +13,11 @@ h3, h1{
   line-height: 1.3333333;
   word-break: break-all;
 }
-
+p{
+  font-family: 'Nunito', sans-serif;
+  line-height: 1.5714;
+  word-break: break-all;
+}
 .loading {
   position: relative;
 }

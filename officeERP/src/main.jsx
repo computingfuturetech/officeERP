@@ -4,6 +4,7 @@ import App from './App.jsx'
 import './index.css'
 import {store} from './app/store'
 import {Provider} from 'react-redux'
+import Sidebar from './components/sidebar.jsx'
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
