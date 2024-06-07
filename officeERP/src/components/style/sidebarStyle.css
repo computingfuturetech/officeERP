@@ -8,13 +8,19 @@
     z-index: 1000;
     overflow-y: auto;
     padding: 20px;
-    border-radius: 0 10px;
+    display: flex;
+    flex-direction: column;
+
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+
 
     .logo {
-        font-size: 1.5rem;
-        font-weight: 600;
-        color: #fff;
-        margin-bottom: 20px;
+        width: 100%;
+        max-width: 150px;
+        align-self: center;
+        margin-block: 10px;
+        
     }
 
     ul {
@@ -46,17 +52,29 @@
                 list-style-position: inside;
                 list-style-type: disc;
 
-                img {
-                    width: 15px;
-                    margin-right: 10px;
-                    color: #5940d6;
 
+                svg {
+
+                    width: 15px;
+                    height: 15px;
+                    margin-right: 10px;
+
+                    g {
+                        fill: #000;
+                    }
                 }
+
             }
 
             a.active {
                 background-color: #e6efff;
                 color: #5940d6;
+
+                svg {
+                    g {
+                        fill: #5940d6;
+                    }
+                }
             }
 
         }

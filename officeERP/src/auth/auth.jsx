@@ -1,13 +1,23 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./style/authStyle.css";
 import Login from "./login";
 import ForgotPassword from "./forgot_password";
 import OTP from "./otp";
 import NewPassword from "./new_password";
 
-
+import { useSelector, useDispatch } from "react-redux";
+import { checkTokenExpiration } from "../features/auth/authSlice";
 
 export default function Auth(props) {
+  const dispatch = useDispatch();
+
+  useEffect(() => {
+    const checkToken = () => {
+      console.log("Checking token expiration");
+      dispatch(checkTokenExpiration());
+    };
+    checkToken();
+  }, [dispatch]);
 
   return (
     <div className="container">
@@ -23,26 +33,17 @@ export default function Auth(props) {
           </ul>
         </div>
       </div>
-      {
-        props.isLogin ? (
-          <Login />
-        ) : (
-          props.isForgotPassword ? (
-            <ForgotPassword />
-          ) : (
-            props.isOTP ? (
-              <OTP />
-            ) : (
-              props.isNewPassword ? (
-                <NewPassword />
-              ) : (
-                <Login />
-              )
-            )
-        )
-        )
-      }
+      {props.isLogin ? (
+        <Login />
+      ) : props.isForgotPassword ? (
+        <ForgotPassword />
+      ) : props.isOTP ? (
+        <OTP />
+      ) : props.isNewPassword ? (
+        <NewPassword />
+      ) : (
+        <Login />
+      )}
     </div>
   );
 }
-

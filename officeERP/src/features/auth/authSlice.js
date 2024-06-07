@@ -23,22 +23,41 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.user = null;
     },
-    checkTokenExpiration: (state) => {
+    checkTokenExpiration: (state, action) => {
       const jwt_token = localStorage.getItem("token");
+
       if (jwt_token) {
         const token = jwt_token;
         const jwtpayload = JSON.parse(window.atob(token.split(".")[1]));
+
         if (jwtpayload.exp * 1000 < Date.now()) {
+          // Token is expired, remove it and redirect to login page
           localStorage.removeItem("token");
           window.location.href = "/login";
-          state.isLoading = false;
-        }else{
-            state.isLoading = false;
+        } else {
+          // Token is valid, handle redirection
+          const requestedUrl = window.location.pathname;
+          if (
+            requestedUrl === "/" ||
+            requestedUrl === "/login" ||
+            requestedUrl === "/otp" ||
+            requestedUrl === "/new_password" ||
+            requestedUrl === "/forgot_password"
+          ) {
+            if (requestedUrl !== "/dashboard") {
+              window.location.href = "/dashboard";
+            }
+          }
         }
       } else {
-        state.isLoading = false;
-        window.location.href = "/login";
+        // No token found, redirect to login page
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
       }
+
+      // Ensure isLoading is set to false only once
+      state.isLoading = false;
     },
   },
 });
