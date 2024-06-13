@@ -1,0 +1,59 @@
+.invoice {
+    border: 1px solid #f0f0f0;
+    /* box-shadow: 0 0 2px rgba(0, 0, 0, 0.1); */
+    box-shadow: 0px 0px 20px 3px rgba(150, 190, 238, 0.15);
+    padding: 10px 20px;
+    width: 100%;
+    height: 100%;
+    min-width: max-content;
+    border-radius: 5px;
+    background-color: #fff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+
+
+
+ 
+
+
+    h3 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        text-align: center;
+        margin: 0;
+    }
+
+    .data {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+
+        p {
+            font-size: 14px;
+            margin: 0;
+            color: #595959;
+            font-weight: 600;
+        }
+
+        span {
+            font-family: 'Nunito', sans-serif;
+            font-size: 14px;
+            margin: 0;
+            color: #3ab3d6;
+            font-weight: 600;
+            padding: 5px 10px;
+
+
+            border: 1px solid #87e8de;
+            border-radius: 5px;
+            background-color: #e6fffb;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+
+        }
+    }
+}
+.invoice:hover{
+    box-shadow: 0px 0px 20px 3px rgba(150, 190, 238, 0.25);
+}

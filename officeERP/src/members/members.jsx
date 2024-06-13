@@ -1,14 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { checkTokenExpiration } from "../features/auth/authSlice";
-import "./style/dashboardStyle.css";
 import Sidebar from "../components/sidebar";
-import { logout } from "../features/auth/authSlice";
-import Invoice from "../components/invoice";
+import { logout} from "../features/auth/authSlice";
+import { Link } from "react-router-dom";
 import MemberList from "../components/member_list";
-import DailyTransaction from "../components/daily_transaction";
-import LastReports from "../components/last_reports";
-export default function Dashboard() {
+import AllMemberList from "../components/all_member_list";
+export default function Members() {
   const dispatch = useDispatch();
   // const token = useSelector((state) => state.auth.token)
   const isLoading = useSelector((state) => state.auth.isLoading);
@@ -29,18 +27,11 @@ export default function Dashboard() {
             Logout
           </a>
         </div>
-        <div className="top-content-container">
-          <Invoice name={'Invoice'} desc={'This month'} price={'$ 123.00'}/>
-          <Invoice name={'Invoice'} desc={'This month'} price={'$ 123.00'}/>
-        </div>
-        <div className="dashboard-content">
-          <div className="dashboard-content-container ">
-           <MemberList/>
-            <div className="recent-activities">
-             <DailyTransaction/>
-              <LastReports/>
-            </div>
-          </div>
+        <div className="main-content">
+
+            <AllMemberList />
+        
+
         </div>
         {isLoading && (
           <div className="loading-indicator">
