@@ -7,7 +7,6 @@ const checkRole = require('../../middleware/checkRole');
 
 const coreController = require('../../controllers/userController/create')
 const loginController = require('../../controllers/userController/login')
-const memberController = require('../../controllers/memberController/memberFilter')
 const newMemberController = require('../../controllers/memberController/newMember')
 const getMemberListController = require('../../controllers/memberController/getMemberList')
 const getDelistedMemberListController = require('../../controllers/memberController/getDelistedMemberList')
@@ -22,13 +21,14 @@ const newPasswordSet = require('../../controllers/userController/newPasswordSet'
 const createBank = require('../../controllers/ledgerController/createBank')
 const bankList = require('../../controllers/ledgerController/bankList')
 const createGeneralLedger = require('../../controllers/ledgerController/generalLedger')
+const createPayableVoucher = require('../../controllers/payableVoucherController/createPayableVoucher')
+const singleTierchallanController = require('../../controllers/templateController/singleTierChallan');
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
 router.post("/login",loginController.login);
-router.get('/getMemberByFilter', authenticateJWT,checkRole(['admin','employee']), memberController.getMemberByFilter);
 router.post("/createMember", authenticateJWT,checkRole(['admin','employee']),newMemberController.createMember);
-router.get("/getMemberList", authenticateJWT,checkRole(['admin','employee']),getMemberListController.getMemberList);
+router.get("/getMemberList/", authenticateJWT,checkRole(['admin','employee']),getMemberListController.getMemberList);
 router.get("/getDelistedMemberList", authenticateJWT,checkRole(['admin','employee']),getDelistedMemberListController.getDelistedMemberList);
 router.post("/transferMembership", authenticateJWT,checkRole(['admin','employee']),transferMembershipController.transferMembership);
 router.post("/updateMember", authenticateJWT,checkRole(['admin','employee']),updateMemberController.updateMember);
@@ -41,5 +41,8 @@ router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);
 router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
 router.post('/createGeneralLedger',authenticateJWT,checkRole(['admin','employee']), createGeneralLedger.createGeneralLedger);
+router.post('/createPayableVoucher',authenticateJWT,checkRole(['admin','employee']), createPayableVoucher.createPayableVoucher);
+// router.get('/', singleTierchallanController.renderTemplate);
+router.get('/generate-pdf', singleTierchallanController.generatePDF);
 
 module.exports = router

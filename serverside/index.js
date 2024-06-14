@@ -15,7 +15,14 @@ const CashBook = require("./src/models/ledgerModels/cashBookLedger");
 const HeadOfAccount = require("./src/models/headOfAccountModel/headOfAccountModel");
 const ForgetPassword = require("./src/models/coreModels/forgetPassword")
 const BankList = require("./src/models/ledgerModels/bankList")
-
+const OperatingFixedassets = require("./src/models/operatingFixedAssetsModels/operatingFixedAssets")
+const PayableVouchers = require("./src/models/payableVoucherModel/payableVouchers")
+const NonCurrentliablities = require("./src/models/liabilitiesModel/nonCurrentLiabilities")
+const Currentliablities = require("./src/models/liabilitiesModel/currentLiabilities")
+const Counter = require('./src/models/counterModel/voucherCounter'); 
+const SingleTierChallan = require('./src/models/challanModels/singleTierChallan'); 
+const ThreeTierChallan = require('./src/models/challanModels/threeTierChallan'); 
+ 
 
 dotenv.config();
 
