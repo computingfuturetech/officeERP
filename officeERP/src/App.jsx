@@ -11,6 +11,7 @@ import Dummy4 from './dashboard/dummy4'
 import Dummy5 from './dashboard/dummy5'
 import Dummy6 from './dashboard/dummy6'
 import Loading from './components/loading'
+import Members from './members/members'
 // import Dummy7 from './dashboard/dummy7'
 
 function App() {
@@ -24,9 +25,9 @@ function App() {
           <Route path="/dashboard" element={<Dashboard/>} />
           <Route path="/login" element={<Auth  isLogin={true}/>} />
           <Route path="/otp" element={<Auth  isOTP={true}/>} />
-          <Route path="/new_password" element={<Auth  isNewPassword={true}/>} />
-          <Route path="/forgot_password" element={<Auth  isForgotPassword={true}/>}/>
-          <Route path="/dummy1" element={<Dummy1/>}/>
+          <Route path="/new-password" element={<Auth  isNewPassword={true}/>} />
+          <Route path="/forgot-password" element={<Auth  isForgotPassword={true}/>}/>
+          <Route path="/members" element={<Members/>}/>
           <Route path="/dummy2" element={<Dummy2/>}/>
           <Route path="/dummy3" element={<Dummy2/>}/>
           <Route path="/dummy4" element={<Dummy3/>}/>

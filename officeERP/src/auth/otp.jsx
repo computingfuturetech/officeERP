@@ -32,7 +32,7 @@ export default function OTP() {
         showSuccessToastMessage("OTP verified successfully!");
         setIsLoading(false);
         setTimeout(() => {
-          window.location.href = "/new_password";
+          window.location.href = "/new-password";
         }, 2000);
       } else {
         setIsLoading(false);

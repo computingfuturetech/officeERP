@@ -41,8 +41,8 @@ const authSlice = createSlice({
             requestedUrl === "/" ||
             requestedUrl === "/login" ||
             requestedUrl === "/otp" ||
-            requestedUrl === "/new_password" ||
-            requestedUrl === "/forgot_password"
+            requestedUrl === "/new-password" ||
+            requestedUrl === "/forgot-password"
           ) {
             if (requestedUrl !== "/dashboard") {
               window.location.href = "/dashboard";
