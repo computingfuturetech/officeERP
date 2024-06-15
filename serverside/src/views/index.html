@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{title}}</title>
+    <!-- <link rel="stylesheet" href="../public/style.css"> -->
+     <style>
+        body {
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 90%;
+    margin: 0 auto;
+    /* border: 1px solid #000;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); */
+}
+
+.header,
+.section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+
+    .img{
+        width: 100px;
+        display: flex;
+        justify-content: start;
+
+    }
+    img {
+        width: 100px;
+    }
+
+    .form-group {
+        width: 30%;
+        max-width: 30%;
+    }
+    .society-name{
+        flex: 2;
+        h2{
+            font-size: 22px;
+            font-weight: 700;
+        
+        }
+    }
+    
+}
+
+.account{
+    width: 100%;
+    p{
+        text-align: right;
+        font-size: 14px;
+    }
+}
+h2{
+    margin: 0;
+    padding: 0;
+}
+h3{
+    margin: 0;
+    padding: 0;
+}
+p{
+    
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 16px;
+    font-weight: 700;
+}
+.bank{
+    p{
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 16px;
+    }
+}
+input {
+    border: none;
+    border-bottom: 1px solid #000;
+}
+
+.header img {
+    width: 100px;
+}
+
+.header div,
+.section div {
+    flex: 1;
+    text-align: center;
+}
+
+.header div:first-child {
+    text-align: left;
+}
+
+.header div:last-child {
+    text-align: right;
+}
+
+label {
+    width: max-content;
+    min-width: max-content;
+    margin-right: 10px;
+    font-weight: 700;
+}
+
+#name,
+#address,
+#phone,
+#email,
+#membership-no {
+    width: 100%;
+}
+
+#membership-no {
+    width: 30%;
+}
+
+.form-group {
+    margin: 10px 0;
+    display: flex;
+    align-items: end;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 5px;
+    margin-top: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table,
+th,
+td {
+    border: 1px solid #000;
+}
+
+.text-container{
+    width: 40%;
+    margin: 0 0;
+    padding: 0px 100px;
+
+    display: flex;
+    justify-content: space-between;
+    h3{
+        padding: 0;
+        margin: 0;
+    }
+}
+.membership{
+    width: 100%;
+    margin: 0 0;
+    padding: 0px;
+    display: flex;
+    justify-content: space-between;
+    /* border: 1px solid #000; */
+
+}
+.membership-form{
+    width: 100%;
+}
+th,
+td {
+    padding: 10px;
+    text-align: left;
+}
+
+.total {
+    font-weight: bold;
+}
+
+.total-text {
+    text-align: right;
+}
+
+tr {
+    td {
+        width: 20%;
+    }
+
+    input {
+        width: 100%;
+        border: none;
+    }
+}
+     </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div>
+                <img src="https://seeklogo.com/images/A/allied-bank-limited-abl-logo-BC9B3FF50C-seeklogo.com.png" alt="Allied Bank Logo">
+            </div>
+            <div class="bank">
+                <p>{{bankName}}.<br>
+                {{branchName}}.<br>
+                Branch Code {{branchCode}}</p>
+            </div>
+            <div class="account">
+                <p>Account No. {{accountNo}}</p>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="img">
+                <img src="https://upload.wikimedia.org/wikipedia/en/6/61/Lahore_High_Court_logo.png" alt="Allied Bank Logo">
+            </div>
+            <div class="society-name">
+                <h2>Cooperative Housing Society Employees</h2>
+                <h3>Lahore High Court (Regd.)</h3>
+            </div>
+            <div></div>
+        </div>
+
+        <div class="section">
+            <div class="form-group">
+                <label for="challan-no">Challan No.</label>
+                <input type="text" id="challan-no" value="{{challanNo}}">
+            </div>
+            <div class="form-group">
+                <label for="date">Dated:</label>
+                <input type="text" id="date" value="{{date}}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" value="{{pName}}">
+        </div>
+
+        <div class="form-group">
+            <label for="address">Full Address</label>
+            <input type="text" id="address" value="{{address}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="address1" value="{{nextlineAddress}}">
+        </div>
+
+        <div class="form-group membership">
+            <div class="membership-form">
+                <label for="membership-no">Membership No.</label>
+                <input type="text" id="membership-no" value="{{membershipNo}}">
+            </div>
+            <div class="text-container">
+                <h3>RS.</h3>
+                <h3>PS.</h3>
+            </div>
+        </div>
+
+        <table>
+            <tr>
+                <th>Possession Fee</th>
+                <td><input type="text" value="{{possessionFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Water Connection Charges</th>
+                <td><input type="text" value="{{waterCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Electricity Connection Fee</th>
+                <td><input type="text" value="{{electricityFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Construction</th>
+                <td><input type="text" value="{{construction}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Masjid Fund</th>
+                <td><input type="text" value="{{masjidFund}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Miscellaneous</th>
+                <td><input type="text" value="{{miscellaneous}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr class="total">
+                <th class="total-text">TOTAL</th>
+                <td><input type="text" value="{{total}}"></td>
+                <td><input type="text"></td>
+            </tr>
+        </table>
+
+        <div class="form-group">
+            <label for="total-in-words">Rupees (in words)</label>
+            <input type="text" id="total-in-words" value="{{totalInWords}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="total-in-words1" value="{{nextTotalInWords}}">
+        </div>
+
+        <div class="section">
+            <div>
+                <p>Cashier</p>
+            </div>
+            <div>
+                <p>Accountant</p>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="depositor-sig">Depositer's Sig.</label>
+        </div>
+    </div>
+</body>
+</html>
