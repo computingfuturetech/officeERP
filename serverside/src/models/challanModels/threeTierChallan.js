@@ -2,8 +2,7 @@ const mongoose = require("mongoose");
 
 const threeTierChallanSchema = new mongoose.Schema({
   date: {
-    type: Date,
-    default: Date.now,
+    type: String,
   },
   pName: {
     type: String,
@@ -14,6 +13,10 @@ const threeTierChallanSchema = new mongoose.Schema({
     required: true,
   },
   branchName: {
+    type: String,
+    required: true,
+  },
+  branchCode: {
     type: String,
     required: true,
   },
@@ -49,12 +52,6 @@ const threeTierChallanSchema = new mongoose.Schema({
     type: Number,
   },
   masjidFund: {
-    type: Number,
-  },
-  electricityCharges: {
-    type: Number,
-  },
-  miscellaneous: {
     type: Number,
   },
   total: {

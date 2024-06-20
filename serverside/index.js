@@ -44,7 +44,8 @@ app.use("/user", coreRouter);
 
 
 const port = 3001;
-const ip = '192.168.0.189';
+// const ip = '192.168.0.189';
+const ip = '192.168.100.13';
 app.get("/", function (req, res) {
   res.send("Hello World!");
 });

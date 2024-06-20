@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Challan Form</title>
+   <!-- <link rel="stylesheet" href="style.css"> -->
+    <style>
+       body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+}
+
+.container {
+    width: 30%;
+    margin: 0 auto;
+    h3{
+        text-align: center;
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+}
+
+.header,
+.section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0;
+    margin: 0;
+
+    .form-group {
+        width: 30%;
+        max-width: 30%;
+    }
+
+    .society-name {
+        padding: 0 18px;
+        h2 {
+            font-size: 12px;
+            font-weight: 700;
+        }
+        h3{
+            font-size: 8px;
+            font-weight: 700;
+        }
+    }
+
+}
+
+img {
+    width: 60px;
+}
+
+.account {
+    width: 100%;
+
+    p {
+        text-align: right;
+        font-size: 8px;
+    }
+}
+
+h2 {
+    margin: 0;
+    padding: 0;
+}
+
+h3 {
+    margin: 0;
+    padding: 0;
+}
+
+p {
+
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.bank {
+    p {
+        font-family: 'Times New Roman', Times, serif;
+        font-size: 12px;
+        text-align: left;
+    }
+}
+
+input {
+    border: none;
+    border-bottom: 1px solid #000;
+    min-width: 40px;
+}
+
+.header img {
+    width: 60px;
+}
+
+.header div,
+.section div {
+    flex: 1;
+    text-align: center;
+}
+
+.header div:first-child {
+    text-align: left;
+}
+
+.header div:last-child {
+    text-align: right;
+}
+
+label {
+    width: max-content;
+    min-width: max-content;
+    margin-right: 10px;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+#name,
+#address,
+#phone,
+#email {
+    width: 100%;
+}
+
+#membership-no {
+    width: 50%;
+}
+
+.form-group {
+    margin: 10px 0;
+    display: flex;
+    align-items: end;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table,
+th,
+td {
+    border: 1px solid #000;
+}
+
+.text-container {
+    width: 35%;
+    margin: 0 0;
+    padding: 0px 30px;
+
+    display: flex;
+    justify-content: space-between;
+
+    h3 {
+        text-align: center;
+        padding: 0;
+        margin: 0;
+        font-size: 12px;
+    }
+}
+
+.membership {
+    width: 100%;
+    margin: 0 0;
+    padding: 0px;
+    display: flex;
+    justify-content: space-between;
+    /* border: 1px solid #000; */
+
+}
+
+.membership-form {
+    width: 100%;
+    input{
+        max-width: 30px;
+        width: 100%;
+        min-width: 20px;
+    }
+}
+
+th,
+td {
+    padding: 2px 6px;
+    text-align: left;
+}
+th{
+    font-size: 10px;
+}
+
+.total {
+    font-weight: bold;
+}
+
+.total-text {
+    text-align: right;
+}
+
+tr {
+    td {
+        width: 20%;
+    }
+
+    input {
+        width: 100%;
+        border: none;
+    }
+}
+
+.sign-section{
+    width: 100%;
+    display: flex;
+    .last-sign{
+        width: 50%;    
+    }
+}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h3>Consumer Copy</h3>
+        <div class="header">
+            <div class="img">
+                <img src="https://seeklogo.com/images/A/allied-bank-limited-abl-logo-BC9B3FF50C-seeklogo.com.png" alt="Allied Bank Logo">
+            </div>
+            <div class="bank">
+                <p>{{bankName}}<br>
+                {{branchName}}<br>
+                Branch Code {{branchCode}}</p>
+            </div>
+            <div class="account">
+                <p>Account No. {{accountNo}}</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="form-group">
+                <label for="challan-no">Challan No.</label>
+                <input type="text" id="challan-no" value="{{challanNo}}">
+            </div>
+            <div class="form-group">
+                <label for="date">Dated:</label>
+                <input type="text" id="date" value="{{date}}">
+            </div>
+        </div>
+        <div class="section">
+            <div class="society-name">
+                <h2>CREDIT: Cooperative Housing Society Employees</h2>
+                <h3>Lahore High Court (Regd.)</h3>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" value="{{pName}}">
+        </div>
+        <div class="form-group">
+            <label for="address">Full Address</label>
+            <input type="text" id="address" value="{{addressLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="address" value="{{nextlineAddress}}">
+        </div>
+        <div class="form-group membership">
+            <div class="membership-form">
+                <label for="membership-no">Membership No.</label>
+                <input type="text" id="membership-no" value="{{membershipNo}}">
+            </div>
+            <div class="text-container">
+                <h3>RS.</h3>
+                <h3>PS.</h3>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Membership Fee</th>
+                <td><input type="text" value="{{membershipFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Land Cost</th>
+                <td><input type="text" value="{{landCost}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Development Charges</th>
+                <td><input type="text" value="{{developmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Additional Development Charges</th>
+                <td><input type="text" value="{{additionalDevelopmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Transfer Fee</th>
+                <td><input type="text" value="{{transferFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Masjid Fund</th>
+                <td><input type="text" value="{{masjidFund}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr class="total">
+                <th class="total-text">TOTAL</th>
+                <td><input type="text" value="{{total}}"></td>
+                <td><input type="text"></td>
+            </tr>
+        </table>
+        <div class="form-group">
+            <label for="total-in-words">Rupees (in words)</label>
+            <input type="text" id="total-in-words" value="{{totalInWordsLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="total-in-words" value="{{nextTotalInWords}}">
+        </div>
+        <div class="sign-section">
+            <div class="last-sign">
+                <p>Cashier</p>
+            </div>
+            <div class="last-sign">
+                <p>Accountant</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="depositor-sig">Depositer's Sig.</label>
+        </div>
+    </div>
+    <hr>
+    <!-- Repeat the structure for Society Copy and Bank Copy with placeholders -->
+    <div class="container">
+        <h3>Society Copy</h3>
+        <div class="header">
+            <div class="img">
+                <img src="https://seeklogo.com/images/A/allied-bank-limited-abl-logo-BC9B3FF50C-seeklogo.com.png" alt="Allied Bank Logo">
+            </div>
+            <div class="bank">
+                <p>{{bankName}}<br>
+                {{branchName}}<br>
+                Branch Code {{branchCode}}</p>
+            </div>
+            <div class="account">
+                <p>Account No. {{accountNo}}</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="form-group">
+                <label for="challan-no">Challan No.</label>
+                <input type="text" id="challan-no" value="{{challanNo}}">
+            </div>
+            <div class="form-group">
+                <label for="date">Dated:</label>
+                <input type="text" id="date" value="{{date}}">
+            </div>
+        </div>
+        <div class="section">
+            <div class="society-name">
+                <h2>CREDIT: Cooperative Housing Society Employees</h2>
+                <h3>Lahore High Court (Regd.)</h3>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" value="{{pName}}">
+        </div>
+        <div class="form-group">
+            <label for="address">Full Address</label>
+            <input type="text" id="address" value="{{addressLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="address" value="{{nextlineAddress}}">
+        </div>
+        <div class="form-group membership">
+            <div class="membership-form">
+                <label for="membership-no">Membership No.</label>
+                <input type="text" id="membership-no" value="{{membershipNo}}">
+            </div>
+            <div class="text-container">
+                <h3>RS.</h3>
+                <h3>PS.</h3>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Membership Fee</th>
+                <td><input type="text" value="{{membershipFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Land Cost</th>
+                <td><input type="text" value="{{landCost}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Development Charges</th>
+                <td><input type="text" value="{{developmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Additional Development Charges</th>
+                <td><input type="text" value="{{additionalDevelopmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Transfer Fee</th>
+                <td><input type="text" value="{{transferFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Masjid Fund</th>
+                <td><input type="text" value="{{masjidFund}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr class="total">
+                <th class="total-text">TOTAL</th>
+                <td><input type="text" value="{{total}}"></td>
+                <td><input type="text"></td>
+            </tr>
+        </table>
+        <div class="form-group">
+            <label for="total-in-words">Rupees (in words)</label>
+            <input type="text" id="total-in-words" value="{{totalInWordsLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="total-in-words" value="{{nextTotalInWords}}">
+        </div>
+        <div class="sign-section">
+            <div class="last-sign">
+                <p>Cashier</p>
+            </div>
+            <div class="last-sign">
+                <p>Accountant</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="depositor-sig">Depositer's Sig.</label>
+        </div>
+    </div>
+    <hr>
+    <div class="container">
+        <h3>Bank Copy</h3>
+        <div class="header">
+            <div class="img">
+                <img src="https://seeklogo.com/images/A/allied-bank-limited-abl-logo-BC9B3FF50C-seeklogo.com.png" alt="Allied Bank Logo">
+            </div>
+            <div class="bank">
+                <p>{{bankName}}<br>
+                {{branchName}}<br>
+                Branch Code {{branchCode}}</p>
+            </div>
+            <div class="account">
+                <p>Account No. {{accountNo}}</p>
+            </div>
+        </div>
+        <div class="section">
+            <div class="form-group">
+                <label for="challan-no">Challan No.</label>
+                <input type="text" id="challan-no" value="{{challanNo}}">
+            </div>
+            <div class="form-group">
+                <label for="date">Dated:</label>
+                <input type="text" id="date" value="{{date}}">
+            </div>
+        </div>
+        <div class="section">
+            <div class="society-name">
+                <h2>CREDIT: Cooperative Housing Society Employees</h2>
+                <h3>Lahore High Court (Regd.)</h3>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="name">Name</label>
+            <input type="text" id="name" value="{{pName}}">
+        </div>
+        <div class="form-group">
+            <label for="address">Full Address</label>
+            <input type="text" id="address" value="{{addressLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="address" value="{{nextlineAddress}}">
+        </div>
+        <div class="form-group membership">
+            <div class="membership-form">
+                <label for="membership-no">Membership No.</label>
+                <input type="text" id="membership-no" value="{{membershipNo}}">
+            </div>
+            <div class="text-container">
+                <h3>RS.</h3>
+                <h3>PS.</h3>
+            </div>
+        </div>
+        <table>
+            <tr>
+                <th>Membership Fee</th>
+                <td><input type="text" value="{{membershipFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Land Cost</th>
+                <td><input type="text" value="{{landCost}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Development Charges</th>
+                <td><input type="text" value="{{developmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Additional Development Charges</th>
+                <td><input type="text" value="{{additionalDevelopmentCharges}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Transfer Fee</th>
+                <td><input type="text" value="{{transferFee}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr>
+                <th>Masjid Fund</th>
+                <td><input type="text" value="{{masjidFund}}"></td>
+                <td><input type="text"></td>
+            </tr>
+            <tr class="total">
+                <th class="total-text">TOTAL</th>
+                <td><input type="text" value="{{total}}"></td>
+                <td><input type="text"></td>
+            </tr>
+        </table>
+        <div class="form-group">
+            <label for="total-in-words">Rupees (in words)</label>
+            <input type="text" id="total-in-words" value="{{totalInWordsLine1}}">
+        </div>
+        <div class="form-group">
+            <input type="text" id="total-in-words" value="{{nextTotalInWords}}">
+        </div>
+        <div class="sign-section">
+            <div class="last-sign">
+                <p>Cashier</p>
+            </div>
+            <div class="last-sign">
+                <p>Accountant</p>
+            </div>
+        </div>
+        <div class="form-group">
+            <label for="depositor-sig">Depositer's Sig.</label>
+        </div>
+    </div>
+</body>
+</html>

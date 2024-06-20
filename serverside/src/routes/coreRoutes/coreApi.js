@@ -23,6 +23,7 @@ const bankList = require('../../controllers/ledgerController/bankList')
 const createGeneralLedger = require('../../controllers/ledgerController/generalLedger')
 const createPayableVoucher = require('../../controllers/payableVoucherController/createPayableVoucher')
 const singleTierchallanController = require('../../controllers/templateController/singleTierChallan');
+const threeTierchallanController = require('../../controllers/templateController/threeTierChallan');
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -42,7 +43,8 @@ router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.creat
 router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
 router.post('/createGeneralLedger',authenticateJWT,checkRole(['admin','employee']), createGeneralLedger.createGeneralLedger);
 router.post('/createPayableVoucher',authenticateJWT,checkRole(['admin','employee']), createPayableVoucher.createPayableVoucher);
-// router.get('/', singleTierchallanController.renderTemplate);
-router.get('/generate-pdf', singleTierchallanController.generatePDF);
+// router.get('/', threeTierchallanController.renderTemplate);
+router.get('/stc-generate-pdf', singleTierchallanController.generatePDF);
+router.get('/ttc-generate-pdf', threeTierchallanController.generatePDF);
 
 module.exports = router
