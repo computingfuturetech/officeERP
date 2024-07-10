@@ -7,6 +7,8 @@ const memberListSchema = new Schema({
     },
     msNo: {
         type: String,
+        unique: true,
+        required: true
     },
     area: {
         type: Number,

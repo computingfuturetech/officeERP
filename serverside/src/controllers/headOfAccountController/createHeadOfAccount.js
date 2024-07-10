@@ -1,4 +1,4 @@
-const HeadOfAccount=require('../../models/headOfAccountModel/headOfAccountModel');
+const HeadOfAccount=require('../../models/headOfAccountModel/headOfAccount');
 
 module.exports={
 
