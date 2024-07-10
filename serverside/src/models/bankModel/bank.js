@@ -9,13 +9,21 @@ const bankListSchema = new Schema({
     bankName:{
         type: String,
     },
+    branchName:{
+        type: String,
+    },
     accountNo:{
         type:String,
     },
-    branch:{
+    branchCode:{
         type:String,
     },
-
+    accountName:{
+        type:String,
+    },
+    accountType:{
+        type:String,
+    }
 }
 )
 

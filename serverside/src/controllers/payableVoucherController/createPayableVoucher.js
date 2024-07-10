@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const PayableVoucher = require('../../models/payableVoucherModel/payableVouchers');
 const Currentliablities = require("../../models/liabilitiesModel/currentLiabilities");
 const Counter = require('../../models/counterModel/voucherCounter'); 
-const HeadOfAccount = require('../../models/headOfAccountModel/headOfAccountModel');
+const HeadOfAccount = require('../../models/headOfAccountModel/headOfAccount');
 
 module.exports = {
     createPayableVoucher: async (req, res) => {

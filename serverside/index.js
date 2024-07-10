@@ -12,9 +12,9 @@ const MemberDeposit = require("./src/models/memberModels/memberDeposit");
 const BankLedger = require("./src/models/ledgerModels/bankLedger");
 const GeneralLedger = require("./src/models/ledgerModels/generalLedger");
 const CashBook = require("./src/models/ledgerModels/cashBookLedger");
-const HeadOfAccount = require("./src/models/headOfAccountModel/headOfAccountModel");
+const HeadOfAccount = require("./src/models/headOfAccountModel/headOfAccount");
 const ForgetPassword = require("./src/models/coreModels/forgetPassword")
-const BankList = require("./src/models/ledgerModels/bankList")
+const BankList = require("./src/models/bankModel/bank")
 const OperatingFixedassets = require("./src/models/operatingFixedAssetsModels/operatingFixedAssets")
 const PayableVouchers = require("./src/models/payableVoucherModel/payableVouchers")
 const NonCurrentliablities = require("./src/models/liabilitiesModel/nonCurrentLiabilities")
@@ -22,7 +22,14 @@ const Currentliablities = require("./src/models/liabilitiesModel/currentLiabilit
 const Counter = require('./src/models/counterModel/voucherCounter'); 
 const SingleTierChallan = require('./src/models/challanModels/singleTierChallan'); 
 const ThreeTierChallan = require('./src/models/challanModels/threeTierChallan'); 
- 
+
+const BankProfit = require('./src/models/incomeModels/bankProfitModels/bankProfit')
+const waterMaintenanceBill = require('./src/models/incomeModels/waterMaintenanceBillModel/waterMaintenanceBill')
+const possessionFee = require('./src/models/incomeModels/pssessionFeeModel/possessionFee')
+const sellerPurchaserIncome = require('./src/models/incomeModels/sellerPurchaseIncome/sellerPurchaseIncome')
+
+const officeUtilExpense = require('./src/models/expenseModel/officeUtilExpense/officeutilExpense')
+const legalProfessionalExpense = require('./src/models/expenseModel/legalProfessionalExpense/legalProfessionalExpense')
 
 dotenv.config();
 
@@ -44,8 +51,8 @@ app.use("/user", coreRouter);
 
 
 const port = 3001;
-// const ip = '192.168.0.189';
-const ip = '192.168.100.13';
+const ip = '192.168.0.189';
+// const ip = '192.168.100.13';
 app.get("/", function (req, res) {
   res.send("Hello World!");
 });

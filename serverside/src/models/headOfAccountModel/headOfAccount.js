@@ -8,6 +8,8 @@ const headOfAccountSchema= new Schema({
     },
     headOfAccount:{
         type:String,
+        unique: true,
+        required: true
     },
     transactionType:{
         type:String,
@@ -16,5 +18,5 @@ const headOfAccountSchema= new Schema({
 }
 )
 
-const HeadOfAccount = mongoose.model('HeadOfAccountr',headOfAccountSchema)
+const HeadOfAccount = mongoose.model('HeadOfAccount',headOfAccountSchema)
 module.exports=HeadOfAccount;

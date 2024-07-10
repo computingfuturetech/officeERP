@@ -3,59 +3,59 @@ const fs = require("fs");
 const puppeteer = require("puppeteer");
 const ThreeTierChallan = require("../../models/challanModels/threeTierChallan");
 
-// exports.renderTemplate = (req, res) => {
-//   fs.readFile(
-//     path.join(__dirname, "../../views/threeTierChallan.html"),
-//     "utf-8",
-//     (err, html) => {
-//       if (err) {
-//         console.error("Error loading template:", err);
-//         return res.status(500).send("Error loading template");
-//       }
-//       const data = ({
-//         accountNo,
-//         bankName,
-//         branchName,
-//         branchCode,
-//         challanNo,
-//         pName,
-//         date,
-//         address,
-//         membershipNo,
-//         membershipFee,
-//         developmentCharges,
-//         additionalDevelopemntCharges,
-//         landCost,
-//         transferFee,
-//         masjidFund,
-//         miscellaneous,
-//         totalInWords,
-//       } = req.body);
+exports.renderTemplate = (req, res) => {
+  fs.readFile(
+    path.join(__dirname, "../../views/threeTierChallan.html"),
+    "utf-8",
+    (err, html) => {
+      if (err) {
+        console.error("Error loading template:", err);
+        return res.status(500).send("Error loading template");
+      }
+      const data = ({
+        accountNo,
+        bankName,
+        branchName,
+        branchCode,
+        challanNo,
+        pName,
+        date,
+        address,
+        membershipNo,
+        membershipFee,
+        developmentCharges,
+        additionalDevelopemntCharges,
+        landCost,
+        transferFee,
+        masjidFund,
+        miscellaneous,
+        totalInWords,
+      } = req.body);
 
  
 
-//       let renderedHtml = html
-//         .replace("{{accountNo}}", data.accountNo)
-//         .replace("{{bankName}}", data.bankName)
-//         .replace("{{branchName}}", data.branchName)
-//         .replace("{{branchCode}}", data.branchCode)
-//         .replace("{{challanNo}}", data.challanNo)
-//         .replace("{{date}}", data.date)
-//         .replace("{{pName}}", data.pName)
-//         .replace("{{addressLine1}}", data.address)
-//         .replace("{{membershipNo}}", data.membershipNo)
-//         .replace("{{membershipFee}}", data.membershipFee)
-//         .replace("{{developmentCharges}}", data.developmentCharges)
-//         .replace("{{additionalDevelopemntCharges}}", data.additionalDevelopemntCharges)
-//         .replace("{{landCost}}", data.landCost)
-//         .replace("{{masjidFund}}", data.masjidFund)
-//         .replace('{{transferFee}}', data.transferFee)
-//         // .replace("{{total}}",total)
-//         .replace("{{totalInWords}}", data.totalInWords)
-//       res.send(renderedHtml);
-//     }
-//   );
-// };
+      let renderedHtml = html
+        .replace("{{accountNo}}", data.accountNo)
+        .replace("{{bankName}}", data.bankName)
+        .replace("{{branchName}}", data.branchName)
+        .replace("{{branchCode}}", data.branchCode)
+        .replace("{{challanNo}}", data.challanNo)
+        .replace("{{date}}", data.date)
+        .replace("{{pName}}", data.pName)
+        .replace("{{addressLine1}}", data.address)
+        .replace("{{membershipNo}}", data.membershipNo)
+        .replace("{{membershipFee}}", data.membershipFee)
+        .replace("{{developmentCharges}}", data.developmentCharges)
+        .replace("{{additionalDevelopemntCharges}}", data.additionalDevelopemntCharges)
+        .replace("{{landCost}}", data.landCost)
+        .replace("{{masjidFund}}", data.masjidFund)
+        .replace('{{transferFee}}', data.transferFee)
+        // .replace("{{total}}",total)
+        .replace("{{totalInWords}}", data.totalInWords)
+      res.send(renderedHtml);
+    }
+  );
+};
 
 exports.generatePDF = async (req, res) => {
   fs.readFile(

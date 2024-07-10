@@ -1,5 +1,5 @@
 const mongoose= require('mongoose')
-const BankList=require('../../models/ledgerModels/bankList')
+const BankList=require('../../models/bankModel/bank')
 
 module.exports={
   bankList: async (req, res) => {
