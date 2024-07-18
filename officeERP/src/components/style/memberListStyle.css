@@ -15,7 +15,6 @@
 }
 
 
-
 .member-list {
     width: 100%;
     padding: 10px 20px;
@@ -37,7 +36,8 @@
 
         .top-bar-item {
             display: flex;
-            align-items: center;
+        justify-content: space-between;
+        align-items: center;
             width: 100%;
 
             h4 {
@@ -210,6 +210,10 @@
                     background: #f0f0f0;
                 }
             }
+            .options.income{
+                bottom: -60px;
+            
+            }
         }
     }
 
@@ -280,6 +284,23 @@
                     border-radius: 5px;
                     font-family: 'Nunito', sans-serif;
                     font-size: 14px;
+                    -webkit-appearance: none;
+                }
+
+                input::-webkit-outer-spin-button,
+                input::-webkit-inner-spin-button {
+                  -webkit-appearance: none;
+                  margin: 0;
+                }
+                
+                /* Firefox */
+                input[type=number] {
+                  -moz-appearance: textfield;
+                }
+
+
+                input[type="date"]{
+                    min-height: 25px;
                 }
 
                 label {

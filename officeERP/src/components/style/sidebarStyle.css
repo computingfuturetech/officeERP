@@ -15,38 +15,35 @@
 
 
 
+
     .logo {
         width: 100%;
         max-width: 150px;
         align-self: center;
         margin-block: 10px;
-        
+
     }
 
-    ul {
-        list-style: none;
-        padding: 0;
+    .sidebar-wrapper {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 100%;
 
-        li {
-            /* margin-bottom: 10px; */
-            text-decoration: none;
-            background-color: transparent;
-            outline: none;
-            cursor: pointer;
-            transition: color 0.3s;
+        ul {
+            list-style: none;
+            padding: 0;
 
-            a {
-                text-decoration: none;
+            .dropdown-item{
+                margin-left: 25px;
+            }
+
+            .dropdown {
+                cursor: pointer;
+                color: #333;
+                padding: 0 10px;
                 color: #000;
                 font-size: 14px;
-                display: block;
-                padding: 0 10px;
-                border-radius: 5px;
-                transition: all 0.5s;
-                display: flex;
-                align-items: center;
-                font-family: 'Nunito', sans-serif !important;
-                -webkit-font-smoothing: antialiased;
                 font-weight: 700;
                 line-height: 40px;
                 list-style-position: inside;
@@ -63,21 +60,106 @@
                         fill: #000;
                     }
                 }
-
+                .dropdown-item{
+                    font-size: 12px;
+                }
             }
 
-            a.active {
-                background-color: #e6efff;
-                color: #5940d6;
 
-                svg {
-                    g {
-                        fill: #5940d6;
+            .dropdown-menu {
+                list-style-type: none;
+                padding: 0;
+                padding-left: 50px;
+                /* margin-top: 10px; */
+                li{
+                    a{
+                        font-size: 12px;
                     }
                 }
             }
 
+            .dropdown-menu li {
+                /* margin-bottom: 10px; */
+            }
+
+            li {
+                /* margin-bottom: 10px; */
+                text-decoration: none;
+                background-color: transparent;
+                outline: none;
+                cursor: pointer;
+                transition: color 0.3s;
+
+                a {
+                    text-decoration: none;
+                    color: #000;
+                    font-size: 14px;
+                    display: block;
+                    padding: 0 10px;
+                    border-radius: 5px;
+                    transition: all 0.5s;
+                    display: flex;
+                    align-items: center;
+                    font-family: 'Nunito', sans-serif !important;
+                    -webkit-font-smoothing: antialiased;
+                    font-weight: 700;
+                    line-height: 40px;
+                    list-style-position: inside;
+                    list-style-type: disc;
+
+
+                    svg {
+
+                        width: 15px;
+                        height: 15px;
+                        margin-right: 10px;
+
+                        g {
+                            fill: #000;
+                        }
+                    }
+
+                }
+
+                a.active {
+                    background-color: #e6efff;
+                    color: #5940d6;
+                    margin-block: 0;
+
+                    svg {
+                        g {
+                            fill: #5940d6;
+                        }
+                    }
+                }
+
+                .active {
+                    background-color: #e6efff;
+                    color: #5940d6;
+                    border-radius: 5px;
+                    margin-block: 5px;
+
+                    svg {
+                        g {
+                            fill: #5940d6;
+                        }
+                    }
+                }
+
+                .logout{
+                   color: red;
+
+                   svg{
+                          g{
+                            fill: red;
+                          }
+                   }
+                }
+
+            }
         }
     }
+
+
 
 }
