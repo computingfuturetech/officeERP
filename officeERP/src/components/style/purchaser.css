@@ -1,0 +1,53 @@
+.add-purchaser {
+    form {
+        display: flex;
+        gap: 1rem;
+
+        .purchaser-input-wrapper {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 1rem;
+
+            .input {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+
+                label {
+                    font-size: 0.8rem;
+                    font-weight: 700;
+                    margin-left: 0.1rem;
+                }
+            }
+
+            .address {
+                display: flex;
+                flex-direction: column;
+                width: 200%;
+            }
+        }
+
+        .purchaser-input {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+    }
+    .blue-button{
+        margin-block: 0.6rem;
+        text-align: center;
+        font-size: 0.9rem;
+        cursor: pointer;
+    }
+
+    .purchaser-input {
+        display: flex;
+        flex-direction: column;
+    }
+    
+}
+
+    .divider-margin {
+        margin-block: 1rem;
+    }

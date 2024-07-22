@@ -273,49 +273,7 @@
                 flex-direction: column;
                 margin-top: 20px;
                 max-height: calc(100vh - 490px);
-
-                input[type="text"],
-                input[type="email"],
-                input[type="number"],
-                input[type="date"],
-                select {
-                    padding: 5px;
-                    border: 1px solid #ccc;
-                    border-radius: 5px;
-                    font-family: 'Nunito', sans-serif;
-                    font-size: 14px;
-                    -webkit-appearance: none;
-                }
-
-                input::-webkit-outer-spin-button,
-                input::-webkit-inner-spin-button {
-                  -webkit-appearance: none;
-                  margin: 0;
-                }
-                
-                /* Firefox */
-                input[type=number] {
-                  -moz-appearance: textfield;
-                }
-
-
-                input[type="date"]{
-                    min-height: 25px;
-                }
-
-                label {
-                    font-family: 'Nunito', sans-serif;
-                    font-size: 14px;
-                    font-weight: 700;
-                    margin-top: 10px;
-                }
-
-                .read-only {
-                    background-color: #f0f0f0;
-                    cursor: not-allowed;
-
-                }
-
+               
                 .blue-button {
                     padding-block: 8px;
                     margin-top: 10px;

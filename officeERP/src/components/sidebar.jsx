@@ -30,6 +30,11 @@ export default function Sidebar() {
         setShowSeller(true);
         setShowGeneral(true);
       }
+      if (location.pathname.includes("/income/purchaser"))
+      {
+        setShowPurchaser(true);
+        setShowGeneral(true);
+      }
 
       setShowIncome(true);
     }
@@ -131,9 +136,9 @@ export default function Sidebar() {
                       <li>
                         <NavLink
                           exact
-                          to="/income/annual"
+                          to="/income/purchaser"
                           activeClassName="active"
-                          onClick={() => setIncome(false)}
+                          onClick={() => handlePurchaser(false)}
                         >
                           Purchaser
                         </NavLink>
