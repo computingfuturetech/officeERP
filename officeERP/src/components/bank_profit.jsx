@@ -4,9 +4,9 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function AllMemberList() {
+export default function BankProfitComponent() {
   const history = useNavigate();
-  const [showSection, setShowSection] = useState(false);
+//   const [showSection, setShowSection] = useState(false);
   const [memberList, setMemberList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedMember, setSelectedMember] = useState(null);
@@ -22,6 +22,10 @@ export default function AllMemberList() {
   const [block, setBlock] = useState("");
   const [cnicNo, setCnicNo] = useState("");
   const [address, setAddress] = useState("");
+  const [addNew, setAddNew] = useState(false);
+
+
+
 
   useEffect(() => {
     const fetchData = async () => {
@@ -40,7 +44,6 @@ export default function AllMemberList() {
         if (response.data.length > 0) {
           setMemberList((prevList) => [...prevList, ...response.data]);
         }
-        console.log(response.data);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -71,9 +74,10 @@ export default function AllMemberList() {
     };
   }, [loading]);
 
-  const handleShowSection = (member) => {
+  const handleAddNew = (member) => {
+    scrollToTop();
     setSelectedMember(member);
-    setShowSection(true);
+    setAddNew(true);
     setShowOptions(false);
   };
   const handleEditSection = (member) => {
@@ -96,7 +100,7 @@ export default function AllMemberList() {
   };
 
   const closeSection = () => {
-    setShowSection(false);
+    setAddNew(false);
     setMsNo("");
     setPurchaseName("");
     setGuardianName("");
@@ -182,10 +186,20 @@ export default function AllMemberList() {
       setLoading(false);
     }
   };
+
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  
+  };
+
+
   return (
     <div className="member-list">
       <div className="title">
-        <h2>Members</h2>
+        <h2>BankProfit</h2>
         <div className="title-buttons">
           <form className="nosubmit" onSubmit={handleSearch}>
             <input
@@ -196,6 +210,7 @@ export default function AllMemberList() {
               placeholder="Search..."
             />
           </form>
+          <Link className="blue-button" onClick={handleAddNew}> Add New</Link> 
           <Link className="simple-button" onClick={handleRefresh}>
             Refresh
           </Link>
@@ -203,10 +218,10 @@ export default function AllMemberList() {
       </div>
       <div className="top-bar">
         <div className="top-bar-item">
-          <h4>Member ID</h4>
-          <h4>Name</h4>
-          <h4>Phase</h4>
-          <h4>Plot No</h4>
+          <h4>Bank Name</h4>
+          <h4>Account Number</h4>
+          <h4>Month</h4>
+          <h4>Amount</h4>
           <h4></h4>
         </div>
       </div>
@@ -227,10 +242,10 @@ export default function AllMemberList() {
             </div>
 
             {selectedMember === member && showOptions && (
-              <div className="options">
-                <button onClick={() => handleShowSection(member)}>Show</button>
-                <div className="horizontal-divider"></div>
-                <button onClick={() => handleEditSection(member)}>Edit</button>
+              <div className="options income">
+                {/* <button onClick={() => handleAddNew(member)}>Edit</button>
+                {/* <div className="horizontal-divider"></div> */}
+                 <button onClick={() => handleEditSection(member)}>Edit</button> 
                 <div className="horizontal-divider"></div>
                 <button>Delete</button>
               </div>
@@ -245,76 +260,102 @@ export default function AllMemberList() {
       </div>
       {editSection && (
         <div className="left-section">
+        <div className="left-section-content">
+          <div onClick={closeSection} className="close-button"></div>
+          <h3>Add Bank Profit</h3>
+          <div className="horizontal-divider"></div>
+          <form onSubmit={updateMember}>
+            <label htmlFor="msNo">Bank Name: </label>
+            {/* <input
+              type="text"
+              // readOnly
+              className="read-only"
+              name="msNo"
+              id="msNo"
+              value={msNo}
+              onChange={(e) => setMsNo(e.target.value)}
+            /> */}
+            <select name="bank-name" id="bank-name">
+              <option value="select" hidden>Select</option>
+              <option value="1">HBL</option>
+              <option value="2">ABL</option>
+            </select>
+            <label htmlFor="purchaseName">Account Number: </label>
+            <select name="account-number" id="account-number">
+            <option value="select" hidden>Select</option>
+              <option value="1">1</option>
+              <option value="2">2</option>
+            </select>
+            <label htmlFor="guardianName">Month: </label>
+            <input
+              type="date"
+              name="guardianName"
+              id="guardianName"
+              value={guardianName}
+              onChange={(e) => setGuardianName(e.target.value)}
+            />
+            <label htmlFor="phase">Amount: </label>
+            <input
+              type="text"
+              name="phase"
+              id="phase"
+              value={phase}
+              onChange={(e) => setPhase(e.target.value)}
+            />
+            <button
+              type="submit"
+              className="blue-button"
+              onClick={updateMember}
+            >
+              Save
+            </button>
+          </form>
+        </div>
+      </div>
+      )}
+      {addNew && (
+        <div className="left-section">
           <div className="left-section-content">
             <div onClick={closeSection} className="close-button"></div>
-            <h3>Edit Member Details</h3>
+            <h3>Add Bank Profit</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
-              <label htmlFor="msNo">Member Id: </label>
-              <input
+              <label htmlFor="msNo">Bank Name: </label>
+              {/* <input
                 type="text"
-                readOnly
+                // readOnly
                 className="read-only"
                 name="msNo"
                 id="msNo"
                 value={msNo}
                 onChange={(e) => setMsNo(e.target.value)}
-              />
-              <label htmlFor="purchaseName">Name: </label>
+              /> */}
+              <select name="bank-name" id="bank-name">
+                <option value="select" hidden>Select</option>
+                <option value="1">HBL</option>
+                <option value="2">ABL</option>
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number">
+              <option value="select" hidden>Select</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+              </select>
+              <label htmlFor="guardianName">Month: </label>
               <input
-                type="text"
-                name="purchaseName"
-                id="purchaseName"
-                value={purchaseName}
-                onChange={(e) =>setPurchaseName(e.target.value)}
-              />
-              <label htmlFor="guardianName">Guardian: </label>
-              <input
-                type="text"
+                type="date"
                 name="guardianName"
                 id="guardianName"
                 value={guardianName}
                 onChange={(e) => setGuardianName(e.target.value)}
               />
-              <label htmlFor="phase">Phase: </label>
+              <label htmlFor="phase">Amount: </label>
               <input
                 type="text"
                 name="phase"
                 id="phase"
                 value={phase}
                 onChange={(e) => setPhase(e.target.value)}
-              />
-              <label htmlFor="plotNo">Plot No: </label>
-              <input
-                type="text"
-                name="plotNo"
-                id="plotNo"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
-              />
-              <label htmlFor="block">Block: </label>
-              <input
-                type="text"
-                name="block"
-                id="block"
-                value={block}
-                onChange={(e) => setBlock(e.target.value)}
-              />
-              <label htmlFor="cnicNo">CNIC No: </label>
-              <input
-                type="text"
-                name="cnicNo"
-                id="cnicNo"
-                value={cnicNo}
-                onChange={(e) => setCnicNo(e.target.value)}
-              />
-              <label htmlFor="address">Address: </label>
-              <input
-                type="text"
-                name="address"
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
               />
               <button
                 type="submit"
@@ -324,49 +365,6 @@ export default function AllMemberList() {
                 Save
               </button>
             </form>
-          </div>
-        </div>
-      )}
-      {showSection && (
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Member Details</h3>
-            <div className="horizontal-divider"></div>
-            <div className="details">
-              <div className="details-item">
-                <h4>Member ID:</h4>
-                <p>{selectedMember?.msNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Name:</h4>
-                <p>{selectedMember?.purchaseName}</p>
-              </div>
-              <div className="details-item">
-                <h4>Guardian:</h4>
-                <p>{selectedMember?.guardianName}</p>
-              </div>
-              <div className="details-item">
-                <h4>Phase:</h4>
-                <p>{selectedMember?.phase}</p>
-              </div>
-              <div className="details-item">
-                <h4>Plot No:</h4>
-                <p>{selectedMember?.plotNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Block:</h4>
-                <p>{selectedMember?.block}</p>
-              </div>
-              <div className="details-item">
-                <h4>CNIC No:</h4>
-                <p>{selectedMember?.cnicNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Address:</h4>
-                <p>{selectedMember?.address}</p>
-              </div>
-            </div>
           </div>
         </div>
       )}

@@ -4,24 +4,31 @@ import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-export default function AllMemberList() {
+export default function SellerDetails() {
   const history = useNavigate();
-  const [showSection, setShowSection] = useState(false);
   const [memberList, setMemberList] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [showOptions, setShowOptions] = useState(false);
   const [page, setPage] = useState(1);
-  const [editSection, setEditSection] = useState(false);
   const membersRef = useRef(null);
   const [msNo, setMsNo] = useState("");
   const [purchaseName, setPurchaseName] = useState("");
-  const [guardianName, setGuardianName] = useState("");
-  const [phase, setPhase] = useState("");
+  const [challanNumber, setChallanNumber] = useState("");
+  const [date, setDate] = useState("");
   const [plotNo, setPlotNo] = useState("");
   const [block, setBlock] = useState("");
   const [cnicNo, setCnicNo] = useState("");
   const [address, setAddress] = useState("");
+  const [editTransferFee, setEditTransferFee] = useState(false);
+
+  const [addDues, setAddDues] = useState(false);
+
+  const handleEditTransferFee = () => {
+    setEditTransferFee(!editTransferFee);
+    };
+
+  const handleAddDues = () => {
+    setAddDues(true);
+    };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -71,41 +78,18 @@ export default function AllMemberList() {
     };
   }, [loading]);
 
-  const handleShowSection = (member) => {
-    setSelectedMember(member);
-    setShowSection(true);
-    setShowOptions(false);
-  };
-  const handleEditSection = (member) => {
-    setSelectedMember(member);
-    setMsNo(member.msNo);
-    setPurchaseName(member.purchaseName);
-    setGuardianName(member.guardianName);
-    setPhase(member.phase);
-    setPlotNo(member.plotNo);
-    setBlock(member.block);
-    setCnicNo(member.cnicNo);
-    setAddress(member.address);
-    setEditSection(true);
-    setShowOptions(false);
-  };
 
-  const handleShowOptions = (member) => {
-    setSelectedMember(member);
-    setShowOptions(!showOptions);
-  };
 
   const closeSection = () => {
-    setShowSection(false);
+    setAddDues(false);
     setMsNo("");
     setPurchaseName("");
-    setGuardianName("");
-    setPhase("");
+    setChallanNumber("");
+    setDate("");
     setPlotNo("");
     setBlock("");
     setCnicNo("");
     setAddress("");
-    setEditSection(false);
   };
 
   const handleRefresh = () => {
@@ -118,8 +102,8 @@ export default function AllMemberList() {
     const data = {
       ms_no: msNo,
       purchase_name: purchaseName,
-      guardian: guardianName,
-      phase: phase,
+      guardian: challanNumber,
+      date: date,
       plot_no: plotNo,
       block: block,
       cnic_no: cnicNo,
@@ -185,7 +169,7 @@ export default function AllMemberList() {
   return (
     <div className="member-list">
       <div className="title">
-        <h2>Members</h2>
+        <h2>Member Dues</h2>
         <div className="title-buttons">
           <form className="nosubmit" onSubmit={handleSearch}>
             <input
@@ -196,6 +180,9 @@ export default function AllMemberList() {
               placeholder="Search..."
             />
           </form>
+          <Link className="blue-button" onClick={handleAddDues}>
+          Add Dues
+          </Link>
           <Link className="simple-button" onClick={handleRefresh}>
             Refresh
           </Link>
@@ -205,9 +192,8 @@ export default function AllMemberList() {
         <div className="top-bar-item">
           <h4>Member ID</h4>
           <h4>Name</h4>
-          <h4>Phase</h4>
-          <h4>Plot No</h4>
-          <h4></h4>
+          <h4>Amount</h4>
+          <h4>Date</h4>
         </div>
       </div>
 
@@ -219,22 +205,11 @@ export default function AllMemberList() {
               <p>{member.purchaseName === "" ? "-" : member.purchaseName}</p>
               <p>{member.phase === "" ? "-" : member.phase}</p>
               <p>{member.plotNo === "" ? "-" : member.plotNo}</p>
-              <img
-                onClick={() => handleShowOptions(member)}
-                src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
-                alt="Member Icon"
-              />
+            
+             
             </div>
 
-            {selectedMember === member && showOptions && (
-              <div className="options">
-                <button onClick={() => handleShowSection(member)}>Show</button>
-                <div className="horizontal-divider"></div>
-                <button onClick={() => handleEditSection(member)}>Edit</button>
-                <div className="horizontal-divider"></div>
-                <button>Delete</button>
-              </div>
-            )}
+          
           </div>
         ))}
         {loading && (
@@ -243,18 +218,16 @@ export default function AllMemberList() {
           </div>
         )}
       </div>
-      {editSection && (
+      {addDues && (
         <div className="left-section">
           <div className="left-section-content">
             <div onClick={closeSection} className="close-button"></div>
-            <h3>Edit Member Details</h3>
+            <h3>Add Member Dues</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
               <label htmlFor="msNo">Member Id: </label>
               <input
                 type="text"
-                readOnly
-                className="read-only"
                 name="msNo"
                 id="msNo"
                 value={msNo}
@@ -268,53 +241,94 @@ export default function AllMemberList() {
                 value={purchaseName}
                 onChange={(e) =>setPurchaseName(e.target.value)}
               />
-              <label htmlFor="guardianName">Guardian: </label>
+              <label htmlFor="challanNumber">Challan Number: </label>
               <input
-                type="text"
-                name="guardianName"
-                id="guardianName"
-                value={guardianName}
-                onChange={(e) => setGuardianName(e.target.value)}
+                type="number"
+                name="challanNumber"
+                id="challanNumber"
+                value={challanNumber}
+                onChange={(e) => setChallanNumber(e.target.value)}
               />
-              <label htmlFor="phase">Phase: </label>
+              <label htmlFor="date">Date: </label>
               <input
-                type="text"
-                name="phase"
-                id="phase"
-                value={phase}
-                onChange={(e) => setPhase(e.target.value)}
+                type="date"
+                name="date"
+                id="date"
+                value={date}
+                onChange={(e) => setDate(e.target.value)}
               />
-              <label htmlFor="plotNo">Plot No: </label>
+
+              <label htmlFor="nocFee">NOC Fee: </label>
               <input
-                type="text"
-                name="plotNo"
-                id="plotNo"
+                type="number"
+                name="nocFee"
+                id="nocFee"
                 value={plotNo}
                 onChange={(e) => setPlotNo(e.target.value)}
               />
-              <label htmlFor="block">Block: </label>
+              <label htmlFor="masjidFund">Masjid Fund: </label>
               <input
-                type="text"
-                name="block"
-                id="block"
-                value={block}
-                onChange={(e) => setBlock(e.target.value)}
+                type="number"
+                name="masjidFund"
+                id="masjidFund"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
               />
-              <label htmlFor="cnicNo">CNIC No: </label>
+              <label htmlFor="dualOwnerFee">Dual Owner Fee: </label>
               <input
-                type="text"
-                name="cnicNo"
-                id="cnicNo"
-                value={cnicNo}
-                onChange={(e) => setCnicNo(e.target.value)}
+                type="number"
+                name="dualOwnerFee"
+                id="dualOwnerFee"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
               />
-              <label htmlFor="address">Address: </label>
+              <label htmlFor="coveredAreaFee">Covered Area Fee: </label>
               <input
-                type="text"
-                name="address"
-                id="address"
-                value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                type="number"
+                name="coveredAreaFee"
+                id="coveredAreaFee"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
+              />
+              <label htmlFor="shareMoney">Share Money: </label>
+              <input
+                type="number"
+                name="shareMoney"
+                id="shareMoney"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
+              />
+              <label htmlFor="depositLandCost">Deposit For Land Cost: </label>
+              <input
+                type="number"
+                name="depositLandCost"
+                id="depositLandCost"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
+              />
+              <label htmlFor="depositDevelopmentCharges">Deposit for Development Charges: </label>
+              <input
+                type="number"
+                name="depositDevelopmentCharges"
+                id="depositDevelopmentCharges"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
+              />
+              <label htmlFor="additionalCharges">Additional Development Charges: </label>
+              <input
+                type="number"
+                name="additionalCharges"
+                id="additionalCharges"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
+              />
+              <label htmlFor="electricityCharges">Electricity Charges: </label>
+              <input
+                type="number"
+                name="electricityCharges"
+                id="electricityCharges"
+                value={plotNo}
+                onChange={(e) => setPlotNo(e.target.value)}
               />
               <button
                 type="submit"
@@ -327,49 +341,7 @@ export default function AllMemberList() {
           </div>
         </div>
       )}
-      {showSection && (
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Member Details</h3>
-            <div className="horizontal-divider"></div>
-            <div className="details">
-              <div className="details-item">
-                <h4>Member ID:</h4>
-                <p>{selectedMember?.msNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Name:</h4>
-                <p>{selectedMember?.purchaseName}</p>
-              </div>
-              <div className="details-item">
-                <h4>Guardian:</h4>
-                <p>{selectedMember?.guardianName}</p>
-              </div>
-              <div className="details-item">
-                <h4>Phase:</h4>
-                <p>{selectedMember?.phase}</p>
-              </div>
-              <div className="details-item">
-                <h4>Plot No:</h4>
-                <p>{selectedMember?.plotNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Block:</h4>
-                <p>{selectedMember?.block}</p>
-              </div>
-              <div className="details-item">
-                <h4>CNIC No:</h4>
-                <p>{selectedMember?.cnicNo}</p>
-              </div>
-              <div className="details-item">
-                <h4>Address:</h4>
-                <p>{selectedMember?.address}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      
     </div>
   );
 }

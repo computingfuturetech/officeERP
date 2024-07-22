@@ -12,6 +12,8 @@ import Dummy5 from './dashboard/dummy5'
 import Dummy6 from './dashboard/dummy6'
 import Loading from './components/loading'
 import Members from './members/members'
+import BankProfit from './income/bank-profit'
+import Seller from './general/seller'
 // import Dummy7 from './dashboard/dummy7'
 
 function App() {
@@ -28,7 +30,8 @@ function App() {
           <Route path="/new-password" element={<Auth  isNewPassword={true}/>} />
           <Route path="/forgot-password" element={<Auth  isForgotPassword={true}/>}/>
           <Route path="/members" element={<Members/>}/>
-          <Route path="/dummy2" element={<Dummy2/>}/>
+          <Route path="/income/bank-profit" element={<BankProfit/>}/>
+          <Route path="/income/seller" element={<Seller/>}/>
           <Route path="/dummy3" element={<Dummy2/>}/>
           <Route path="/dummy4" element={<Dummy3/>}/>
           <Route path="/dummy5" element={<Dummy4/>}/>

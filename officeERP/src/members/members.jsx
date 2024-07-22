@@ -22,11 +22,7 @@ export default function Members() {
     <>
       <Sidebar />
       <div className={`main ${isLoading ? "loading" : ""}`}>
-        <div className="top-nav">
-          <a href="#" onClick={() => dispatch(logout())}>
-            Logout
-          </a>
-        </div>
+       
         <div className="main-content">
 
             <AllMemberList />
