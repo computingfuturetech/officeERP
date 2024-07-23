@@ -5,24 +5,32 @@ const SellerPurchaseIncome = require("../../models/incomeModels/sellerPurchaseIn
 module.exports = {
   createSellerPurchaseIncome: async (req, res) => {
     const {
-      member_no,
+      ms_no,
       challan_no,
       head_of_account,
+      noc_fee,
+      masjid_fund,
+      dual_owner_fee,
+      covered_area_fee,
+      share_money,
+      deposit_land_cost,
+      deposit_development_charges,
+      additional_charges,
+      electricity_charges,
       address,
-      amount,
       date,
     } = req.body;
     try {
       if (
         !date ||
-        !member_no ||
+        !ms_no ||
         !challan_no ||
         !head_of_account ||
         !amount
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const member = await Member.findOne({ msNo: member_no });
+      const member = await Member.findOne({ msNo: ms_no });
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
@@ -62,8 +70,8 @@ module.exports = {
       if (req.body.date) {
         updateData.date = req.body.date;
       }
-      if (req.body.member_no) {
-        const member = await Member.findOne({ msNo: req.body.member_no });
+      if (req.body.ms_no) {
+        const member = await Member.findOne({ msNo: req.body.ms_no });
         if (!member) {
           return res.status(404).json({ message: "Member not found" });
         }
@@ -101,18 +109,17 @@ module.exports = {
     }
   },
   getSellerPurchaseIncome: async (req, res) => {
-    const { member_no } = req.query;
+    const { head_of_account } = req.query;
     try {
-      let member;
       let sellerPurchaseIncome;
   
-      if (member_no) {
-        member = await Member.findOne({ msNo: member_no });
-        if (!member) {
-          return res.status(404).json({ message: 'Member not found' });
+      if (head_of_account) {
+        const headOfAccount = await HeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+        if (!headOfAccount) {
+          return res.status(404).json({ message: 'Head of account not found' });
         }
   
-        sellerPurchaseIncome = await SellerPurchaseIncome.find({ memberNo: member._id })
+        sellerPurchaseIncome = await SellerPurchaseIncome.find({ headOfAccount: headOfAccount._id })
           .populate('memberNo', 'msNo purchaseName')
           .populate('headOfAccount', 'headOfAccount')
           .exec();

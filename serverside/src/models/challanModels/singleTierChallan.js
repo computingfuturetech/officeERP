@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const singleTierChallanSchema = new mongoose.Schema({
   date: {
     type: String,
-    // default: Date.now,
   },
   pName: {
     type: String,

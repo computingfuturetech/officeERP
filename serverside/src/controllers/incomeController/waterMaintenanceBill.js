@@ -10,7 +10,6 @@ module.exports = {
       amount,
       paid_date,
     } = req.body;
-    console.log("hello")
     try {
       if (
         !paid_date ||
@@ -43,20 +42,12 @@ module.exports = {
     }
   },
   getWaterMaintenanceBill: async (req, res) => {
-    const { member_no } = req.query;
     try {
-        if (!member_no) {
-            return res.status(400).json({ message: 'member_no is required' });
-        }
-        const member = await Member.findOne({ msNo: member_no });
-        if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        const waterMaintenanceBill = await WaterMaintenancBill.find({ memberNo: member._id })
+        const waterMaintenanceBill = await WaterMaintenancBill.find()
             .populate('memberNo', 'msNo purchaseName plotNo')
             .exec();
         if (waterMaintenanceBill.length === 0) {
-            return res.status(404).json({ message: 'Water Maintenance Bill not found for this member' });
+            return res.status(404).json({ message: 'Water Maintenance Bill not found' });
         }
         res.status(200).json(waterMaintenanceBill);
     } catch (err) {

@@ -113,16 +113,8 @@ module.exports = {
     }
   },
   getPossessionFee: async (req, res) => {
-    const { member_no } = req.query;
     try {
-        if (!member_no) {
-            return res.status(400).json({ message: 'member_no is required' });
-        }
-        const member = await Member.findOne({ msNo: member_no });
-        if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        const possessionFees = await PossessionFee.find({ memberNo: member._id })
+        const possessionFees = await PossessionFee.find()
             .populate('memberNo', 'msNo purchaseName')
             .exec();
         if (possessionFees.length === 0) {

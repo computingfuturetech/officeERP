@@ -14,20 +14,13 @@ module.exports = {
         return res.status(400).json({ message: "File path is required" });
       }
 
-
-
-      // Check if the file exists
       if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: "File not found" });
       }
-
       const results = [];
-
-      // Read CSV file
       fs.createReadStream(filePath)
         .pipe(csvParser({ separator: "," }))
         .on("data", (data) => {
-          // Map CSV header names to match your schema
           const mappedData = {
             srNo: parseInt(data["Sr. #"], 10) || 0,
             msNo: parseInt(data["Mship No."], 10) || 0,
@@ -43,12 +36,10 @@ module.exports = {
         })
         .on("end", async () => {
           try {
-            // Filter out invalid entries
             const validResults = results.filter(
               (item) => !isNaN(item.msNo) && !isNaN(item.area) && item.plotNo
             );
 
-            // Insert valid data into MongoDB
             await MemberList.insertMany(validResults);
             res.json({ message: "Data imported successfully" });
           } catch (err) {
