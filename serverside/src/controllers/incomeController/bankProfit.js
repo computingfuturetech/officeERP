@@ -69,7 +69,13 @@ module.exports = {
     }
   },
   getBankProfits: async (req, res) => {
-    const id = req.query.id;
+    const { id, bankname, sort } = req.query;
+    let sortOrder = {};
+    if (sort === 'asc') {
+      sortOrder = { amount: 1 };
+    } else if (sort === 'desc') {
+      sortOrder = { amount: -1 };
+    }
     try {
       if (id) {
         const bankProfit = await BankProfit.findById(id).exec();
@@ -77,12 +83,18 @@ module.exports = {
           return res.status(404).json({ message: "Bank Profit not found" });
         }
         res.status(200).json(bankProfit);
+      } else if (bankname) {
+        const bankProfits = await BankProfit.find({ bankName: bankname }).sort(sortOrder).exec();
+        if (bankProfits.length === 0) {
+          return res.status(404).json({ message: "Bank Profits not found" });
+        }
+        res.status(200).json(bankProfits);
       } else {
-        const bankProfits = await BankProfit.find().exec();
+        const bankProfits = await BankProfit.find().sort(sortOrder).exec();
         res.status(200).json(bankProfits);
       }
     } catch (err) {
-      res.status(500).json({ message: err });
+      res.status(500).json({ message: err.message });
     }
-  },
+  }
 };
