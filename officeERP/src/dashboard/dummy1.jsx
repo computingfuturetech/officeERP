@@ -11,7 +11,6 @@ export default function Dummy1() {
   const isLoading = useSelector((state) => state.auth.isLoading);
   useEffect(() => {
     const checkToken = () => {
-      console.log("Checking token expiration");
       dispatch(checkTokenExpiration());
     };
     checkToken();

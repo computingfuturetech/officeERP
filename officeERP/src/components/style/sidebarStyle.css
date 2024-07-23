@@ -78,12 +78,8 @@
                 }
             }
 
-            .dropdown-menu li {
-                /* margin-bottom: 10px; */
-            }
 
             li {
-                /* margin-bottom: 10px; */
                 text-decoration: none;
                 background-color: transparent;
                 outline: none;
@@ -159,7 +155,4 @@
             }
         }
     }
-
-
-
 }

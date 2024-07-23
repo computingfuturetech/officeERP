@@ -10,7 +10,6 @@ export default function Seller() {
     const isLoading = useSelector((state) => state.auth.isLoading);
     useEffect(() => {
       const checkToken = () => {
-        console.log("Checking token expiration");
         dispatch(checkTokenExpiration());
       };
       checkToken();

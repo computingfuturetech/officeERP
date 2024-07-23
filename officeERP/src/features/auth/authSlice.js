@@ -31,11 +31,9 @@ const authSlice = createSlice({
         const jwtpayload = JSON.parse(window.atob(token.split(".")[1]));
 
         if (jwtpayload.exp * 1000 < Date.now()) {
-          // Token is expired, remove it and redirect to login page
           localStorage.removeItem("token");
           window.location.href = "/login";
         } else {
-          // Token is valid, handle redirection
           const requestedUrl = window.location.pathname;
           if (
             requestedUrl === "/" ||
@@ -50,13 +48,11 @@ const authSlice = createSlice({
           }
         }
       } else {
-        // No token found, redirect to login page
         if (window.location.pathname !== "/login") {
           window.location.href = "/login";
         }
       }
 
-      // Ensure isLoading is set to false only once
       state.isLoading = false;
     },
   },

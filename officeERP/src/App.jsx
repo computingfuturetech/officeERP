@@ -1,10 +1,7 @@
 import './App.css'
 import Auth from './auth/auth'
-
-
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom'
 import Dashboard from './dashboard/dashboard'
-import Dummy1 from './dashboard/dummy1'
 import Dummy2 from './dashboard/dummy2'
 import Dummy3 from './dashboard/dummy3'
 import Dummy4 from './dashboard/dummy4'
@@ -15,7 +12,6 @@ import Members from './members/members'
 import BankProfit from './income/bank-profit'
 import Seller from './general/seller'
 import Purchaser from './general/purchaser'
-// import Dummy7 from './dashboard/dummy7'
 
 function App() {
   
@@ -39,8 +35,6 @@ function App() {
           <Route path="/dummy5" element={<Dummy4/>}/>
           <Route path="/dummy6" element={<Dummy5/>}/>
           <Route path="/dummy7" element={<Dummy6/>}/>
-          
-
         </Routes>
       </Router>
     </>

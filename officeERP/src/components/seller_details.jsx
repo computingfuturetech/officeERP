@@ -21,10 +21,7 @@ export default function SellerDetails() {
   const [editTransferFee, setEditTransferFee] = useState(false);
 
   const [addDues, setAddDues] = useState(false);
-
-  const handleEditTransferFee = () => {
-    setEditTransferFee(!editTransferFee);
-    };
+  const [updateMemberState, setUpdateMemberState] = useState([]);
 
   const handleAddDues = () => {
     setAddDues(true);
@@ -41,13 +38,12 @@ export default function SellerDetails() {
         };
 
         const response = await axios.get(
-          `http://192.168.0.189:3001/user/getMemberList/?page_no=${page}`,
+          `${process.env.REACT_APP_API_URL}/user/getMemberList/?page_no=${page}`,
           config
         );
         if (response.data.length > 0) {
           setMemberList((prevList) => [...prevList, ...response.data]);
         }
-        console.log(response.data);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -58,7 +54,6 @@ export default function SellerDetails() {
     fetchData();
   }, [page]);
   const handleScroll = () => {
-    console.log("scrolling");
     if (membersRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
       if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
@@ -111,7 +106,6 @@ export default function SellerDetails() {
     };
     
     const update = async () => {
-      console.log(data);
       try {
         const config = {
           headers: {
@@ -119,11 +113,10 @@ export default function SellerDetails() {
           },
         };
         const response = await axios.post(
-          `http://192.168.0.189:3001/user/updateMember`,
+          `${process.env.REACT_APP_API_URL}/user/updateMember`,
           data,
           config
         );
-        console.log(response.data);
         closeSection();
       } catch (error) {
         console.error(error);
@@ -136,10 +129,8 @@ export default function SellerDetails() {
     e.preventDefault();
     try {
       const searchValue = e.target[0].value;
-      console.log(searchValue);
       const search = async () => {
         setLoading(true);
-        console.log(searchValue);
         try {
           const config = {
             headers: {
@@ -147,10 +138,9 @@ export default function SellerDetails() {
             },
           };
           const response = await axios.get(
-            `http://192.168.0.189:3001/user/getMemberList/?search=${searchValue.trim()}`,
+            `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${searchValue.trim()}`,
             config
           );
-          console.log(response.data);
           if (response.data.length > 0) {
             setMemberList(response.data);
           }
@@ -190,7 +180,7 @@ export default function SellerDetails() {
       </div>
       <div className="top-bar">
         <div className="top-bar-item">
-          <h4>Member ID</h4>
+          <h4>Membership No</h4>
           <h4>Name</h4>
           <h4>Amount</h4>
           <h4>Date</h4>
@@ -225,37 +215,49 @@ export default function SellerDetails() {
             <h3>Add Member Dues</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
-              <label htmlFor="msNo">Member Id: </label>
+              <label htmlFor="msNo" className="required">Membership No: </label>
               <input
                 type="text"
                 name="msNo"
                 id="msNo"
-                value={msNo}
-                onChange={(e) => setMsNo(e.target.value)}
+                required
+                onChange={(e) => setUpdateMemberState(
+                  {...updateMemberState,
+                  msNo: e.target.value}
+                )}
               />
-              <label htmlFor="purchaseName">Name: </label>
+              <label htmlFor="purchaseName" className="required">Name: </label>
               <input
                 type="text"
                 name="purchaseName"
                 id="purchaseName"
-                value={purchaseName}
-                onChange={(e) =>setPurchaseName(e.target.value)}
+                required
+                onChange={(e) =>setUpdateMemberState({
+                  ...updateMemberState,
+                  purchaseName: e.target.value
+                })}
               />
-              <label htmlFor="challanNumber">Challan Number: </label>
+              <label htmlFor="challanNumber" className="required">Challan Number: </label>
               <input
                 type="number"
                 name="challanNumber"
                 id="challanNumber"
-                value={challanNumber}
-                onChange={(e) => setChallanNumber(e.target.value)}
+                required
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  challanNumber: e.target.value
+                })}
               />
-              <label htmlFor="date">Date: </label>
+              <label htmlFor="date" className="required">Date: </label>
               <input
                 type="date"
                 name="date"
                 id="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
+                required
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  date: e.target.value
+                })}
               />
 
               <label htmlFor="nocFee">NOC Fee: </label>
@@ -263,72 +265,90 @@ export default function SellerDetails() {
                 type="number"
                 name="nocFee"
                 id="nocFee"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  nocFee: e.target.value
+                })}
               />
               <label htmlFor="masjidFund">Masjid Fund: </label>
               <input
                 type="number"
                 name="masjidFund"
                 id="masjidFund"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  masjidFund: e.target.value
+                })}
               />
               <label htmlFor="dualOwnerFee">Dual Owner Fee: </label>
               <input
                 type="number"
                 name="dualOwnerFee"
                 id="dualOwnerFee"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  dualOwnerFee: e.target.value
+                })}
               />
               <label htmlFor="coveredAreaFee">Covered Area Fee: </label>
               <input
                 type="number"
                 name="coveredAreaFee"
                 id="coveredAreaFee"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  coveredAreaFee: e.target.value
+                })}
               />
               <label htmlFor="shareMoney">Share Money: </label>
               <input
                 type="number"
                 name="shareMoney"
                 id="shareMoney"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  shareMoney: e.target.value
+                })}
               />
               <label htmlFor="depositLandCost">Deposit For Land Cost: </label>
               <input
                 type="number"
                 name="depositLandCost"
                 id="depositLandCost"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  depositLandCost: e.target.value
+                })}
               />
               <label htmlFor="depositDevelopmentCharges">Deposit for Development Charges: </label>
               <input
                 type="number"
                 name="depositDevelopmentCharges"
                 id="depositDevelopmentCharges"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  depositDevelopmentCharges: e.target.value
+                })}
               />
               <label htmlFor="additionalCharges">Additional Development Charges: </label>
               <input
                 type="number"
                 name="additionalCharges"
                 id="additionalCharges"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  additionalCharges: e.target.value
+                })}
               />
               <label htmlFor="electricityCharges">Electricity Charges: </label>
               <input
                 type="number"
                 name="electricityCharges"
                 id="electricityCharges"
-                value={plotNo}
-                onChange={(e) => setPlotNo(e.target.value)}
+                onChange={(e) => setUpdateMemberState({
+                  ...updateMemberState,
+                  electricityCharges: e.target.value
+                })}
               />
               <button
                 type="submit"

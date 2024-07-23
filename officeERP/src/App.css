@@ -3,9 +3,6 @@
 #root {
 
   max-width: 1280px;
-  /* margin: 0 auto;
-  padding: 2rem;
-  text-align: center; */
   background-color: #f9fafc;
 }
 
@@ -173,4 +170,10 @@ label {
     background-color: #f0f0f0;
     cursor: not-allowed;
 
+}
+
+label.required::before {
+    content: "*";
+    color: red;
+    margin-right: 5px;
 }

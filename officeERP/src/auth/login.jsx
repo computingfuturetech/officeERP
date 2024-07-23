@@ -28,10 +28,6 @@ export default function Login() {
     setPasswordShown(passwordShown ? false : true);
   };
 
-  useEffect(() => {
-    console.log(localStorage.getItem("token"));
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);

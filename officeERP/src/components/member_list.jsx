@@ -19,7 +19,7 @@ export default function MemberList() {
           }
         }
 
-        const response = await axios.get("http://192.168.0.189:3001/user/getMemberList/", config);
+        const response = await axios.get(`${process.env.REACT_APP_API_URL}/user/getMemberList/`, config);
         setMemberList(response.data);
         setLoading(false);
       } catch (error) {
@@ -30,11 +30,6 @@ export default function MemberList() {
     fetchData();
   }, []);
 
-  const handleClick = () => {
-    console.log("clicked");
-    history("/dummy2");
-  };
-
   return (
     
     <div className="member-list">
@@ -44,7 +39,7 @@ export default function MemberList() {
       </div>
       <div className="top-bar">
         <div className="top-bar-item">
-          <h4>Member ID</h4>
+          <h4>Membership No</h4>
           <h4>Name</h4>
           <h4>Phase</h4>
           <h4>Plot No</h4>
@@ -54,7 +49,7 @@ export default function MemberList() {
 
       <div className={`members  ${loading ? "loading" : ""}`}>
         {memberList.map((member) => (
-          <div className="member" key={member.id} onClick={handleClick}>
+          <div className="member" key={member.id}>
             <div className="member-details">
               <p>{member.msNo == '' ? '-': member.msNo}</p>
               <p>{member.purchaseName== '' ? '-': member.purchaseName}</p>
