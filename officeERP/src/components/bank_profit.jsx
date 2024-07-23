@@ -21,6 +21,8 @@ export default function BankProfitComponent() {
   const [bankList,setBankList]=useState([])
   const [selectedBank, setSelectedBank] = useState("");
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [bankName, setBankName]=useState("")
+  const [profit_id,setProfitId]=useState("")
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
@@ -121,19 +123,23 @@ export default function BankProfitComponent() {
   }, [loading]);
 
   const handleBankChange = (e) => {
-    const selectedBankId = e.target.value;
+    const selectedBankId = e.target.value
     setSelectedBank(selectedBankId);
     const account = bankList.find((item) => item.bankId === selectedBankId);
-    if (account) {
-      setBankName(account.bankName);
-      setSelectedAccount(account.accountNo);
-      console.log(account.bankName)
+    const profitid=BankProfitList.find((item) => item._id === selectedBankId)
+    if (profitid) {
+      setProfitId(profitid)
     }
   };
   const handleAccountChange = (e) => {
     setSelectedAccount(e.target.value);
   };
-  
+  useEffect(() => {
+    if (selectedBank) {
+      const firstAccount = bankList.find((bank) => bank._id === selectedBank)?.accountNo || '';
+      setSelectedAccount(firstAccount);
+    }
+  }, [selectedBank, bankList]);
   const handleAddNew = (member) => {
     console.log('bankList'+bankList)
     scrollToTop();
@@ -143,13 +149,16 @@ export default function BankProfitComponent() {
   };
   const handleEditSection = (member) => {
     setSelectedMember(member);
-    setPurchaseName(member.purchaseName);
-    setMonthName(member.monthName);
+    console.log(bankList)
+    // setPurchaseName(member.purchaseName);
+    setMonthName(member.profitMonth);
     setAmount(member.amount);
-    setPlotNo(member.plotNo);
-    setBlock(member.block);
-    setCnicNo(member.cnicNo);
-    setAddress(member.address);
+    setBankName(member.bankName)
+    setSelectedAccount(member.bankAccount)
+    // setPlotNo(member.plotNo);
+    // setBlock(member.block);
+    // setCnicNo(member.cnicNo);
+    // setAddress(member.address);
     setEditSection(true);
     setShowOptions(false);
   };
@@ -161,13 +170,11 @@ export default function BankProfitComponent() {
 
   const closeSection = () => {
     setAddNew(false);
-    setPurchaseName("");
+    // setPurchaseName("");
     setMonthName("");
     setAmount("");
-    setPlotNo("");
-    setBlock("");
-    setCnicNo("");
-    setAddress("");
+    setBankName("");
+    setSelectedAccount("");
     setEditSection(false);
   };
 
@@ -197,6 +204,39 @@ export default function BankProfitComponent() {
         };
         const response = await axios.post(
           `http://192.168.0.189:3001/user/createBankProfit`,
+          data,
+          config
+        );
+        console.log(response.data);
+        closeSection();
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    update();
+  };
+
+  const updateBankProfit = (e) => {
+    e.preventDefault();
+    const account = bankList.find((item) => item._id === selectedBank);
+
+    const data = {
+      bank_account: selectedAccount,
+      profit_month: monthName,
+      bank_name:account ? account.bankName : "",
+      amount: amount,
+    };
+    
+    const update = async () => {
+      console.log(data);
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        };
+        const response = await axios.post(
+          `http://192.168.0.189:3001/user/updateBankProfit?id=${profit_id}`,
           data,
           config
         );
@@ -315,13 +355,18 @@ export default function BankProfitComponent() {
           </div>
         )}
       </div>
+
+
+
+
+
       {editSection && (
         <div className="left-section">
         <div className="left-section-content">
           <div onClick={closeSection} className="close-button"></div>
           <h3>Add Bank Profit</h3>
           <div className="horizontal-divider"></div>
-          <form onSubmit={createNewBankProfit}>
+          <form onSubmit={updateBankProfit}>
             <label htmlFor="msNo">Bank Name: </label>
             {/* <input
               type="text"
@@ -332,29 +377,33 @@ export default function BankProfitComponent() {
               value={msNo}
               onChange={(e) => setMsNo(e.target.value)}
             /> */}
-            <select name="bank-name" id="bank-name">
-              <option value="select" hidden>Select</option>
-              {bankList.map((Bank)=>{
-                <option value={Bank._id} key={Bank._id}>
-                  {Bank.branchCode}
-                  </option>
-              })}
+            <select name="bank-name" id="bank-name" onChange={handleBankChange}>
+              <option value="select" hidden>{bankName}</option>
+              {bankList.map((bank) => (
+                  <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
+                ))}
             </select>
             <label htmlFor="purchaseName">Account Number: </label>
-            <select name="account-number" id="account-number">
-            <option value="select" hidden>Select</option>
-              <option value="1">1</option>
-              <option value="2">2</option>
+            <select name="account-number" id="account-number" onChange={handleAccountChange} value={selectedAccount}>
+            <option value={selectedAccount} hidden>{selectedAccount}</option>
+            {/* {bankList
+                .filter((bank) => bank._id === selectedBank)
+                .map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
+                ))} */}
             </select>
             <label htmlFor="monthName">Month: </label>
-            <input
-              type="date"
+            <select
               name="monthName"
               id="monthName"
               value={monthName}
               onChange={(e) => setMonthName(e.target.value)}
-            />
-            <label htmlFor="amount">Amount: </label>
+            >
+              {months.map((month, index) => (
+                <option key={index} value={month}>{month}</option>
+              ))}
+            </select>
+            <label htmlFor="amount">Amount: </label> 
             <input
               type="text"
               name="amount"
@@ -365,7 +414,7 @@ export default function BankProfitComponent() {
             <button
               type="submit"
               className="blue-button"
-              onClick={createNewBankProfit}
+              onClick={updateBankProfit}
             >
               Save
             </button>
@@ -373,6 +422,10 @@ export default function BankProfitComponent() {
         </div>
       </div>
       )}
+
+
+
+
       {addNew && (
         <div className="left-section">
           <div className="left-section-content">
@@ -396,7 +449,6 @@ export default function BankProfitComponent() {
                   <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
                 ))}
               </select>
-
               <label htmlFor="purchaseName">Account Number: </label>
               <select name="account-number" id="account-number" onChange={handleAccountChange}>
               <option value="select" hidden>Select</option>
