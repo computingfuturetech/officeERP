@@ -14,6 +14,7 @@ import Loading from './components/loading'
 import Members from './members/members'
 import BankProfit from './income/bank-profit'
 import Seller from './general/seller'
+import Purchaser from './general/purchaser'
 // import Dummy7 from './dashboard/dummy7'
 
 function App() {
@@ -32,6 +33,7 @@ function App() {
           <Route path="/members" element={<Members/>}/>
           <Route path="/income/bank-profit" element={<BankProfit/>}/>
           <Route path="/income/seller" element={<Seller/>}/>
+          <Route path="/income/purchaser" element={<Purchaser/>}/>
           <Route path="/dummy3" element={<Dummy2/>}/>
           <Route path="/dummy4" element={<Dummy3/>}/>
           <Route path="/dummy5" element={<Dummy4/>}/>
