@@ -31,7 +31,9 @@ const possessionFee = require('../../controllers/incomeController/possessionFee'
 const sellerPurchaserIncome = require('../../controllers/incomeController/sellerPurchaseIncome')
 const officeUtilExpense = require('../../controllers/expenseController/officeUtilExpense')
 const officeExpense = require('../../controllers/expenseController/officeExpense')
-// const legalProfessionalExpense = require('../../controllers/expenseController/legalProfessionalExpense')
+const legalProfessionalExpense = require('../../controllers/expenseController/legalProfessionalExpense')
+const salaries = require('../../controllers/expenseController/salaries')
+const salaryType = require('../../controllers/expenseController/salaryType')
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -77,6 +79,14 @@ router.post("/createOfficeExpense",authenticateJWT,checkRole(['admin','employee'
 router.get("/getOfficeExpense",authenticateJWT,checkRole(['admin','employee']),officeExpense.getOfficeExpense);
 router.post("/updateOfficeExpense",authenticateJWT,checkRole(['admin','employee']),officeExpense.updateOfficeExpense);
 
-// router.post("/createLegalProfessionalExpense",authenticateJWT,checkRole(['admin','employee']),legalProfessionalExpense.createLegalProfessionalExpense);
+router.post("/createLegalProfessionalExpense",authenticateJWT,checkRole(['admin','employee']),legalProfessionalExpense.createLegalProfessionalExpense);
+router.get("/getLegalProfessionalExpense",authenticateJWT,checkRole(['admin','employee']),legalProfessionalExpense.getLegalProfessionalExpense);
+router.post("/updateLegalProfessionalExpense",authenticateJWT,checkRole(['admin','employee']),legalProfessionalExpense.updateLegalProfessionalExpense);
+
+router.post("/createSalary",authenticateJWT,checkRole(['admin','employee']),salaries.createSalaries);
+router.get("/getSalary",authenticateJWT,checkRole(['admin','employee']),salaries.getSalaries);
+router.post("/updateSalary",authenticateJWT,checkRole(['admin','employee']),salaries.updateSalaries);
+
+router.post("/createSalaryType",authenticateJWT,checkRole(['admin','employee']),salaryType.createSalaryType);
 
 module.exports = router

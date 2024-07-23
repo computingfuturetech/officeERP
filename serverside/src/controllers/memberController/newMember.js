@@ -13,6 +13,7 @@ module.exports = {
       plot_no,
       block,
     } = req.body;
+    console.log(req.body)
     try {
       if (!ms_no || !phase || !purchase_name || !address || !cnic_no) {
         return res.status(400).json({ message: "All fields are required" });

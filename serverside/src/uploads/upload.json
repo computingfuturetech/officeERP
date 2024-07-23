@@ -1,0 +1,99 @@
+[
+    {
+      "srNo": 1,
+      "msNo": "101",
+      "area": 8,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Aamar Iqbal S/O Khalifa Shafqat Ali Javed",
+      "address": "H No. 1/1 Naqshbandia St No. 90/A Chaman Bagh Rajgarh Lahore",
+      "cnicNo": "35200-7265605-9",
+      "plotNo": "33",
+      "block": "C"
+    },
+    {
+      "srNo": 2,
+      "msNo": "102",
+      "area": 4,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Hakim Bibi W/O Noor Muhammad",
+      "address": "H.No.1-B-R-Block, Johar Town, Lahore.",
+      "cnicNo": "35202-8561059-8",
+      "plotNo": "109",
+      "block": "D"
+    },
+    {
+      "srNo": 3,
+      "msNo": "102/1",
+      "area": 4,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Hakim Bibi W/O Noor Muhammad",
+      "address": "H.No.1-B-R-Block, Johar Town, Lahore.",
+      "cnicNo": "35202-8561059-8",
+      "plotNo": "109/1",
+      "block": "D"
+    },
+    {
+      "srNo": 4,
+      "msNo": "103",
+      "area": 4,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Muhammad Saeed Chugtai  S/O Muhammad Latif",
+      "address": "House No.239-C-I Mohallah Nespak Society College Road Lahore.",
+      "cnicNo": "35202-6781930-3",
+      "plotNo": "95",
+      "block": "B"
+    },
+    {
+      "srNo": 5,
+      "msNo": "104",
+      "area": 4,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Azhar Mahmood S/O Muhammad Rasheed",
+      "address": "H.No.99-D, Mohallah P.C.S.I.R Staff Society, Lahore.",
+      "cnicNo": "35200-1562895-7",
+      "plotNo": "62",
+      "block": "D"
+    },
+    {
+      "srNo": 6,
+      "msNo": "105",
+      "area": 4,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Munir Ali Siddiqui S/O Bashir Ali Siddiqui",
+      "address": "84-A U.E.T Society Lahore.",
+      "cnicNo": "35202-2576327-5",
+      "plotNo": "",
+      "block": ""
+    },
+    {
+      "srNo": 7,
+      "msNo": "106/1",
+      "area": 2,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Mirza Ahmed Baig S/O Mirza Muhammad Baig",
+      "address": "Mohallah Bilal Town, Adda Chabeel, G.T. Road, Lahore Cantt: District Lahore.",
+      "cnicNo": "35201-8521133-5",
+      "plotNo": "167/1",
+      "block": "B"
+    },
+    {
+      "srNo": 8,
+      "msNo": "106",
+      "area": 2,
+      "category": "Residential",
+      "phase": "II",
+      "purchaseName": "Syed Shujaat Ali S/O Syed Liaquat Ali Shah",
+      "address": "H.No.147, Mohallah Satellite Town, Ferozpur Road, Lahore.",
+      "cnicNo": "35201-4721534-1",
+      "plotNo": "167",
+      "block": "B"
+    }
+  ]
+  

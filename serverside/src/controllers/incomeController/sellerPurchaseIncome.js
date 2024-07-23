@@ -5,24 +5,32 @@ const SellerPurchaseIncome = require("../../models/incomeModels/sellerPurchaseIn
 module.exports = {
   createSellerPurchaseIncome: async (req, res) => {
     const {
-      member_no,
+      ms_no,
       challan_no,
-      head_of_account, 
+      head_of_account,
+      noc_fee,
+      masjid_fund,
+      dual_owner_fee,
+      covered_area_fee,
+      share_money,
+      deposit_land_cost,
+      deposit_development_charges,
+      additional_charges,
+      electricity_charges,
       address,
-      amount,
       date,
     } = req.body;
     try {
       if (
         !date ||
-        !member_no ||
+        !ms_no ||
         !challan_no ||
-        !head_of_account || 
-        !amount 
+        !head_of_account ||
+        !amount
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const member = await Member.findOne({ msNo: member_no });
+      const member = await Member.findOne({ msNo: ms_no });
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
@@ -34,7 +42,7 @@ module.exports = {
         date: date,
         memberNo: member._id,
         challanNo: challan_no,
-        headOfAccount: headOfAccount._id, 
+        headOfAccount: headOfAccount._id,
         address: address,
         amount: amount,
       });
@@ -62,12 +70,12 @@ module.exports = {
       if (req.body.date) {
         updateData.date = req.body.date;
       }
-      if (req.body.member_no) {
-        const member = await Member.findOne({ msNo: req.body.member_no });
+      if (req.body.ms_no) {
+        const member = await Member.findOne({ msNo: req.body.ms_no });
         if (!member) {
           return res.status(404).json({ message: "Member not found" });
         }
-        updateData.memberNo = member._id; 
+        updateData.memberNo = member._id;
       }
       if (req.body.challan_no) {
         updateData.challanNo = req.body.challan_no;
@@ -83,7 +91,7 @@ module.exports = {
         if (!headOfAccount) {
           return res.status(404).json({ message: "Head of Account not found" });
         }
-        updateData.headOfAccount = headOfAccount._id; 
+        updateData.headOfAccount = headOfAccount._id;
       }
       console.log("Update Data:", updateData);
       const updatedSellerPurchaseIncome = await SellerPurchaseIncome.findByIdAndUpdate(
@@ -101,25 +109,34 @@ module.exports = {
     }
   },
   getSellerPurchaseIncome: async (req, res) => {
-    const { member_no } = req.query;
+    const { head_of_account } = req.query;
     try {
-        if (!member_no) {
-            return res.status(400).json({ message: 'member_no is required' });
+      let sellerPurchaseIncome;
+  
+      if (head_of_account) {
+        const headOfAccount = await HeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+        if (!headOfAccount) {
+          return res.status(404).json({ message: 'Head of account not found' });
         }
-        const member = await Member.findOne({ msNo: member_no });
-        if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
-        }
-        const sellerPurchaseIncome = await SellerPurchaseIncome.find({ memberNo: member._id })
-            .populate('memberNo', 'msNo purchaseName')
-            .populate('headOfAccount', 'headOfAccount')
-            .exec();
-        if (sellerPurchaseIncome.length === 0) {
-            return res.status(404).json({ message: 'Seller Purchase Income not found for this member' });
-        }
-        res.status(200).json(sellerPurchaseIncome);
+  
+        sellerPurchaseIncome = await SellerPurchaseIncome.find({ headOfAccount: headOfAccount._id })
+          .populate('memberNo', 'msNo purchaseName')
+          .populate('headOfAccount', 'headOfAccount')
+          .exec();
+      } else {
+        sellerPurchaseIncome = await SellerPurchaseIncome.find()
+          .populate('memberNo', 'msNo purchaseName')
+          .populate('headOfAccount', 'headOfAccount')
+          .exec();
+      }
+  
+      if (sellerPurchaseIncome.length > 0) {
+        return res.status(200).json(sellerPurchaseIncome);
+      } else {
+        return res.status(404).json({ message: 'Seller Purchase Income not found' });
+      }
     } catch (err) {
-        res.status(500).json({ message: err.message });
+      res.status(500).json({ message: err.message });
     }
   },
 };
