@@ -1,6 +1,6 @@
 const Member = require("../../models/memberModels/memberList");
 const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
-const LegalProfessionalExpense = require("../../models/expenseModel/legalProfessionalExpense");
+const LegalProfessionalExpense = require("../../models/expenseModel/legalProfessionalExpense/legalProfessionalExpense")
 
 module.exports = {
   createLegalProfessionalExpense: async (req, res) => {
@@ -33,85 +33,85 @@ module.exports = {
       res.status(500).json({ message: "Internal server error" });
     }
   },
-//   updateOfficeExpense: async (req, res) => {
-//     const id = req.query.id;
-//     try {
-//       if (!id) {
-//         return res.status(400).json({ message: "ID is required" });
-//       }
+  getLegalProfessionalExpense: async (req, res) => {
+    const { head_of_account } = req.query;
 
-//       const officeExpense = await OfficeExpense.findById(id).exec();
-//       if (!officeExpense) {
-//         return res.status(404).json({ message: "Office Expense not found" });
-//       }
+    try {
+      let query = {};
 
-//       const updateData = {};
-//       if (req.body.paid_date) {
-//         updateData.paidDate = req.body.paid_date;
-//       }
-//       if (req.body.amount) {
-//         updateData.amount = req.body.amount;
-//       }
-//       if (req.body.particulor) {
-//         updateData.particulor = req.body.particulor;
-//       }
-//       if (req.body.vendor) {
-//         updateData.vendor = req.body.vendor;
-//       }
-//       if (req.body.head_of_account) {
-//         const headOfAccount = await HeadOfAccount.findOne({
-//           headOfAccount: req.body.head_of_account,
-//         });
-//         if (!headOfAccount) {
-//           return res.status(404).json({ message: "Head of Account not found" });
-//         }
-//         updateData.headOfAccount = headOfAccount._id;
-//       }
+      if (head_of_account) {
+        const headOfAccount = await HeadOfAccount.findOne({
+          headOfAccount: head_of_account,
+        }).exec();
+        if (!headOfAccount) {
+          return res.status(404).json({ message: "Head of Account not found" });
+        }
+        query.headOfAccount = headOfAccount._id;
+      }
 
-//       console.log("Update Data:", updateData);
+      const legalProfessionalExpense = await LegalProfessionalExpense.find(query)
+        .populate("headOfAccount", "headOfAccount")
+        .exec();
 
-//       const updatedOfficeExpense = await OfficeExpense.findByIdAndUpdate(
-//         id,
-//         { $set: updateData },
-//         { new: true }
-//       ).exec();
+      if (legalProfessionalExpense.length === 0) {
+        return res.status(404).json({ message: "Legal Professional Expense not found" });
+      }
 
-//       res.status(200).json({
-//         message: "Office Expense updated successfully",
-//         data: updatedOfficeExpense,
-//       });
-//     } catch (err) {
-//       console.error("Error:", err);
-//       res.status(500).json({ message: "Internal server error" });
-//     }
-//   },
-//   getOfficeExpense: async (req, res) => {
-//     const { head_of_account } = req.query;
+      res.status(200).json(legalProfessionalExpense);
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
+  updateLegalProfessionalExpense: async (req, res) => {
+    const id = req.query.id;
+    try {
+      if (!id) {
+        return res.status(400).json({ message: "ID is required" });
+      }
 
-//     try {
-//       let query = {};
+      const legalProfessionalExpense = await LegalProfessionalExpense.findById(id).exec();
+      if (!legalProfessionalExpense) {
+        return res.status(404).json({ message: "Legal Professional Expense not found" });
+      }
 
-//       if (head_of_account) {
-//         const headOfAccount = await HeadOfAccount.findOne({
-//           headOfAccount: head_of_account,
-//         }).exec();
-//         if (!headOfAccount) {
-//           return res.status(404).json({ message: "Head of Account not found" });
-//         }
-//         query.headOfAccount = headOfAccount._id;
-//       }
+      const updateData = {};
+      if (req.body.paid_date) {
+        updateData.paidDate = req.body.paid_date;
+      }
+      if (req.body.amount) {
+        updateData.amount = req.body.amount;
+      }
+      if (req.body.particulor) {
+        updateData.particulor = req.body.particulor;
+      }
+      if (req.body.billing_month) {
+        updateData.billingMonth = req.body.billing_month;
+      }
+      if (req.body.head_of_account) {
+        const headOfAccount = await HeadOfAccount.findOne({
+          headOfAccount: req.body.head_of_account,
+        });
+        if (!headOfAccount) {
+          return res.status(404).json({ message: "Head of Account not found" });
+        }
+        updateData.headOfAccount = headOfAccount._id;
+      }
 
-//       const officeExpenses = await OfficeExpense.find(query)
-//         .populate("headOfAccount", "headOfAccount")
-//         .exec();
+      console.log("Update Data:", updateData);
 
-//       if (officeExpenses.length === 0) {
-//         return res.status(404).json({ message: "Office Expense not found" });
-//       }
+      const updatedlegalProfessionalExpense = await LegalProfessionalExpense.findByIdAndUpdate(
+        id,
+        { $set: updateData },
+        { new: true }
+      ).exec();
 
-//       res.status(200).json(officeExpenses);
-//     } catch (err) {
-//       res.status(500).json({ message: err.message });
-//     }
-//   },
+      res.status(200).json({
+        message: "Legal Professiona  Expense updated successfully",
+        data: updatedlegalProfessionalExpense,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  },
 };
