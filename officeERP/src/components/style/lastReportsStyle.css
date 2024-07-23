@@ -28,22 +28,6 @@
             font-family: 'Nunito', sans-serif;
         }
 
-        /* a {
-            font-family: 'Nunito', sans-serif;
-            font-size: 14px;
-            margin: 0;
-            color: #3ab3d6;
-            font-weight: 600;
-            padding: 5px 10px;
-
-
-            border: 1px solid #87e8de;
-            border-radius: 5px;
-            background-color: #e6fffb;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-
-
-        } */
          .links{
             display: flex;
             gap: 10px;

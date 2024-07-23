@@ -9,7 +9,6 @@ export default function Loading() {
     const dispatch = useDispatch();
     useEffect(() => {
         const checkToken = () => {
-          console.log("Checking token expiration");
           dispatch(checkTokenExpiration());
         };
         checkToken();

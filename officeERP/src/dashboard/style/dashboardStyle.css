@@ -1,21 +1,14 @@
 .main {
-    /* position: absolute;
-    z-index: 0;
-    top: 0;
-    left: 0; */
     width: calc(100vw - 260px);
-    /* height: 100vh; */
     height: 100%;
     display: flex;
     justify-content: start;
     align-items: center;
     flex-direction: column;
     background-color: #f9fafc;
-
-
     margin-left: 250px;
 
-    .chart{
+    .chart {
         width: 100%;
         display: flex;
         justify-content: space-between;
@@ -50,8 +43,7 @@
 
     .dashboard-content {
         width: 100%;
-
-
+        
         .dashboard-content-container {
             background-color: #fff;
             margin-top: 35px;
@@ -59,11 +51,8 @@
             gap: 10px;
             background-color: #f9fafc;
 
-
-
             .recent-activities {
                 width: 40%;
-                /* height: 200px; */
                 display: flex;
                 flex-direction: column;
                 gap: 10px;

@@ -13,7 +13,6 @@ export default function Auth(props) {
 
   useEffect(() => {
     const checkToken = () => {
-      console.log("Checking token expiration");
       dispatch(checkTokenExpiration());
     };
     checkToken();

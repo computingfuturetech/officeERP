@@ -34,13 +34,12 @@ export default function AllMemberList() {
         };
 
         const response = await axios.get(
-          `http://192.168.0.189:3001/user/getMemberList/?page_no=${page}`,
+          `${process.env.REACT_APP_API_URL}/user/getMemberList/?page_no=${page}`,
           config
         );
         if (response.data.length > 0) {
           setMemberList((prevList) => [...prevList, ...response.data]);
         }
-        console.log(response.data);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -51,7 +50,6 @@ export default function AllMemberList() {
     fetchData();
   }, [page]);
   const handleScroll = () => {
-    console.log("scrolling");
     if (membersRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
       if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
@@ -127,7 +125,6 @@ export default function AllMemberList() {
     };
     
     const update = async () => {
-      console.log(data);
       try {
         const config = {
           headers: {
@@ -135,11 +132,10 @@ export default function AllMemberList() {
           },
         };
         const response = await axios.post(
-          `http://192.168.0.189:3001/user/updateMember`,
+          `${process.env.REACT_APP_API_URL}/user/updateMember`,
           data,
           config
         );
-        console.log(response.data);
         closeSection();
       } catch (error) {
         console.error(error);
@@ -152,10 +148,8 @@ export default function AllMemberList() {
     e.preventDefault();
     try {
       const searchValue = e.target[0].value;
-      console.log(searchValue);
       const search = async () => {
         setLoading(true);
-        console.log(searchValue);
         try {
           const config = {
             headers: {
@@ -163,10 +157,9 @@ export default function AllMemberList() {
             },
           };
           const response = await axios.get(
-            `http://192.168.0.189:3001/user/getMemberList/?search=${searchValue.trim()}`,
+            `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${searchValue.trim()}`,
             config
           );
-          console.log(response.data);
           if (response.data.length > 0) {
             setMemberList(response.data);
           }
@@ -203,7 +196,7 @@ export default function AllMemberList() {
       </div>
       <div className="top-bar">
         <div className="top-bar-item">
-          <h4>Member ID</h4>
+          <h4>Membership No</h4>
           <h4>Name</h4>
           <h4>Phase</h4>
           <h4>Plot No</h4>
@@ -250,7 +243,7 @@ export default function AllMemberList() {
             <h3>Edit Member Details</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
-              <label htmlFor="msNo">Member Id: </label>
+              <label htmlFor="msNo">Membership No: </label>
               <input
                 type="text"
                 readOnly
@@ -335,7 +328,7 @@ export default function AllMemberList() {
             <div className="horizontal-divider"></div>
             <div className="details">
               <div className="details-item">
-                <h4>Member ID:</h4>
+                <h4>Membership No:</h4>
                 <p>{selectedMember?.msNo}</p>
               </div>
               <div className="details-item">

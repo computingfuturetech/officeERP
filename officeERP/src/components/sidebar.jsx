@@ -18,7 +18,6 @@ export default function Sidebar() {
 
   const general = ["Dashboard", "Members", "Income"];
 
-  // Effect to close Income dropdown when navigating away
   useEffect(() => {
     if (!location.pathname.includes("/income")) {
       setShowIncome(false);
