@@ -9,7 +9,8 @@ module.exports = {
       if (!amount || !bank_account || !bank_name || !profit_month) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const bankList = await BankList.findOne({ accountNo: bank_account
+      const bankList = await BankList.findOne({
+        accountNo: bank_account
       });
       if (!bankList) {
         return res
@@ -25,7 +26,8 @@ module.exports = {
       await bankProfit.save();
       res.status(200).json({
         message: "Bank profit created successfully",
-        data: bankProfit
+        data: bankProfit,
+
       });
     } catch (err) {
       res.status(500).json({ message: err });
@@ -40,32 +42,28 @@ module.exports = {
         return res.status(404).json({ message: "Bank Profit not found" });
       }
       if ((bank_account && !bank_name) || (bank_name && !bank_account)) {
-        return res
-          .status(400)
-          .json({
-            message: "Both bank account and bank name are required to update",
-          });
+        return res.status(400).json({
+          message: "Both bank account and bank name are required to update",
+        });
       }
       if (amount) bankProfit.amount = amount;
       if (profit_month) bankProfit.profitMonth = profit_month;
       if (bank_account && bank_name) {
-        const bankList = await BankList.findOne({ accountNo: bank_account
-        });
+        const bankList = await BankList.findOne({ accountNo: bank_account, bankName: bank_name });
         if (!bankList) {
-          return res
-            .status(400)
-            .json({ message: "Invalid bank_name or bank_account" });
+          return res.status(400).json({ message: "Invalid bank_name or bank_account" });
         }
         bankProfit.bankAccount = bank_account;
         bankProfit.bankName = bank_name;
       }
       await bankProfit.save();
+      console.log(bankProfit);
       res.status(200).json({
         message: "Bank Profit updated successfully",
         data: bankProfit,
       });
     } catch (err) {
-      res.status(500).json({ message: err });
+      res.status(500).json({ message: err.message });
     }
   },
   getBankProfits: async (req, res) => {

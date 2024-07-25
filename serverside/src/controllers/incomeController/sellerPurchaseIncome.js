@@ -7,15 +7,14 @@ module.exports = {
     const {
       ms_no,
       challan_no,
-      head_of_account,
       noc_fee,
       masjid_fund,
       dual_owner_fee,
       covered_area_fee,
       share_money,
-      deposit_land_cost,
-      deposit_development_charges,
-      additional_charges,
+      deposit_for_land_cost,
+      deposit_for_development_charges,
+      additional_development_charges,
       electricity_charges,
       address,
       date,
@@ -25,8 +24,7 @@ module.exports = {
         !date ||
         !ms_no ||
         !challan_no ||
-        !head_of_account ||
-        !amount
+        !address
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
@@ -34,17 +32,20 @@ module.exports = {
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
-      const headOfAccount = await HeadOfAccount.findOne({ headOfAccount: head_of_account });
-      if (!headOfAccount) {
-        return res.status(404).json({ message: "Head of Account not found" });
-      }
       const sellerPurchaseIncome = new SellerPurchaseIncome({
         date: date,
         memberNo: member._id,
         challanNo: challan_no,
-        headOfAccount: headOfAccount._id,
         address: address,
-        amount: amount,
+        nocFee: noc_fee ?? 0,
+        masjidFund: masjid_fund ?? 0,
+        dualOwnerFee: dual_owner_fee ?? 0,
+        coveredAreaFee: covered_area_fee ?? 0,
+        shareMoney: share_money ?? 0,
+        depositForLandCost: deposit_for_land_cost ?? 0,
+        depositForDevelopmentCharges: deposit_for_development_charges ?? 0,
+        additionalDevelopmentCharges: additional_development_charges ?? 0,
+        electricityCharges: electricity_charges ?? 0
       });
       await sellerPurchaseIncome.save();
       res.status(201).json({
@@ -66,32 +67,64 @@ module.exports = {
       if (!sellerPurchaseIncome) {
         return res.status(404).json({ message: "Seller Purchase Income not found" });
       }
+      const {
+        ms_no,
+        challan_no,
+        noc_fee,
+        masjid_fund,
+        dual_owner_fee,
+        covered_area_fee,
+        share_money,
+        deposit_for_land_cost,
+        deposit_for_development_charges,
+        additional_development_charges,
+        electricity_charges,
+        address,
+        date,
+      } = req.body;
       const updateData = {};
-      if (req.body.date) {
-        updateData.date = req.body.date;
+      if (date) {
+        updateData.date = date;
       }
-      if (req.body.ms_no) {
-        const member = await Member.findOne({ msNo: req.body.ms_no });
+      if (ms_no) {
+        const member = await Member.findOne({ msNo: ms_no });
         if (!member) {
           return res.status(404).json({ message: "Member not found" });
         }
         updateData.memberNo = member._id;
       }
-      if (req.body.challan_no) {
-        updateData.challanNo = req.body.challan_no;
+      if (challan_no) {
+        updateData.challanNo = challan_no;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (address) {
+        updateData.address = address;
       }
-      if (req.body.address) {
-        updateData.address = req.body.address;
+      if (noc_fee !== undefined) {
+        updateData.nocFee = noc_fee;
       }
-      if (req.body.head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({ headOfAccount: req.body.head_of_account });
-        if (!headOfAccount) {
-          return res.status(404).json({ message: "Head of Account not found" });
-        }
-        updateData.headOfAccount = headOfAccount._id;
+      if (masjid_fund !== undefined) {
+        updateData.masjidFund = masjid_fund;
+      }
+      if (dual_owner_fee !== undefined) {
+        updateData.dualOwnerFee = dual_owner_fee;
+      }
+      if (covered_area_fee !== undefined) {
+        updateData.coveredAreaFee = covered_area_fee;
+      }
+      if (share_money !== undefined) {
+        updateData.shareMoney = share_money;
+      }
+      if (deposit_for_land_cost !== undefined) {
+        updateData.depositForLandCost = deposit_for_land_cost;
+      }
+      if (deposit_for_development_charges !== undefined) {
+        updateData.depositForDevelopmentCharges = deposit_for_development_charges;
+      }
+      if (additional_development_charges !== undefined) {
+        updateData.additionalDevelopmentCharges = additional_development_charges;
+      }
+      if (electricity_charges !== undefined) {
+        updateData.electricityCharges = electricity_charges;
       }
       console.log("Update Data:", updateData);
       const updatedSellerPurchaseIncome = await SellerPurchaseIncome.findByIdAndUpdate(
@@ -109,27 +142,25 @@ module.exports = {
     }
   },
   getSellerPurchaseIncome: async (req, res) => {
-    const { head_of_account } = req.query;
+    const { ms_no } = req.query;
     try {
       let sellerPurchaseIncome;
-  
-      if (head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-        if (!headOfAccount) {
-          return res.status(404).json({ message: 'Head of account not found' });
+
+      if (ms_no) {
+        const memberNo = await Member.findOne({ msNo: ms_no }).exec();
+        if (!memberNo) {
+          return res.status(404).json({ message: 'Member not found' });
         }
-  
-        sellerPurchaseIncome = await SellerPurchaseIncome.find({ headOfAccount: headOfAccount._id })
+
+        sellerPurchaseIncome = await SellerPurchaseIncome.find({ memberNo: memberNo._id })
           .populate('memberNo', 'msNo purchaseName')
-          .populate('headOfAccount', 'headOfAccount')
           .exec();
       } else {
         sellerPurchaseIncome = await SellerPurchaseIncome.find()
           .populate('memberNo', 'msNo purchaseName')
-          .populate('headOfAccount', 'headOfAccount')
           .exec();
       }
-  
+
       if (sellerPurchaseIncome.length > 0) {
         return res.status(200).json(sellerPurchaseIncome);
       } else {
