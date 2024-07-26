@@ -14,6 +14,9 @@ export default function Sidebar() {
   const [showPurchaser, setShowPurchaser] = useState(false);
   const [postPurchase, setPostPurchase] = useState(false);
   const [showMonthly, setShowMonthly] = useState(false);
+  const [showExpense, setShowExpense] = useState(false);
+  const [showOfficeExpense, setShowOfficeExpense] = useState(false);
+  const [showSiteExpense, setShowSiteExpense] = useState(false);
 
 
   const general = ["Dashboard", "Members", "Income"];
@@ -21,7 +24,8 @@ export default function Sidebar() {
   useEffect(() => {
     if (!location.pathname.includes("/income")) {
       setShowIncome(false);
-    } else {
+    } 
+    else {
       if (location.pathname.includes("/income/bank-profit"))
         setShowBank(true);
       if (location.pathname.includes("/income/seller"))
@@ -38,6 +42,20 @@ export default function Sidebar() {
       setShowIncome(true);
     }
   }, [location]);
+
+  useEffect(() => {
+    if (!location.pathname.includes("/expense")) {
+      setShowExpense(false);
+    } 
+    else {
+      if (location.pathname.includes("/expense/office-expense"))
+        setShowOfficeExpense(true);
+      if (location.pathname.includes("/expense/site-expense"))
+        setShowSiteExpense(true)
+      setShowExpense(true);
+    }
+  }, [location]);
+
 
   const handleIncome = () => {
     setShowIncome(!showIncome);
@@ -60,6 +78,15 @@ export default function Sidebar() {
   const handleMonthly = () => {
     setShowMonthly(!showMonthly);
   };
+  const handleExpense=()=>{
+    setShowExpense(!showExpense);
+  }
+  const handleOfficeExpense=()=>{
+    setShowOfficeExpense(!showExpense);
+  }
+  const handleSiteExpense=()=>{
+    setShowSiteExpense(!showExpense);
+  }
 
   return (
     <div className="sidebar">
@@ -274,6 +301,61 @@ export default function Sidebar() {
                 )
               }
           </li>
+
+
+
+
+
+
+
+
+
+          <li>
+            <div onClick={handleExpense} className="dropdown">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
+                <g fill="#5940d6" strokeMiterlimit="10" strokeWidth="1">
+                  <path
+                    d="M34.052 41.639H7.587C3.403 41.639 0 38.235 0 34.052V7.587C0 3.403 3.403 0 7.587 0h26.465c4.184 0 7.587 3.403 7.587 7.587v26.465c0 4.183-3.404 7.587-7.587 7.587zM7.587 4A3.59 3.59 0 004 7.587v26.465a3.59 3.59 0 003.587 3.587h26.465a3.59 3.59 0 003.587-3.587V7.587A3.59 3.59 0 0034.052 4H7.587zM82.413 41.639H55.948c-4.184 0-7.587-3.404-7.587-7.587V7.587C48.361 3.403 51.765 0 55.948 0h26.465C86.597 0 90 3.403 90 7.587v26.465c0 4.183-3.403 7.587-7.587 7.587zM55.948 4a3.59 3.59 0 00-3.587 3.587v26.465a3.59 3.59 0 003.587 3.587h26.465A3.59 3.59 0 0086 34.052V7.587A3.59 3.59 0 0082.413 4H55.948zM34.052 90H7.587C3.403 90 0 86.597 0 82.413V55.948c0-4.184 3.403-7.587 7.587-7.587h26.465c4.184 0 7.587 3.403 7.587 7.587v26.465c0 4.184-3.404 7.587-7.587 7.587zM7.587 52.361A3.592 3.592 0 004 55.948v26.465A3.59 3.59 0 007.587 86h26.465a3.59 3.59 0 003.587-3.587V55.948a3.59 3.59 0 00-3.587-3.587H7.587zM82.413 90H55.948c-4.184 0-7.587-3.403-7.587-7.587V55.948c0-4.184 3.403-7.587 7.587-7.587h26.465c4.184 0 7.587 3.403 7.587 7.587v26.465C90 86.597 86.597 90 82.413 90zM55.948 52.361a3.59 3.59 0 00-3.587 3.587v26.465A3.59 3.59 0 0055.948 86h26.465A3.59 3.59 0 0086 82.413V55.948a3.59 3.59 0 00-3.587-3.587H55.948z"
+                    transform="matrix(2.81 0 0 2.81 1.407 1.407)"
+                  ></path>
+                </g>
+              </svg>
+              Expense
+            </div>
+            {showExpense && (
+              <>
+              <ul className="dropdown-menu">
+                <li>
+                  <NavLink
+                    exact
+                    to="/expense/office-expense"
+                    activeClassName="active"
+                    onClick={() => setShowExpense(false)}
+                  >
+                    Office Expense
+                  </NavLink>
+                </li>
+                <li>
+                  <NavLink
+                    exact
+                    to="/expense/site-expense"
+                    activeClassName="active"
+                    onClick={() => setShowExpense(false)}
+                  >
+                    Site Expense
+                  </NavLink>
+                </li>
+              </ul>
+            </>
+            )}
+          </li>
+
+
+
+
+
+
+
           <li>
             <NavLink to="/dummy3" activeClassName="active">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">

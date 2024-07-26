@@ -12,6 +12,8 @@ import Members from './members/members'
 import BankProfit from './income/bank-profit'
 import Seller from './general/seller'
 import Purchaser from './general/purchaser'
+import OfficeExpense from './expense/office-expense'
+import SiteExpense from './expense/site-expense'
 
 function App() {
   
@@ -28,6 +30,8 @@ function App() {
           <Route path="/forgot-password" element={<Auth  isForgotPassword={true}/>}/>
           <Route path="/members" element={<Members/>}/>
           <Route path="/income/bank-profit" element={<BankProfit/>}/>
+          <Route path="/expense/office-expense" element={<OfficeExpense/>}/>
+          <Route path="/expense/site-expense" element={<SiteExpense/>}/>
           <Route path="/income/seller" element={<Seller/>}/>
           <Route path="/income/purchaser" element={<Purchaser/>}/>
           <Route path="/dummy3" element={<Dummy2/>}/>
