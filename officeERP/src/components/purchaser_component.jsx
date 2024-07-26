@@ -14,6 +14,35 @@ export default function PurchaserComponent() {
   const membersRef = useRef(null);
   const [addDues, setAddDues] = useState(false);
   const [updateMemberState, setUpdateMemberState] = useState([]);
+  const [sellerList,setSellerList]=useState([]);
+
+
+
+
+  useEffect(() => {
+    const fetchBanks= async() =>{
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+      }
+      const response=await axios.get(
+        `http://192.168.0.189:3001/user/getSellerPurchaseIncome`,
+        config
+      )
+      setSellerList(response.data)
+      console.log(response.data)
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+  fetchBanks()
+}, []);
+
+
+
 
   const handleScroll = () => {
     if (membersRef.current) {
