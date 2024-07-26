@@ -32,26 +32,27 @@ export default function BankProfitComponent() {
 
 
 
-  useEffect(() => {
-    const fetchProfitBanks= async() =>{
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-      }
-      const response=await axios.get(
-        `http://192.168.0.189:3001/user/getBankProfit`,
-        config
-      )
-      setBankProfitList(response.data)
-    }
-    catch(error){
-      console.error(error);
-    }
-  }
-  fetchProfitBanks()
-}, []);
+//   useEffect(() => {
+//     const fetchProfitBanks= async() =>{
+//       try {
+//         const config = {
+//           headers: {
+//             Authorization: "Bearer " + localStorage.getItem("token"),
+//           },
+//       }
+//       const response=await axios.get(
+//         `http://192.168.0.189:3001/user/getBankProfit`,
+//         config
+//       )
+//       setBankProfitList(response.data)
+//       console.log(BankProfitList)
+//     }
+//     catch(error){
+//       console.error(error);
+//     }
+//   }
+//   fetchProfitBanks()
+// }, []);
 
   useEffect(() => {
     const fetchBanks= async() =>{
@@ -89,6 +90,7 @@ export default function BankProfitComponent() {
           `http://192.168.0.189:3001/user/getBankProfit/?page_no=${page}`,
           config
         );
+        console.log(response.data)
         if (response.data.length > 0) {
           setBankProfitList((prevList) => [...prevList, ...response.data]);
         }
@@ -98,7 +100,7 @@ export default function BankProfitComponent() {
         setLoading(false);
       }
     };
-
+    
     fetchData();
   }, [page]);
   const handleScroll = () => {
@@ -121,6 +123,8 @@ export default function BankProfitComponent() {
       }
     };
   }, [loading]);
+
+
 
   const handleBankChange = (e) => {
     const selectedBankId = e.target.value
@@ -149,16 +153,12 @@ export default function BankProfitComponent() {
   };
   const handleEditSection = (member) => {
     setSelectedMember(member);
-    console.log(bankList)
-    // setPurchaseName(member.purchaseName);
     setMonthName(member.profitMonth);
     setAmount(member.amount);
     setBankName(member.bankName)
+    setProfitId(member._id)
     setSelectedAccount(member.bankAccount)
-    // setPlotNo(member.plotNo);
-    // setBlock(member.block);
-    // setCnicNo(member.cnicNo);
-    // setAddress(member.address);
+
     setEditSection(true);
     setShowOptions(false);
   };
@@ -170,7 +170,6 @@ export default function BankProfitComponent() {
 
   const closeSection = () => {
     setAddNew(false);
-    // setPurchaseName("");
     setMonthName("");
     setAmount("");
     setBankName("");
@@ -184,14 +183,11 @@ export default function BankProfitComponent() {
 
   const createNewBankProfit = (e) => {
     e.preventDefault();
-    const account = bankList.find((item) => item._id === selectedBank);
-
     const data = {
       bank_account: selectedAccount,
       profit_month: monthName,
-      bank_name:account ? account.bankName : "",
+      bank_name:bankName,
       amount: amount
-      
     };
     
     const update = async () => {
@@ -223,7 +219,7 @@ export default function BankProfitComponent() {
     const data = {
       bank_account: selectedAccount,
       profit_month: monthName,
-      bank_name:account ? account.bankName : "",
+      bank_name:bankName,
       amount: amount,
     };
     
@@ -264,7 +260,7 @@ export default function BankProfitComponent() {
             },
           };
           const response = await axios.get(
-            `http://192.168.0.189:3001/user/getMemberList/?search=${searchValue.trim()}`,
+            `http://192.168.0.189:3001/user/getBankProfit/?bankname=${searchValue.trim()}`,
             config
           );
           console.log(response.data);
