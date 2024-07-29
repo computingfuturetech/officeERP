@@ -3,6 +3,8 @@ import "./style/memberListStyle.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import "./style/bankprofit.css"
+import Multiselect from 'multiselect-react-dropdown';
 
 export default function BankProfitComponent() {
   const history = useNavigate();
@@ -23,12 +25,18 @@ export default function BankProfitComponent() {
   const [selectedAccount, setSelectedAccount] = useState("");
   const [bankName, setBankName]=useState("")
   const [profit_id,setProfitId]=useState("")
+  const [hasMorePages,setHasMorePages]=useState(true)
   const months = [
     "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  
-
+  const [selectedList,setSelectedList]=useState([])
+  const [filteredData,setFilteredData]=useState([])
+  const [filtersSelected,setfiltersSelected]=useState(0)
+  const timeoutRef = useRef(null); // Ref to keep track of the timeout
+  const allBanks=[
+    "Allied Bank(ABL)","Punjab Provincial Cooperative Bank (PPCB)","Muslim Commercial Bank (MCB)","Bank of Punjab (BOP)"
+  ]
 
 
 
@@ -76,33 +84,63 @@ export default function BankProfitComponent() {
 }, []);
 
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
+const [isFetching, setIsFetching] = useState(false);
 
-        const response = await axios.get(
-          `http://192.168.0.189:3001/user/getBankProfit/?page_no=${page}`,
-          config
-        );
-        console.log(response.data)
-        if (response.data.length > 0) {
-          setBankProfitList((prevList) => [...prevList, ...response.data]);
-        }
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
+useEffect(() => {
+  
+  const fetchData = async () => {
+    if (isFetching || !hasMorePages) return; // Prevent duplicate calls
+    setIsFetching(true);
+    try {
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+
+      const response = await axios.get(
+        `http://192.168.0.189:3001/user/getBankProfit/?page_no=${page}`,
+        config
+      );
+      console.log(response.data);
+      if (response.data.bankProfits.length > 0) {
+        setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
+        setHasMorePages(response.data.hasMore);
+
+      } else {
+        setHasMorePages(false);
       }
-    };
-    
-    fetchData();
-  }, [page]);
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false)
+      setIsFetching(false); // Ensure this is called regardless of success or failure
+    }
+  };
+ // Clean up function to clear the timeout if the effect runs again
+ if (timeoutRef.current) {
+  clearTimeout(timeoutRef.current);
+}
+
+// Set a new timeout for debouncing
+timeoutRef.current = setTimeout(() => {
+  fetchData();
+}, 500); // 500ms debounce delay
+
+// Cleanup timeout on component unmount
+return () => {
+  if (timeoutRef.current) {
+    clearTimeout(timeoutRef.current);
+  }
+};
+}, [page, hasMorePages]);
+
+// Optional: If you need to handle `hasMorePages` changes separately, you can add another useEffect
+useEffect(() => {
+  if (!hasMorePages) return;
+  // Add any logic that needs to run when hasMorePages changes
+}, [hasMorePages]);
+
   const handleScroll = () => {
     console.log("scrolling");
     if (membersRef.current) {
@@ -112,6 +150,10 @@ export default function BankProfitComponent() {
       }
     }
   };
+
+  function dummy(){
+    console.log('sdaf');
+  }
 
   useEffect(() => {
     if (membersRef.current) {
@@ -232,7 +274,7 @@ export default function BankProfitComponent() {
           },
         };
         const response = await axios.post(
-          `http://192.168.0.189:3001/user/updateBankProfit?id=${profit_id}`,
+          process.env.REACT_APP_API_URL + `/user/updateBankProfit?id=${profit_id}`,
           data,
           config
         );
@@ -260,12 +302,13 @@ export default function BankProfitComponent() {
             },
           };
           const response = await axios.get(
-            `http://192.168.0.189:3001/user/getBankProfit/?bankname=${searchValue.trim()}`,
+            process.env.REACT_APP_API_URL + `/user/getBankProfit/?bankname=${searchValue.trim()}`,
             config
           );
           console.log(response.data);
           if (response.data.length > 0) {
             setBankProfitList(response.data);
+
           }
           setLoading(false);
         } catch (error) {
@@ -287,6 +330,56 @@ export default function BankProfitComponent() {
     });
   
   };
+  const handleSelect = (selectedList) => {
+    setfiltersSelected((filtersSelected) => filtersSelected + 1);
+    setSelectedList(selectedList);
+    filterBanks(selectedList);
+    console.log(filteredData)
+    
+  };
+  const filterBanks = async (selectedBanks) => {
+    setLoading(true);
+    if(selectedBanks===""){
+      setLoading(false)
+      return
+    }
+    try {
+      // Construct the bank names query parameter as a comma-separated string
+      const bankNames = selectedBanks.map(bank => bank.bankName).join(',');
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+      // Make the API call with bank names as a query parameter
+      const response = await axios.get(
+        process.env.REACT_APP_API_URL+`/user/getBankProfit/?bankname=${bankNames}`,
+        config
+      );
+  
+      // Assuming the response data contains the filtered list
+      if (response.data.length > 0) {
+        console.log('hi')
+        setFilteredData(response.data.bankProfits);
+        setBankProfitList([])
+      } else {
+        setFilteredData([]); // Clear the filtered data if no results
+      }
+      console.log('Filtered Data:', response.data.bankProfits, selectedBanks);
+      setFilteredData(response.data.bankProfits)
+    } catch (error) {
+      console.error('Error fetching filtered data:', error);
+    } finally {
+      setLoading(false); // Ensure loading state is updated
+    }
+  };
+  
+  const handleRemove = (selectedList) => {
+    setfiltersSelected((filtersSelected) => filtersSelected - 1);
+    setSelectedList(selectedList);
+    filterBanks(selectedList);
+    
+  };
 
 
   return (
@@ -294,15 +387,22 @@ export default function BankProfitComponent() {
       <div className="title">
         <h2>BankProfit</h2>
         <div className="title-buttons">
-          <form className="nosubmit" onSubmit={handleSearch}>
-            <input
-              className="nosubmit"
-              name="search-members"
-              id="search-members"
-              type="search"
-              placeholder="Search..."
-            />
-          </form>
+        <Multiselect
+            options={bankList}
+            displayValue="bankName"
+            onSelect={handleSelect}
+            onRemove={handleRemove}
+            showCheckbox
+            style={{
+              chips: { background: "#1640d6" },
+              searchBox: { border: "1px solid #ccc", borderRadius: "4px"},
+            }}
+            placeholder="Filter by Bank"
+            avoidHighlightFirstOption
+            disablePreSelectedValues
+            showArrow
+            hidePlaceholder
+          />
           <Link className="blue-button" onClick={handleAddNew}> Add New</Link> 
           <Link className="simple-button" onClick={handleRefresh}>
             Refresh
@@ -320,8 +420,8 @@ export default function BankProfitComponent() {
       </div>
 
       <div className={`members  ${loading ? "loading" : ""}`} ref={membersRef}>
-        {BankProfitList.map((member) => (
-          <div className="member" key={member._id}>
+      {(filtersSelected > 0 ? filteredData : BankProfitList).map((member) => (
+          <div className="member bankprofit" key={member._id}>
             <div className="member-details">
               <p>{member.bankName}</p>
               <p>{member.bankAccount}</p>
