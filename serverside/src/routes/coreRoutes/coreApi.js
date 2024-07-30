@@ -43,6 +43,10 @@ router.post('/forgetPassword', forgetPassword.forgetPassword);
 router.post('/otpVerify', otpVerify.otpVerify);
 router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
 
+router.post('/forgetPassword', forgetPassword.forgetPassword);
+router.post('/otpVerify', otpVerify.otpVerify);
+router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
+
 router.post("/createMember", authenticateJWT,checkRole(['admin','employee']),newMemberController.createMember);
 router.get("/getMemberList/", authenticateJWT,checkRole(['admin','employee']),getMemberListController.getMemberList);
 router.get("/getDelistedMemberList", authenticateJWT,checkRole(['admin','employee']),getDelistedMemberListController.getDelistedMemberList);
