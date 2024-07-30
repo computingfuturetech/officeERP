@@ -13,8 +13,9 @@ const getDelistedMemberListController = require('../../controllers/memberControl
 const transferMembershipController = require('../../controllers/memberController/transferMembership')
 const updateMemberController = require('../../controllers/memberController/updateMember')
 const memberDeposit = require('../../controllers/memberController/memberDeposit')
-const createHeadOfAccount = require('../../controllers/headOfAccountController/createHeadOfAccount')
-const listofHeadOfAccount = require('../../controllers/headOfAccountController/listOfHeadOfAccount')
+const createHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createMainHeadOfAccount')
+const createSubHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createSubHeadOfAccount')
+const listofHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/listOfHeadOfAccount')
 const forgetPassword = require('../../controllers/userController/forgetPassword')
 const otpVerify = require('../../controllers/userController/otpVerify')
 const newPasswordSet = require('../../controllers/userController/newPasswordSet')
@@ -49,7 +50,10 @@ router.post("/transferMembership", authenticateJWT,checkRole(['admin','employee'
 router.post("/updateMember", authenticateJWT,checkRole(['admin','employee']),updateMemberController.updateMember);
 router.post('/memberDeposit', authenticateJWT,checkRole(['admin','employee']), memberDeposit.memberDeposit);
 
-router.post('/createHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.createHeadOfAccount);
+router.post('/createMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.createHeadOfAccount);
+router.post('/updateMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.updateHeadOfAccount);
+router.post('/createSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.createHeadOfAccount);
+router.post('/updateSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.updateHeadOfAccount);
 router.get('/listOHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), listofHeadOfAccount.listOfHeadOfAccount);
 
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);

@@ -1,6 +1,7 @@
 const Member = require("../../models/memberModels/memberList");
-const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
 const LegalProfessionalExpense = require("../../models/expenseModel/legalProfessionalExpense/legalProfessionalExpense")
+const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
+const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 
 module.exports = {
   createLegalProfessionalExpense: async (req, res) => {
@@ -10,15 +11,27 @@ module.exports = {
       if (!paid_date || !particulor || !billing_month || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const headOfAccount = await HeadOfAccount.findOne({
+      const mainHeadOfAccount = await MainHeadOfAccount.findOne({
         headOfAccount: head_of_account,
       });
-      if (!headOfAccount) {
+      const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
+        headOfAccount: head_of_account,
+      });
+      if (!mainHeadOfAccount && !subHeadOfAccount) {
         return res.status(404).json({ message: "Head of Account not found" });
+      }
+      let sub_head_id;
+      let main_head_id;
+      if (mainHeadOfAccount) {
+        main_head_id = mainHeadOfAccount._id
+      }
+      else {
+        sub_head_id = subHeadOfAccount._id
       }
       const legalProfessionalExpense = new LegalProfessionalExpense({
         paidDate: paid_date,
-        headOfAccount: headOfAccount._id,
+        mainHeadOfAccount: main_head_id,
+        subHeadOfAccount: sub_head_id,
         amount: amount,
         particulor: particulor,
         billingMonth: billing_month,
@@ -40,7 +53,16 @@ module.exports = {
       let query = {};
 
       if (head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({
+        const headOfAccount = await MainHeadOfAccount.findOne({
+          headOfAccount: head_of_account,
+        }).exec();
+        if (!headOfAccount) {
+          return res.status(404).json({ message: "Head of Account not found" });
+        }
+        query.headOfAccount = headOfAccount._id;
+      }
+      if (head_of_account) {
+        const headOfAccount = await SubHeadOfAccount.findOne({
           headOfAccount: head_of_account,
         }).exec();
         if (!headOfAccount) {
@@ -50,7 +72,8 @@ module.exports = {
       }
 
       const legalProfessionalExpense = await LegalProfessionalExpense.find(query)
-        .populate("headOfAccount", "headOfAccount")
+        .populate("mainHeadOfAccount", "headOfAccount")
+        .populate("subHeadOfAccount", "headOfAccount")
         .exec();
 
       if (legalProfessionalExpense.length === 0) {
@@ -88,13 +111,32 @@ module.exports = {
         updateData.billingMonth = req.body.billing_month;
       }
       if (req.body.head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({
+        const mainHeadOfAccount = await MainHeadOfAccount.findOne({
           headOfAccount: req.body.head_of_account,
         });
-        if (!headOfAccount) {
+        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
+          headOfAccount: req.body.head_of_account,
+        });
+        if (!mainHeadOfAccount && !subHeadOfAccount) {
           return res.status(404).json({ message: "Head of Account not found" });
         }
-        updateData.headOfAccount = headOfAccount._id;
+        let sub_head_id;
+        let main_head_id;
+        if (mainHeadOfAccount) {
+          updateData.mainHeadOfAccount = mainHeadOfAccount._id;
+          if (legalProfessionalExpense.subHeadOfAccount) {
+            legalProfessionalExpense.subHeadOfAccount = null
+            legalProfessionalExpense.save()
+          }
+        } 
+        if (subHeadOfAccount) {
+          updateData.subHeadOfAccount = subHeadOfAccount._id;
+          if (legalProfessionalExpense.mainHeadOfAccount) {
+            legalProfessionalExpense.mainHeadOfAccount = null
+            legalProfessionalExpense.save()
+          }
+        }
+
       }
 
       console.log("Update Data:", updateData);
@@ -115,3 +157,6 @@ module.exports = {
     }
   },
 };
+
+
+

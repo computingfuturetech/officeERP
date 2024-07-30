@@ -67,13 +67,14 @@ module.exports = {
     }
   },
   getBankProfits: async (req, res) => {
-    const { id, bankname, sort } = req.query;
+    const { id, bankname, sort, page_no = 1, limit = 10 } = req.query;
     let sortOrder = {};
     if (sort === 'asc') {
       sortOrder = { amount: 1 };
     } else if (sort === 'desc') {
       sortOrder = { amount: -1 };
     }
+  
     try {
       if (id) {
         const bankProfit = await BankProfit.findById(id).exec();
@@ -82,17 +83,32 @@ module.exports = {
         }
         res.status(200).json(bankProfit);
       } else if (bankname) {
-        const bankProfits = await BankProfit.find({ bankName: bankname }).sort(sortOrder).exec();
+        const totalBankProfits = await BankProfit.countDocuments({ bankName: bankname });
+        const skip = (page_no - 1) * limit; 
+        const bankProfits = await BankProfit.find({ bankName: bankname })
+         .sort(sortOrder)
+         .skip(skip) 
+         .limit(limit)
+         .exec();
+        const hasMore = page_no * limit < totalBankProfits;
         if (bankProfits.length === 0) {
           return res.status(404).json({ message: "Bank Profits not found" });
         }
-        res.status(200).json(bankProfits);
+        res.status(200).json({ bankProfits, hasMore });
       } else {
-        const bankProfits = await BankProfit.find().sort(sortOrder).exec();
-        res.status(200).json(bankProfits);
+        const totalBankProfits = await BankProfit.countDocuments();
+        const skip = (page_no - 1) * limit; 
+        const bankProfits = await BankProfit.find()
+         .sort(sortOrder)
+         .skip(skip)
+         .limit(limit)
+         .exec();
+        const hasMore = page_no * limit < totalBankProfits;
+        res.status(200).json({ bankProfits, hasMore });
       }
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   }
+
 };
