@@ -12,9 +12,7 @@ const bankPofitSchema = new Schema({
         type: String,
     },
     bankAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'BankListSchema',
-        required: true
+        type: String,
     },
     profitMonth:{
         type: String,

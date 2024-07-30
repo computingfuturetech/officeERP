@@ -13,8 +13,9 @@ const getDelistedMemberListController = require('../../controllers/memberControl
 const transferMembershipController = require('../../controllers/memberController/transferMembership')
 const updateMemberController = require('../../controllers/memberController/updateMember')
 const memberDeposit = require('../../controllers/memberController/memberDeposit')
-const createHeadOfAccount = require('../../controllers/headOfAccountController/createHeadOfAccount')
-const listofHeadOfAccount = require('../../controllers/headOfAccountController/listOfHeadOfAccount')
+const createHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createMainHeadOfAccount')
+const createSubHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createSubHeadOfAccount')
+const listofHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/listOfHeadOfAccount')
 const forgetPassword = require('../../controllers/userController/forgetPassword')
 const otpVerify = require('../../controllers/userController/otpVerify')
 const newPasswordSet = require('../../controllers/userController/newPasswordSet')
@@ -38,35 +39,51 @@ const salaryType = require('../../controllers/expenseController/salaryType')
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
 router.post("/login",loginController.login);
+router.post('/forgetPassword', forgetPassword.forgetPassword);
+router.post('/otpVerify', otpVerify.otpVerify);
+router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
+
+router.post('/forgetPassword', forgetPassword.forgetPassword);
+router.post('/otpVerify', otpVerify.otpVerify);
+router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
+
 router.post("/createMember", authenticateJWT,checkRole(['admin','employee']),newMemberController.createMember);
 router.get("/getMemberList/", authenticateJWT,checkRole(['admin','employee']),getMemberListController.getMemberList);
 router.get("/getDelistedMemberList", authenticateJWT,checkRole(['admin','employee']),getDelistedMemberListController.getDelistedMemberList);
 router.post("/transferMembership", authenticateJWT,checkRole(['admin','employee']),transferMembershipController.transferMembership);
 router.post("/updateMember", authenticateJWT,checkRole(['admin','employee']),updateMemberController.updateMember);
 router.post('/memberDeposit', authenticateJWT,checkRole(['admin','employee']), memberDeposit.memberDeposit);
-router.post('/createHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.createHeadOfAccount);
+
+router.post('/createMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.createHeadOfAccount);
+router.post('/updateMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.updateHeadOfAccount);
+router.post('/createSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.createHeadOfAccount);
+router.post('/updateSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.updateHeadOfAccount);
 router.get('/listOHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), listofHeadOfAccount.listOfHeadOfAccount);
-router.post('/forgetPassword', forgetPassword.forgetPassword);
-router.post('/otpVerify', otpVerify.otpVerify);
-router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
+
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);
 router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
+
 router.post('/createGeneralLedger',authenticateJWT,checkRole(['admin','employee']), createGeneralLedger.createGeneralLedger);
 router.post('/createPayableVoucher',authenticateJWT,checkRole(['admin','employee']), createPayableVoucher.createPayableVoucher);
 router.get('/', threeTierchallanController.renderTemplate);
+
 router.get('/stc-generate-pdf',authenticateJWT,checkRole(['admin','employee']), singleTierchallanController.generatePDF);
 router.get('/ttc-generate-pdf',authenticateJWT,checkRole(['admin','employee']), threeTierchallanController.generatePDF);
+
 router.post("/addFixedAmount",authenticateJWT,checkRole(['admin','employee']),fixedAmountController.addFixedAmount);
 
 router.post("/createBankProfit",authenticateJWT,checkRole(['admin','employee']),bankProfit.createBankProfit);
 router.get("/getBankProfit/",authenticateJWT,checkRole(['admin','employee']),bankProfit.getBankProfits);
 router.post("/updateBankProfit",authenticateJWT,checkRole(['admin','employee']),bankProfit.updateBankProfit);
+
 router.post("/createPossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.createPossessionFee);
 router.get("/getPossessionFee/",authenticateJWT,checkRole(['admin','employee']),possessionFee.getPossessionFee);
 router.post("/updatePossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.updatePossessionFee);
+
 router.post("/createSellerPurchaseIncome",authenticateJWT,checkRole(['admin','employee']),sellerPurchaserIncome.createSellerPurchaseIncome);
 router.post("/updateSellerPurchaseIncome",authenticateJWT,checkRole(['admin','employee']),sellerPurchaserIncome.updateSellerPurchaseIncome);
 router.get("/getSellerPurchaseIncome/",authenticateJWT,checkRole(['admin','employee']),sellerPurchaserIncome.getSellerPurchaseIncome);
+
 router.post("/createWaterMaintenanceBill",authenticateJWT,checkRole(['admin','employee']),waterMaintenanceBill.createWaterMaintenanceBill);
 router.get("/getWaterMaintenanceBill/",authenticateJWT,checkRole(['admin','employee']),waterMaintenanceBill.getWaterMaintenanceBill);
 router.post("/updateWaterMaintenanceBill",authenticateJWT,checkRole(['admin','employee']),waterMaintenanceBill.updateWaterMaintenanceBill);

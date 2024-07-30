@@ -1,0 +1,23 @@
+const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
+
+module.exports = {
+  listOfHeadOfAccount: async (req, res) => {
+    try {
+      const expenseType = req.query.expense_type; // Get the expenseType from the query parameter
+      let filter = {};
+
+      if (expenseType) {
+        filter = { expenseType: expenseType }; // Create a filter object with the expenseType
+      }
+      const headOfAccount = await MainHeadOfAccount.find(filter).populate('subExpenseHeads');
+      if (headOfAccount.length === 0) {
+        res.status(404).json({ message: "No head of accounts found" });
+      } else {
+        res.status(200).json(headOfAccount);
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
+    }
+  }
+}

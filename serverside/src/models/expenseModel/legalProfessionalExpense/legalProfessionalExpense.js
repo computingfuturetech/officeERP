@@ -5,10 +5,13 @@ const legalProfessionalExpenseSchema = new Schema({
     paidDate:{
         type: Date,
     },
-    headOfAccount:{
+    mainHeadOfAccount:{
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'HeadOfAccount',
-        required: true
+        ref: 'MainExpenseHeadOfAccount',
+    },
+    subHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SubExpenseHeadOfAccount',
     },
     amount:{
         type: Number,

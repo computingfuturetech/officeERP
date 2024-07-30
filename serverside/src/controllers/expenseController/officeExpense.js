@@ -1,6 +1,8 @@
 const Member = require("../../models/memberModels/memberList");
 const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
 const OfficeExpense = require("../../models/expenseModel/officeExpense/officeExpense");
+const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
+const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 
 module.exports = {
   createOfficeExpense: async (req, res) => {
@@ -10,15 +12,27 @@ module.exports = {
       if (!paid_date || !particulor || !vendor || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const headOfAccount = await HeadOfAccount.findOne({
+      const mainHeadOfAccount = await MainHeadOfAccount.findOne({
         headOfAccount: head_of_account,
       });
-      if (!headOfAccount) {
+      const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
+        headOfAccount: head_of_account,
+      });
+      if (!mainHeadOfAccount && !subHeadOfAccount) {
         return res.status(404).json({ message: "Head of Account not found" });
+      }
+      let sub_head_id;
+      let main_head_id;
+      if (mainHeadOfAccount) {
+        main_head_id = mainHeadOfAccount._id
+      }
+      else {
+        sub_head_id = subHeadOfAccount._id
       }
       const officeExpense = new OfficeExpense({
         paidDate: paid_date,
-        headOfAccount: headOfAccount._id,
+        mainHeadOfAccount: main_head_id,
+        subHeadOfAccount: sub_head_id,
         amount: amount,
         particulor: particulor,
         vendor: vendor,
@@ -92,7 +106,16 @@ module.exports = {
       let query = {};
 
       if (head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({
+        const headOfAccount = await MainHeadOfAccount.findOne({
+          headOfAccount: head_of_account,
+        }).exec();
+        if (!headOfAccount) {
+          return res.status(404).json({ message: "Head of Account not found" });
+        }
+        query.headOfAccount = headOfAccount._id;
+      }
+      if (head_of_account) {
+        const headOfAccount = await SubHeadOfAccount.findOne({
           headOfAccount: head_of_account,
         }).exec();
         if (!headOfAccount) {
@@ -102,7 +125,8 @@ module.exports = {
       }
 
       const officeExpenses = await OfficeExpense.find(query)
-        .populate("headOfAccount", "headOfAccount")
+        .populate("mainHeadOfAccount", "headOfAccount")
+        .populate("subHeadOfAccount", "headOfAccount")
         .exec();
 
       if (officeExpenses.length === 0) {
