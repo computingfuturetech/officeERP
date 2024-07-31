@@ -3,6 +3,7 @@ const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
 const OfficeExpense = require("../../models/expenseModel/officeExpense/officeExpense");
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
+const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
 
 module.exports = {
   createOfficeExpense: async (req, res) => {
@@ -12,22 +13,10 @@ module.exports = {
       if (!paid_date || !particulor || !vendor || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const mainHeadOfAccount = await MainHeadOfAccount.findOne({
-        headOfAccount: head_of_account,
-      });
-      const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
-        headOfAccount: head_of_account,
-      });
-      if (!mainHeadOfAccount && !subHeadOfAccount) {
-        return res.status(404).json({ message: "Head of Account not found" });
-      }
-      let sub_head_id;
       let main_head_id;
-      if (mainHeadOfAccount) {
-        main_head_id = mainHeadOfAccount._id
-      }
-      else {
-        sub_head_id = subHeadOfAccount._id
+      let sub_head_id;
+      if (req.body.head_of_account) {
+        ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
       const officeExpense = new OfficeExpense({
         paidDate: paid_date,
@@ -73,16 +62,8 @@ module.exports = {
         updateData.vendor = req.body.vendor;
       }
       if (req.body.head_of_account) {
-        const headOfAccount = await HeadOfAccount.findOne({
-          headOfAccount: req.body.head_of_account,
-        });
-        if (!headOfAccount) {
-          return res.status(404).json({ message: "Head of Account not found" });
-        }
-        updateData.headOfAccount = headOfAccount._id;
+        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, officeExpense);
       }
-
-      console.log("Update Data:", updateData);
 
       const updatedOfficeExpense = await OfficeExpense.findByIdAndUpdate(
         id,
