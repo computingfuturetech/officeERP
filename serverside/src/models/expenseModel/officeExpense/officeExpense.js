@@ -24,7 +24,14 @@ const officeExpenseSchema = new Schema({
         type: String,
     },
 }
-)
+, {
+    timestamps: true,
+  });
+  
+  officeExpenseSchema.pre('save', function(next) {
+    this.mainHeadOfAccount ? this.subHeadOfAccount = undefined : this.mainHeadOfAccount = undefined;
+    next();
+})
 
 const OfficeExpense = mongoose.model('OfficeExpense',officeExpenseSchema)
 module.exports=OfficeExpense;
