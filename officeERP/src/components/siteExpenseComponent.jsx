@@ -96,7 +96,7 @@ function SiteExpenseComponent() {
 
   const createNewSiteExpense=(e)=>{
     e.preventDefault();
-    console.log("snew created")
+    console.log("new created")
   }
   return (
     <>
