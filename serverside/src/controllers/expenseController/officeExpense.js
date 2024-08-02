@@ -87,22 +87,16 @@ module.exports = {
       let query = {};
 
       if (head_of_account) {
-        const headOfAccount = await MainHeadOfAccount.findOne({
-          headOfAccount: head_of_account,
-        }).exec();
-        if (!headOfAccount) {
+        const mainHeadOfAccount = await MainHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+  
+        if (mainHeadOfAccount) {
+          query.mainHeadOfAccount = mainHeadOfAccount._id;
+        } else if (subHeadOfAccount) {
+          query.subHeadOfAccount = subHeadOfAccount._id;
+        } else {
           return res.status(404).json({ message: "Head of Account not found" });
         }
-        query.headOfAccount = headOfAccount._id;
-      }
-      if (head_of_account) {
-        const headOfAccount = await SubHeadOfAccount.findOne({
-          headOfAccount: head_of_account,
-        }).exec();
-        if (!headOfAccount) {
-          return res.status(404).json({ message: "Head of Account not found" });
-        }
-        query.headOfAccount = headOfAccount._id;
       }
 
       const officeExpenses = await OfficeExpense.find(query)

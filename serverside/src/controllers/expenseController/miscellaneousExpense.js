@@ -1,15 +1,14 @@
-const Member = require("../../models/memberModels/memberList");
-const LegalProfessionalExpense = require("../../models/expenseModel/legalProfessionalExpense/legalProfessionalExpense")
+const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExpense/miscellaneousExpense")
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
 
 module.exports = {
-  createLegalProfessionalExpense: async (req, res) => {
-    const { head_of_account, amount, particulor, billing_month, paid_date } = req.body;
+  createMiscellaneousExpense: async (req, res) => {
+    const { head_of_account, amount, description, vendor_name,plot_number, paid_date } = req.body;
     console.log(req.body);
     try {
-      if (!paid_date || !particulor || !billing_month || !head_of_account || !amount) {
+      if (!paid_date || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
       let main_head_id;
@@ -17,25 +16,26 @@ module.exports = {
       if (req.body.head_of_account) {
         ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
-      const legalProfessionalExpense = new LegalProfessionalExpense({
+      const miscellaneousExpense = new MiscellaneousExpense({
         paidDate: paid_date,
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
         amount: amount,
-        particulor: particulor,
-        billingMonth: billing_month,
+        vendorName: vendor_name,
+        plotNumber: plot_number,
+        description: description
       });
-      await legalProfessionalExpense.save();
+      await miscellaneousExpense.save();
       res.status(201).json({
-        message: "Legal Professional Expense created successfully",
-        data: legalProfessionalExpense,
+        message: "Miscellaneous Expense created successfully",
+        data: miscellaneousExpense,
       });
     } catch (err) {
       console.error(err);
       res.status(500).json({ message: "Internal server error" });
     }
   },
-  getLegalProfessionalExpense: async (req, res) => {
+  getMiscellaneousExpense: async (req, res) => {
     const { head_of_account } = req.query;
 
     try {
@@ -54,30 +54,30 @@ module.exports = {
         }
       }
 
-      const legalProfessionalExpense = await LegalProfessionalExpense.find(query)
+      const miscellaneousExpense = await MiscellaneousExpense.find(query)
         .populate("mainHeadOfAccount", "headOfAccount")
         .populate("subHeadOfAccount", "headOfAccount")
         .exec();
 
-      if (legalProfessionalExpense.length === 0) {
-        return res.status(404).json({ message: "Legal Professional Expense not found" });
+      if (miscellaneousExpense.length === 0) {
+        return res.status(404).json({ message: "Miscellaneous Expense not found" });
       }
 
-      res.status(200).json(legalProfessionalExpense);
+      res.status(200).json(miscellaneousExpense);
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   },
-  updateLegalProfessionalExpense: async (req, res) => {
+  updateMiscellaneousExpense: async (req, res) => {
     const id = req.query.id;
     try {
       if (!id) {
         return res.status(400).json({ message: "ID is required" });
       }
 
-      const legalProfessionalExpense = await LegalProfessionalExpense.findById(id).exec();
-      if (!legalProfessionalExpense) {
-        return res.status(404).json({ message: "Legal Professional Expense not found" });
+      const miscellaneousExpense = await MiscellaneousExpense.findById(id).exec();
+      if (!miscellaneousExpense) {
+        return res.status(404).json({ message: "Miscellaneous Expense not found" });
       }
 
       const updateData = {};
@@ -87,24 +87,24 @@ module.exports = {
       if (req.body.amount) {
         updateData.amount = req.body.amount;
       }
-      if (req.body.particulor) {
-        updateData.particulor = req.body.particulor;
+      if (req.body.vendor_name) {
+        updateData.vendor_name = req.body.vendor_name;
       }
-      if (req.body.billing_month) {
-        updateData.billingMonth = req.body.billing_month;
+      if (req.body.plot_number) {
+        updateData.plot_number = req.body.plot_number;
       }
       if (req.body.head_of_account) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,legalProfessionalExpense);
+        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,miscellaneousExpense);
       }
-      const updatedlegalProfessionalExpense = await LegalProfessionalExpense.findByIdAndUpdate(
+      const updatedmiscellaneousExpense = await MiscellaneousExpense.findByIdAndUpdate(
         id,
         { $set: updateData },
         { new: true }
       ).exec();
 
       res.status(200).json({
-        message: "Legal Professiona  Expense updated successfully",
-        data: updatedlegalProfessionalExpense,
+        message: "Miscellaneous Expense updated successfully",
+        data: updatedmiscellaneousExpense,
       });
     } catch (err) {
       console.error("Error:", err);
