@@ -29,7 +29,7 @@ function SiteExpenseComponent() {
   const Repair_site_SUBHEADS=['Phase 1','Phase 2']
   const Sub_Lesco_Heads=['Block A','Block D']
   const Sub_Disposal_Heads=['Disposal','Vehicle']
-  const HEADOFACCOUNTLIST = ['Salary','Utility','Vehicle/Disposal','Eletricity/Water Coonection','Repair/Maintainance','Misc'];
+  const HEADOFACCOUNTLIST = ['Salary','Utility','Vehicle/Disposal','Eletricity/Water Connection','Repair/Maintainance','Misc'];
   const [HeadOfAccountssiteList,setHeadOfAccountssiteList]=useState([])
   const [billingMonth, setBillingMonth] = useState('');
   const [advTax, setAdvTax] = useState('');
@@ -46,6 +46,7 @@ function SiteExpenseComponent() {
   const [bankName, setBankName] = useState('');
   const [chequeNumber,setChequeNumber]=useState("")
   const [lescoSubHead,setLescoSubHead]=useState("")
+  const [bankList,setBankList]=useState('')
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -94,6 +95,26 @@ function SiteExpenseComponent() {
     };
   }, [loading]);
 
+  useEffect(() => {
+    const fetchBanks= async() =>{
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+      }
+      const response=await axios.get(
+        `http://192.168.0.189:3001/user/bankList`,
+        config
+      )
+      setBankList(response.data)
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+  fetchBanks()
+}, []);
   const handleExpenseChange = () => {};
 
   const handleAddNew = () => {
@@ -133,37 +154,128 @@ function SiteExpenseComponent() {
   const handleBankAccountChange = (e) => setBankAccount(e.target.value);
   const handleBankNameChange = (e) => setBankName(e.target.value);
 
-  const createNewsiteExpense = (e) => {
+  const createNewSiteExpense = (e) => {
     e.preventDefault();
-    const data = {
-      head_of_account: headOfAccount,
-      particulor: particular,
-      amount:amount,
-      paid_date: date,
-      vendor:vendor
+    let data = {};
+    let url = '';
+
+    switch (headOfAccount) {
+        case 'Utility':
+            switch (SubHeadOfAccount) {
+                case 'Lesco':
+                    switch (lescoSubHead) {
+                        case 'Block A':
+                            url = '/user/createOfficeUtilExpense';
+                            data = { head_of_account: 'A Block', bill_reference: billReference, amount: amount, billing_month: billingMonth, paid_date: date, adv_tax: advTax };
+                            break;
+                        case 'Block D':
+                            url = '/user/createOfficeUtilExpense';
+                            data = { head_of_account: 'D Block', bill_reference: billReference, amount: amount, billing_month: billingMonth, paid_date: date, adv_tax: advTax };
+                            break;
+                        default:
+                            return;
+                    }
+                    break;
+                default:
+                    return;
+            }
+            break;
+        case 'Salary':
+            url = '/user/createSalary';
+            data = { salary_type:"Site",head_of_account: 'Salaries Site Employees',cheque_no:chequeNumber,amount:amount,bank_account:bankAccount,paid_date:date};
+            break;
+
+        case 'Vehicle/Disposal':
+            switch (SubHeadOfAccount) {
+                case 'Disposal':
+                  url = '/user/createVehicleDisposalExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                case 'Vehicle':
+                    url = '/user/createVehicleDisposalExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    break;
+                default:
+                    return;
+            }
+            break;
+
+        case 'Eletricity/Water Connection':
+            switch (SubHeadOfAccount) {
+
+                case 'Electricity':
+                  url = '/user/createElectricityWaterExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                case 'Water':
+                    url = '/user/createElectricityWaterExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    break;
+                default:
+                    return;
+            }
+            break;
+
+        case 'Repair/Maintainance':
+          console.log(SubHeadOfAccount)
+            switch (SubHeadOfAccount) {
+              
+                case 'Phase 1':
+                  url = '/user/createLegalProfessionalExpense';
+                  data = { head_of_account:"Phase 1", amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                  break;
+                case 'Phase 2':
+                    url = '/user/createLegalProfessionalExpense';
+                    data = { head_of_account:"Phase 2", amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    break;
+                default:
+                    return;
+            }
+            break;
+
+        case 'Misc':
+            switch (SubHeadOfAccount) {
+                case 'Dengue':
+                  url = '/user/createMiscellaneousExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  paid_date: date, description: description };
+                    break;
+                case 'Weapon':
+                  url = '/user/createMiscellaneousExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount, plot_number: plotNumber, paid_date: date, description: description,vendor:vendor };
+                    break;
+                case 'Demarcation':
+                  url = '/user/createMiscellaneousExpense';
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  paid_date: date, description: description };
+                    break;
+                default:
+                    return;
+            }
+            break;
+
+        default:
+            return;
+    }
+
+    const createExpense = async () => {
+        console.log(data);
+        try {
+            const config = {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token"),
+                },
+            };
+            const response = await axios.post(
+                process.env.REACT_APP_API_URL + url,
+                data,
+                config
+            );
+            console.log(response.data);
+            closeSection();
+        } catch (error) {
+            console.error(error);
+        }
     };
-    
-    const update = async () => {
-      console.log(data);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          process.env.REACT_APP_API_URL+`/user/createsiteExpense`,
-          data,
-          config
-        );
-        console.log(response.data);
-        closeSection();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    update();
-  };
+    createExpense();
+};
+
   const formatDate = (date) => {
     const d = new Date(date);
     let month = '' + (d.getMonth() + 1);
@@ -197,6 +309,19 @@ function SiteExpenseComponent() {
   }
   const handleHeadOfAccountChange=(e)=>{
     setHeadOfAccount(e.target.value)
+    setAmount("")
+    setDate("")
+    setAdvTax("")
+    setAuditFeeChange("")
+    setAuditYear("")
+    setBankAccount("")
+    setBankName("")
+    setBillingMonth("")
+    setDescription("")
+    setEmployeeName("")
+    setParticular("")
+    setVendor("")
+
   }
   const handleEditSection = (member) => {
     setSelectedMember(member);
@@ -277,7 +402,7 @@ function SiteExpenseComponent() {
     <>
       <div className="member-list">
         <div className="title">
-          <h2>site Expense</h2>
+          <h2>Site Expense</h2>
           <div className="title-buttons">
             <form className="nosubmit">
               <input
@@ -306,7 +431,7 @@ function SiteExpenseComponent() {
           {siteExpensesList.map((member) => (
             <div className="member" key={member._id}>
               <div className="member-details">
-                <p>{member.subHeadOfAccount.headOfAccount}</p>
+              {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}
                 <p>{member.paidDate}</p>
                 <p>{member.amount}</p>
                 <img
@@ -333,9 +458,9 @@ function SiteExpenseComponent() {
   <div className="left-section">
     <div className="left-section-content">
       <div onClick={closeSection} className="close-button"></div>
-      <h3>Add site Expense</h3>
+      <h3>Add Site Expense</h3>
       <div className="horizontal-divider"></div>
-      <form onSubmit={createNewsiteExpense}>
+      <form onSubmit={createNewSiteExpense}>
         <label htmlFor="headOfAccount">Head Of Account: </label>
         <select name="headOfAccount" id="headOfAccount" onChange={handleHeadOfAccountChange}>
           <option value={headOfAccount} hidden>
@@ -358,14 +483,22 @@ function SiteExpenseComponent() {
               value={chequeNumber}
               onChange={handleChequeNumberChange}
             />
-             <label htmlFor="bankName">Bank Name: </label>
-            <input
-              type="text"
-              name="bankName"
-              id="bankName"
-              value={bankName}
-              onChange={handleBankNameChange}
-            />
+            <label htmlFor="bank-name">Bank Name: </label>
+    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+     <option value="select" hidden>{bankName}</option>
+                {bankList.map((bank) => (
+                    <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
+                  ))}
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
+              <option value="select" hidden>Select</option>
+              {bankList
+                .filter((bank) => bank._id === bankName)
+                .map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
+                ))}
+            </select>
                <label htmlFor="amount">Amount: </label>
                 <input
                   type="number"
@@ -374,6 +507,15 @@ function SiteExpenseComponent() {
                   value={amount}
                   onChange={handleAmountChange}
                 />
+                 <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={handleDateChange}
+                />
+                
 
           </>
         )}
@@ -739,7 +881,7 @@ function SiteExpenseComponent() {
             
           </>
         )}
-        {headOfAccount === "Eletricity/Water Coonection" && (
+        {headOfAccount === "Eletricity/Water Connection" && (
         <>
         <label htmlFor="subHeadOfConnection">Select Coonection: </label>
         <select name="subHeadOfConnection" id="subHeadOfConnection" onChange={handleSubHeadOfAccountChange}>
@@ -834,7 +976,7 @@ function SiteExpenseComponent() {
 
 
 
-        <button type="submit" className="blue-button" onSubmit={createNewsiteExpense}>
+        <button type="submit" className="blue-button" onSubmit={createNewSiteExpense}>
           Save
         </button>
       </form>

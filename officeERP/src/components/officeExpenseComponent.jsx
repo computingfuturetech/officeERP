@@ -20,7 +20,6 @@ function OfficeExpenseComponent() {
   const [date,setDate]=useState("")
   const [headOfAccount,setHeadOfAccount]=useState("")
   const [SubHeadOfAccount,setSubHeadOfAccount]=useState("")
-  const Expenses = ['Utility', 'Rent', 'Advertisement', 'Legal/Professional', 'Audit'];
   const SubHeads = ['Lesco', 'Telephone', 'Sui Gas', 'Water'];
   const MISC_OFFICE_SUBHEADS=['Misc','TA/DA']
   const LEGAL_PROFESSIONAL_SUBHEADS = [
@@ -45,6 +44,8 @@ function OfficeExpenseComponent() {
   const [description,setDescription]=useState("")
   const [bankAccount, setBankAccount] = useState('');
   const [bankName, setBankName] = useState('');
+  const [bankList,setBankList]=useState('')
+  const [selectedAccount, setSelectedAccount] = useState("");
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -56,7 +57,7 @@ function OfficeExpenseComponent() {
         };
         const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Office%20Expense', config);
         setOfficeExpensesList(response.data);
-        // console.log(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error(error);
       }
@@ -64,6 +65,26 @@ function OfficeExpenseComponent() {
     fetchBanks();
   }, []);
 
+  useEffect(() => {
+    const fetchBanks= async() =>{
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+      }
+      const response=await axios.get(
+        `http://192.168.0.189:3001/user/bankList`,
+        config
+      )
+      setBankList(response.data)
+    }
+    catch(error){
+      console.error(error);
+    }
+  }
+  fetchBanks()
+}, []);
 
   useEffect(() => {
     const fetchHeadOfAccounts = async () => {
@@ -73,7 +94,7 @@ function OfficeExpenseComponent() {
             Authorization: 'Bearer ' + localStorage.getItem('token'),
           },
         };
-        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/listOHeadOfAccount?expense_type=Office%20Expense', config);
+        const response = await axios.get(process.env.REACT_APP_API_URL + 'user/listOfHeadOfAccount?expense_type=Office%20Expense', config);
         setHeadOfAccountsOfficeList(response.data);
         // console.log(response.data);
       } catch (error) {
@@ -135,15 +156,114 @@ function OfficeExpenseComponent() {
 
   const createNewOfficeExpense = (e) => {
     e.preventDefault();
-    const data = {
-      head_of_account: headOfAccount,
-      particulor: particular,
-      amount:amount,
-      paid_date: date,
-      vendor:vendor
-    };
+    let data = {};
+    let url = '';
+
+    switch (headOfAccount) {
+      case 'Utility':
+        switch (SubHeadOfAccount) {
+          case 'Water':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Water' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+            break;
+          case 'Lesco':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Lesco', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax };
+            break;
+          case 'Telephone':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Telephone' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax};
+            break;
+          case 'Sui Gas':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Gas', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+            break;  
+          default:
+            return;
+        }
+        break;
+        case 'Bank Charges Expense':
+          url = '/user/createBankExpense';
+          data = { amount:amount, bank_account: bankAccount, bank_name: bankName,paid_date:date };
+          break;
     
-    const update = async () => {
+        case 'Legal/Professional':
+          switch (SubHeadOfAccount) {
+            case 'Legal':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Legal",legal_name: legalName };
+              break;
+            case 'Accounts Consultant':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Account and Consultant" , amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            case 'Billing Software':
+              url = '/user/createLegalProfessionalExpense';
+              data = {head_of_account:"IT Billing", amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            case 'Tax Consultant':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Tax Consultant",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            default:
+              return;
+          }
+          break;
+    
+        case 'Salary':
+          url = '/user/createSalary';
+          data = { salary_type:"Office",employee_name: employeeName, amount:amount,date:date,head_of_account:"Salaries Office Employees" };
+          break;
+    
+        case 'Printing/Stationary':
+          url = '/user/createOfficeExpense';
+          data = {head_of_account: "Printing And Stationary", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'News Paper/Periodicals':
+          url = '/user/createOfficeExpense';
+          data = { head_of_account:"Newspaper",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+          break;
+    
+        case 'Rent Rate/Taxes':
+          url = '/user/createOfficeExpense';
+          data = { head_of_account:"Rent Rate/Taxes",amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'Advertisement':
+          url = '/user/createOfficeExpense';
+          data = {head_of_account:"Advertisement", amount, particulor: particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'Repair/Maintenance':
+          url = '/user/createRepairMaintenanceExpense';
+          data = { amount:amount, particular:particular, paid_date:date, vendor:vendor};
+          break;
+    
+        case 'Audit':
+          url = '/user/createAuditExpense';
+          data = { year: auditYear.getFullYear(), amount:amount, paid_date:date,head_of_account:"Audit" };
+          break;
+
+        case 'Misc':
+          switch (SubHeadOfAccount) {
+            case 'Misc':
+              url = '/user/createMiscellaneousExpense';
+              data = {head_of_account:'Misc' ,amount:amount, paid_date:date,description:description};
+              break;
+            case 'TA/DA':
+              url = '/user/createMiscellaneousExpense';
+              data = {head_of_account:'TA/DA',amount:amount, paid_date:date,description:description};
+              break;
+              default:
+            return;
+          }
+          break;
+      default:
+        return;
+    }
+    
+    const createExpense = async () => {
       console.log(data);
       try {
         const config = {
@@ -152,17 +272,29 @@ function OfficeExpenseComponent() {
           },
         };
         const response = await axios.post(
-          process.env.REACT_APP_API_URL+`/user/createOfficeExpense`,
+          process.env.REACT_APP_API_URL+url,
           data,
           config
         );
         console.log(response.data);
         closeSection();
+        setAmount("")
+    setDate("")
+    setAdvTax("")
+    setAuditFeeChange("")
+    setAuditYear("")
+    setBankAccount("")
+    setBankName("")
+    setBillingMonth("")
+    setDescription("")
+    setEmployeeName("")
+    setParticular("")
+    setVendor("")
       } catch (error) {
         console.error(error);
       }
     };
-    update();
+    createExpense();
   };
   const formatDate = (date) => {
     const d = new Date(date);
@@ -185,6 +317,7 @@ function OfficeExpenseComponent() {
   
   };
   const handleAuditYearChange=(e)=>{
+    // const year = e.getFullYear();
     setAuditYear(e)
   }
   const handleParticularChange=(e)=>{
@@ -195,6 +328,19 @@ function OfficeExpenseComponent() {
   }
   const handleHeadOfAccountChange=(e)=>{
     setHeadOfAccount(e.target.value)
+    setAmount("")
+    setDate("")
+    setAdvTax("")
+    setAuditFeeChange("")
+    setAuditYear("")
+    setBankAccount("")
+    setBankName("")
+    setBillingMonth("")
+    setDescription("")
+    setEmployeeName("")
+    setParticular("")
+    setVendor("")
+
   }
   const handleEditSection = (member) => {
     setSelectedMember(member);
@@ -266,6 +412,12 @@ function OfficeExpenseComponent() {
     update();
   }
 
+
+  // Api Integration For Expense Creation
+
+
+
+
   return (
     <>
       <div className="member-list">
@@ -299,7 +451,8 @@ function OfficeExpenseComponent() {
           {officeExpensesList.map((member) => (
             <div className="member" key={member._id}>
               <div className="member-details">
-                <p>{member.mainHeadOfAccount.headOfAccount}</p>
+              <p>
+            {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}</p>
                 <p>{member.paidDate}</p>
                 <p>{member.amount}</p>
                 <img
@@ -341,22 +494,6 @@ function OfficeExpenseComponent() {
           ))}
         </select>
 
-        {headOfAccount === "Test Fee" && (
-          <>
-            <label htmlFor="particular">Particular: </label>
-            <select name="particular-name" id="particular-name" onChange={handleParticularChange}>
-              <option value={particular} hidden>
-                {particular}
-              </option>
-              {Expenses.map((expense, index) => (
-                <option key={index} value={expense}>
-                  {expense}
-                </option>
-              ))}
-            </select>
-          </>
-        )}
-
         {headOfAccount === "Salary" && (
           <>
             <label htmlFor="employeeName">Employee Name: </label>
@@ -367,6 +504,14 @@ function OfficeExpenseComponent() {
               value={employeeName}
               onChange={handleEmployeeNameChange}
             />
+            <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={handleAmountChange}
+                />
             <label htmlFor="date">Date: </label>
             <input
               type="date"
@@ -375,6 +520,7 @@ function OfficeExpenseComponent() {
               value={date}
               onChange={handleDateChange}
             />
+            
           </>
         )}
 
@@ -711,14 +857,14 @@ function OfficeExpenseComponent() {
               value={amount}
               onChange={handleAmountChange}
             />
-            <label htmlFor="auditFee">Audit Fee: </label>
+            {/* <label htmlFor="auditFee">Audit Fee: </label>
             <input
               type="number"
               name="auditFee"
               id="auditFee"
               value={auditFee}
               onChange={handleAuditFeeChange}
-            />
+            /> */}
             <label htmlFor="date">Paid Date: </label>
             <input
               type="date"
@@ -805,14 +951,14 @@ function OfficeExpenseComponent() {
 
       {SubHeadOfAccount === 'Accounts Consultant' && (
         <>
-          <label htmlFor="consultantName">Name: </label>
-          <input
-            type="text"
-            name="consultantName"
-            id="consultantName"
-            value={consultantName}
-            onChange={(e) => setConsultantName(e.target.value)}
-          />
+         <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
           <label htmlFor="amount">Amount: </label>
           <input
             type="number"
@@ -842,14 +988,14 @@ function OfficeExpenseComponent() {
 
       {SubHeadOfAccount === 'Billing Software' && (
         <>
-          <label htmlFor="softwareName">Name: </label>
-          <input
-            type="text"
-            name="softwareName"
-            id="softwareName"
-            value={softwareName}
-            onChange={(e) => setSoftwareName(e.target.value)}
-          />
+          <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
           <label htmlFor="amount">Amount: </label>
           <input
             type="number"
@@ -879,14 +1025,14 @@ function OfficeExpenseComponent() {
 
           {SubHeadOfAccount === 'Tax Consultant' && (
             <>
-              <label htmlFor="taxConsultantName">Name: </label>
-              <input
-                type="text"
-                name="taxConsultantName"
-                id="taxConsultantName"
-                value={taxConsultantName}
-                onChange={(e) => setTaxConsultantName(e.target.value)}
-              />
+             <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
               <label htmlFor="amount">Amount: </label>
               <input
                 type="number"
@@ -1030,22 +1176,23 @@ function OfficeExpenseComponent() {
       value={amount}
       onChange={handleAmountChange}
     />
-    <label htmlFor="bankAccount">Bank Account: </label>
-    <input
-      type="text"
-      name="bankAccount"
-      id="bankAccount"
-      value={bankAccount}
-      onChange={handleBankAccountChange}
-    />
-    <label htmlFor="bankName">Bank Name: </label>
-    <input
-      type="text"
-      name="bankName"
-      id="bankName"
-      value={bankName}
-      onChange={handleBankNameChange}
-    />
+     <label htmlFor="bank-name">Bank Name: </label>
+    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+     <option value="select" hidden>{bankName}</option>
+                {bankList.map((bank) => (
+                    <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
+                  ))}
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
+              <option value="select" hidden>Select</option>
+              {bankList
+                .filter((bank) => bank._id === bankName)
+                .map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
+                ))}
+            </select>
+    
     <label htmlFor="date">Date: </label>
     <input
       type="date"
