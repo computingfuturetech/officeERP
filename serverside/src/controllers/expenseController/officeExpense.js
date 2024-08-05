@@ -5,7 +5,7 @@ const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOf
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
 
-module.exports = {
+module.exports = { 
   createOfficeExpense: async (req, res) => {
     const { head_of_account, amount, particulor, vendor, paid_date } = req.body;
     console.log(req.body);

@@ -7,6 +7,14 @@ const salariesSchema = new Schema({
         ref: 'SalaryTypeSchema',
         required: true
     },
+    mainHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MainExpenseHeadOfAccount',
+    },
+    subHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SubExpenseHeadOfAccount',
+    },
     employeeName:{
         type:String,
     },
