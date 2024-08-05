@@ -39,6 +39,7 @@ const auditFee = require('../../controllers/expenseController/auditExpense')
 const bankExpense = require('../../controllers/expenseController/bankChargesExpense')
 const miscellaneousExpense = require('../../controllers/expenseController/miscellaneousExpense')
 const electricityWaterExpense = require('../../controllers/expenseController/electricityAndWaterConnectionExpense')
+const getAllExpense = require('../../controllers/expenseController/getAllExpense')
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -62,7 +63,7 @@ router.post('/createMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin
 router.post('/updateMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createHeadOfAccount.updateHeadOfAccount);
 router.post('/createSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.createHeadOfAccount);
 router.post('/updateSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.updateHeadOfAccount);
-router.get('/listOHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), listofHeadOfAccount.listOfHeadOfAccount);
+router.get('/listOfHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), listofHeadOfAccount.listOfHeadOfAccount);
 
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);
 router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
@@ -125,5 +126,7 @@ router.get("/getSalary",authenticateJWT,checkRole(['admin','employee']),salaries
 router.post("/updateSalary",authenticateJWT,checkRole(['admin','employee']),salaries.updateSalaries);
 
 router.post("/createSalaryType",authenticateJWT,checkRole(['admin','employee']),salaryType.createSalaryType);
+
+router.get("/getAllExpense",authenticateJWT,checkRole(['admin','employee']),getAllExpense.getAllExpense);
 
 module.exports = router

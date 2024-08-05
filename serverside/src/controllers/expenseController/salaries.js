@@ -1,5 +1,6 @@
 const Salaries = require("../../models/expenseModel/salaries/salaries");
 const SalaryType = require("../../models/expenseModel/salaries/salaryType");
+const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
 
 module.exports = {
     createSalaries: async (req, res) => {
@@ -8,12 +9,14 @@ module.exports = {
             employee_name,
             amount,
             date,
+            head_of_account,
         } = req.body;
         console.log(req.body);
         try {
             if (!date || !employee_name || !salary_type || !amount) {
                 return res.status(400).json({ message: "All fields are required" });
             }
+            
 
             const foundSalaryType = await SalaryType.findOne({
                 salaryType: salary_type,
@@ -23,9 +26,17 @@ module.exports = {
                 return res.status(404).json({ message: "Salary type not found" });
             }
 
+            let main_head_id;
+            let sub_head_id;
+            if (req.body.head_of_account) {
+                ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+            }
+
             const newSalary = new Salaries({
                 date: date,
                 salaryType: foundSalaryType._id,
+                mainHeadOfAccount: main_head_id,
+                subHeadOfAccount: sub_head_id,
                 employeeName: employee_name,
                 amount: amount,
             });
