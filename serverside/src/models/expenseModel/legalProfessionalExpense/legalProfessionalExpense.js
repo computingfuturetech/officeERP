@@ -19,7 +19,7 @@ const legalProfessionalExpenseSchema = new Schema({
     particulor:{
         type: String,
     },
-    billingMonth:{
+    vendor:{
         type: String,
     },
 }

@@ -24,7 +24,7 @@ module.exports={
           }
     },
     updateHeadOfAccount: async (req, res) => {
-      const { head_of_account,expense_type } = req.body;
+      const { head_of_account } = req.body;
       const id = req.query.id;
       try {
         if (!id) {
@@ -38,10 +38,7 @@ module.exports={
         if (head_of_account) {
           updateData.headOfAccount = head_of_account;
         }
-        if (expense_type) {
-          updateData.expenseType = expense_type;
-        }
-        const updatedMainHeadOfAccount = await MainHeadOfAccount.findByIdAndUpdate(
+        const updatedMainExpenseHeadOfAccount = await MainHeadOfAccount.findByIdAndUpdate(
           id,
           { $set: updateData },
           { new: true }
@@ -49,7 +46,7 @@ module.exports={
     
         res.status(200).json({
           message: "Main Head Of Account updated successfully",
-          data: updatedMainHeadOfAccount,
+          data: updatedMainExpenseHeadOfAccount,
         });
       } catch (err) {
         res.status(500).json({ message: err });

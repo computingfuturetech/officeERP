@@ -1,57 +1,74 @@
 const Salaries = require("../../models/expenseModel/salaries/salaries");
 const SalaryType = require("../../models/expenseModel/salaries/salaryType");
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
     createSalaries: async (req, res) => {
         const {
-            salary_type,
-            employee_name,
-            amount,
-            date,
-            head_of_account,
+          salary_type,
+          employee_name,
+          amount,
+          paid_date,
+          head_of_account,
+          bank_account,
+          cheque_no,
         } = req.body;
-        console.log(req.body);
+      
         try {
-            if (!date || !employee_name || !salary_type || !amount) {
-                return res.status(400).json({ message: "All fields are required" });
-            }
-            
+          if (!head_of_account || !salary_type || !amount) {
+            return res.status(400).json({ message: "Head of Account and Salary Type are required" });
+          }
+      
+          const salaryType = await SalaryType.findOne({ salaryType: salary_type }).exec();
+          if (!salaryType) {
+            return res.status(404).json({ message: "Salary type not found" });
+          }
 
-            const foundSalaryType = await SalaryType.findOne({
-                salaryType: salary_type,
+          if(req.body.bank){
+            const bank = await BankList.findOne({
+              accountNo: bank_account
             });
-
-            if (!foundSalaryType) {
-                return res.status(404).json({ message: "Salary type not found" });
+            if (!bank) {
+              return res
+                .status(400)
+                .json({ message: "Invalid Bank Account Number" });
             }
+          }
 
-            let main_head_id;
-            let sub_head_id;
-            if (req.body.head_of_account) {
-                ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
-            }
-
-            const newSalary = new Salaries({
-                date: date,
-                salaryType: foundSalaryType._id,
-                mainHeadOfAccount: main_head_id,
-                subHeadOfAccount: sub_head_id,
-                employeeName: employee_name,
-                amount: amount,
-            });
-
-            await newSalary.save();
-
-            res.status(201).json({
-                message: "Salaries created successfully",
-                data: newSalary,
-            });
+          const bank = await BankList.findOne({
+            accountNo: bank_account
+          });
+          if (!bank) {
+            return res
+              .status(400)
+              .json({ message: "Invalid Bank Account Number" });
+          }
+      
+          const { main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res);
+      
+          const salaries = new Salaries({
+            mainHeadOfAccount: main_head_id,
+            subHeadOfAccount: sub_head_id,
+            employeeName: employee_name,
+            amount: amount,
+            paidDate: paid_date,
+            salaryType: salaryType._id,
+            bank: bank._id,
+            chequeNumber: cheque_no,
+          });
+      
+          await salaries.save();
+      
+          res.status(201).json({
+            message: "Salary created successfully",
+            data: salaries,
+          });
         } catch (err) {
-            console.error(err);
-            res.status(500).json({ message: "Internal server error" });
+          console.error(err);
+          res.status(500).json({ message: err.message });
         }
-    },
+      },
     updateSalaries: async (req, res) => {
         const id = req.query.id;
         try {
@@ -109,11 +126,11 @@ module.exports = {
                 salaries = await Salaries.find({
                     employeeName: employee_name,
                 })
-                    .populate("salaryType", "salaryType") // Correct field name
+                    .populate("salaryType", "salaryType")
                     .exec();
             } else {
                 salaries = await Salaries.find()
-                    .populate("salaryType", "salaryType") // Correct field name
+                    .populate("salaryType", "salaryType")
                     .exec();
             }
 

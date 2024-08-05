@@ -18,9 +18,7 @@ module.exports = {
       if (
         !paid_date ||
         !billing_month ||
-        !bill_reference ||
         !head_of_account ||
-        !adv_tax ||
         !amount
       ) {
         return res.status(400).json({ message: "All fields are required" });
@@ -101,11 +99,11 @@ module.exports = {
         officeUtilExpense = await OfficeUtilExpense.find({
           billingMonth: billing_month,
         })
-          .populate("headOfAccount", "headOfAccount")
+          .populate("mainHeadOfAccount", "headOfAccount")
           .exec();
       } else {
         officeUtilExpense = await OfficeUtilExpense.find()
-          .populate("headOfAccount", "headOfAccount")
+          .populate("subHeadOfAccount", "headOfAccount")
           .exec();
       }
 

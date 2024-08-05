@@ -7,6 +7,7 @@ const LegalProfessionalExpense = require("../../models/expenseModel/legalProfess
 const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExpense/miscellaneousExpense")
 const OfficeExpense = require("../../models/expenseModel/officeExpense/officeExpense");
 const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/officeutilExpense");
+const Salaries = require("../../models/expenseModel/salaries/salaries");
 
 module.exports = {
     getAllExpense: async (req, res) => {
@@ -43,7 +44,8 @@ module.exports = {
                 LegalProfessionalExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
                 MiscellaneousExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
                 OfficeExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
-                OfficeUtilExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec()
+                OfficeUtilExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+                Salaries.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec()
             ]);
     
             const allExpenses = expenses.flat();

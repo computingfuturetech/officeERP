@@ -1,8 +1,8 @@
 const mongoose = require('mongoose')
-const Schema=mongoose.Schema
+const Schema = mongoose.Schema
 
 const salariesSchema = new Schema({
-    salaryType:{
+    salaryType: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SalaryTypeSchema',
         required: true
@@ -15,17 +15,19 @@ const salariesSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'SubExpenseHeadOfAccount',
     },
-    employeeName:{
-        type:String,
+    employeeName: {
+        type: String,
     },
-    amount:{
-        type:Number,
+    amount: {
+        type: Number,
     },
-    date:{
-        type:Date,
+    paidDate: {
+        type: Date,
     },
-}
-)
+    checkNumber:{
+        type: Number,
+    }
+});
 
-const SalariesSchema = mongoose.model('SalariesSchema',salariesSchema)
-module.exports=SalariesSchema;
+const SalariesSchema = mongoose.model('SalariesSchema', salariesSchema)
+module.exports = SalariesSchema;
