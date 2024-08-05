@@ -1,18 +1,20 @@
 const mongoose = require('mongoose')
 const Schema=mongoose.Schema
 
-const bankPofitSchema = new Schema({
+const bankProfitSchema = new Schema({
     date:{
         type: Date,
+    },
+    headOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
     },
     amount:{
         type: Number,
     },
-    bankName:{
-        type: String,
-    },
-    bankAccount:{
-        type: String,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
     },
     profitMonth:{
         type: String,
@@ -21,5 +23,5 @@ const bankPofitSchema = new Schema({
 }
 )
 
-const BankProfitSchema = mongoose.model('BankProfitSchema',bankPofitSchema)
+const BankProfitSchema = mongoose.model('BankProfitSchema',bankProfitSchema)
 module.exports=BankProfitSchema;

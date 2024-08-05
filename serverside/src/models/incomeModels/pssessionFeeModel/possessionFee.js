@@ -17,24 +17,10 @@ const possessionFeeSchema = new Schema({
     challanNo:{
         type: Number,
     },
-    electricityConnectionCharges:{
-        type: Number,
+    headOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
     },
-    waterConnectionCharges:{
-        type: Number,
-    },
-    masjidFund:{
-        type:Number,
-    },
-    constructionWater:{
-        type: Number,
-    },
-    buildingBylawsCharges:{
-        type: Number,
-    },
-    masjidFund:{
-        type: Number,
-    }
 }
 )
 
