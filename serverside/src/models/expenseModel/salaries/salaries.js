@@ -1,3 +1,4 @@
+const { access } = require('fs');
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
@@ -31,6 +32,7 @@ const salariesSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'BankListSchema',
     }
+    
 });
 
 const SalariesSchema = mongoose.model('SalariesSchema', salariesSchema)

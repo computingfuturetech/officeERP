@@ -11,6 +11,9 @@ const incomeHeadOfAccountSchema= new Schema({
         unique: true,
         required: true
     },
+    incomeType:{
+        type:String,
+    }
 }
 )
 
