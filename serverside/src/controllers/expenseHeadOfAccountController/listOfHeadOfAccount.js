@@ -3,11 +3,11 @@ const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccoun
 module.exports = {
   listOfHeadOfAccount: async (req, res) => {
     try {
-      const expenseType = req.query.expense_type; // Get the expenseType from the query parameter
+      const expenseType = req.query.expense_type;
       let filter = {};
 
       if (expenseType) {
-        filter = { expenseType: expenseType }; // Create a filter object with the expenseType
+        filter = { expenseType: expenseType };
       }
       const headOfAccount = await MainHeadOfAccount.find(filter).populate('subExpenseHeads');
       if (headOfAccount.length === 0) {

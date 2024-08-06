@@ -6,10 +6,10 @@ const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHe
 
 module.exports = {
   createLegalProfessionalExpense: async (req, res) => {
-    const { head_of_account, amount, particulor, billing_month, paid_date } = req.body;
+    const { head_of_account, amount, particulor, vendor, paid_date } = req.body;
     console.log(req.body);
     try {
-      if (!paid_date || !particulor || !billing_month || !head_of_account || !amount) {
+      if (!paid_date || !particulor || !vendor || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
       let main_head_id;
@@ -23,7 +23,7 @@ module.exports = {
         subHeadOfAccount: sub_head_id,
         amount: amount,
         particulor: particulor,
-        billingMonth: billing_month,
+        vendor: vendor,
       });
       await legalProfessionalExpense.save();
       res.status(201).json({
@@ -90,8 +90,8 @@ module.exports = {
       if (req.body.particulor) {
         updateData.particulor = req.body.particulor;
       }
-      if (req.body.billing_month) {
-        updateData.billingMonth = req.body.billing_month;
+      if (req.body.vendor) {
+        updateData.vendor = req.body.vendor;
       }
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,legalProfessionalExpense);
