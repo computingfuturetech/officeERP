@@ -40,6 +40,7 @@ const bankExpense = require('../../controllers/expenseController/bankChargesExpe
 const miscellaneousExpense = require('../../controllers/expenseController/miscellaneousExpense')
 const electricityWaterExpense = require('../../controllers/expenseController/electricityAndWaterConnectionExpense')
 const getAllExpense = require('../../controllers/expenseController/getAllExpense')
+const vehicleDisposal = require('../../controllers/expenseController/vehicleDisposalExpense')
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -124,6 +125,10 @@ router.post("/updateLegalProfessionalExpense",authenticateJWT,checkRole(['admin'
 router.post("/createSalary",authenticateJWT,checkRole(['admin','employee']),salaries.createSalaries);
 router.get("/getSalary",authenticateJWT,checkRole(['admin','employee']),salaries.getSalaries);
 router.post("/updateSalary",authenticateJWT,checkRole(['admin','employee']),salaries.updateSalaries);
+
+router.post("/createVehicleDisposal",authenticateJWT,checkRole(['admin','employee']),vehicleDisposal.createVehicleDisposalExpense);
+router.get("/getVehicleDisposal",authenticateJWT,checkRole(['admin','employee']),vehicleDisposal.getVehicleDisposalExpense);
+router.post("/updateVehicleDisposal",authenticateJWT,checkRole(['admin','employee']),vehicleDisposal.updateVehicleDisposalExpense);
 
 router.post("/createSalaryType",authenticateJWT,checkRole(['admin','employee']),salaryType.createSalaryType);
 
