@@ -4,6 +4,9 @@ import './style/memberListStyle.css';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { showErrorToastMessage, showSuccessToastMessage } from './toastUtils';
+import { ToastContainer } from 'react-toastify';
+
 
 function SiteExpenseComponent() {
   const [selectedMember, setSelectedMember] = useState(null);
@@ -74,9 +77,9 @@ function SiteExpenseComponent() {
             Authorization: 'Bearer ' + localStorage.getItem('token'),
           },
         };
-        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/listOHeadOfAccount?expense_type=Site%20Expense', config);
+        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/listOfHeadOfAccount?expense_type=Site%20Expense', config);
         setHeadOfAccountssiteList(response.data);
-        // console.log(response.data);
+        console.log(response.data);
       } catch (error) {
         console.error(error);
       }
@@ -188,11 +191,12 @@ function SiteExpenseComponent() {
         case 'Vehicle/Disposal':
             switch (SubHeadOfAccount) {
                 case 'Disposal':
-                  url = '/user/createVehicleDisposalExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                  url = '/user/createVehicleDisposal';
+                    data = { head_of_account: "Disposal", amount: amount,  paid_date: date, fuel_litre:fuelLitre };
+                    break;
                 case 'Vehicle':
-                    url = '/user/createVehicleDisposalExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    url = '/user/createVehicleDisposal';
+                    data = { head_of_account: "Vehicle", amount: amount, vehicle_number:vehichleNumber, vehicle_type:vehicleType,paid_date: date,fuel_litre:fuelLitre  };
                     break;
                 default:
                     return;
@@ -268,9 +272,26 @@ function SiteExpenseComponent() {
                 config
             );
             console.log(response.data);
+            showSuccessToastMessage("Expense Is Added Successfully")
+            setAmount("")
+            setDate("")
+            setAdvTax("")
+            setAuditFeeChange("")
+            setAuditYear("")
+            setBankAccount("")
+            setBankName("")
+            setBillingMonth("")
+            setDescription("")
+            setEmployeeName("")
+            setParticular("")
+            setVendor("")
+            setFuelLitre("")
+            setVehicleNumber("")
+            setVehicleType("")
             closeSection();
         } catch (error) {
             console.error(error);
+            showErrorToastMessage("Error Please Try Again!")
         }
     };
     createExpense();
@@ -321,6 +342,9 @@ function SiteExpenseComponent() {
     setEmployeeName("")
     setParticular("")
     setVendor("")
+    setFuelLitre("")
+    setVehicleNumber("")
+    setVehicleType("")
 
   }
   const handleEditSection = (member) => {
@@ -431,7 +455,8 @@ function SiteExpenseComponent() {
           {siteExpensesList.map((member) => (
             <div className="member" key={member._id}>
               <div className="member-details">
-              {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}
+              <p>
+            {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}</p>
                 <p>{member.paidDate}</p>
                 <p>{member.amount}</p>
                 <img
@@ -450,7 +475,6 @@ function SiteExpenseComponent() {
             </div>
           ))}
         </div>
-
         
 {/* ADD NEW SEcTION */}
 
@@ -807,14 +831,6 @@ function SiteExpenseComponent() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
-                  <label htmlFor="plotNumber">Plot Number: </label>
-                  <input
-                    type="number"
-                    name="plotNumber"
-                    id="plotNumber"
-                    value={plotNumber}
-                    onChange={(e) => setPlotNumber(e.target.value)}
-                  />
                   <label htmlFor="vendor">Vendor</label>
                   <input
                     type="text"
@@ -1047,6 +1063,7 @@ function SiteExpenseComponent() {
       </div>
       )}
       </div>
+      <ToastContainer/>
     </>
   );
 }
