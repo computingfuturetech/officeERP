@@ -8,6 +8,8 @@ const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExp
 const OfficeExpense = require("../../models/expenseModel/officeExpense/officeExpense");
 const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/officeutilExpense");
 const Salaries = require("../../models/expenseModel/salaries/salaries");
+const VechicleDisposal = require("../../models/expenseModel/vehicleDisposalExpense/vehicleDisposalExpense");
+
 
 module.exports = {
     getAllExpense: async (req, res) => {
@@ -45,7 +47,8 @@ module.exports = {
                 MiscellaneousExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
                 OfficeExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
                 OfficeUtilExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
-                Salaries.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec()
+                Salaries.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+                VechicleDisposal.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
             ]);
     
             const allExpenses = expenses.flat();
@@ -59,4 +62,42 @@ module.exports = {
             res.status(500).json({ message: err.message });
         }
     },
+    getExpenseByHeadOfAccount: async (req, res) => {
+        const { headOfAccountId, mainId } = req.query;
+      
+        if (!headOfAccountId || !mainId) {
+          return res.status(400).json({ message: "Head of Account ID and Main ID are required" });
+        }
+      
+        try {
+          const query = {
+            $or: [
+              { mainHeadOfAccount: headOfAccountId, _id: mainId },
+              { subHeadOfAccount: headOfAccountId, _id: mainId }
+            ]
+          };
+      
+          const expenses = await Promise.all([
+            AuditFeeExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            BankChargesExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            ElectricityAndWaterConnectionExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            LegalProfessionalExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            MiscellaneousExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            OfficeExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            OfficeUtilExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            Salaries.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            VechicleDisposal.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+          ]);
+      
+          const expense = expenses.find(expense => expense !== null);
+      
+          if (!expense) {
+            return res.status(404).json({ message: "No expense found for the given head of account ID and main ID" });
+          }
+      
+          res.status(200).json(expense);
+        } catch (err) {
+          res.status(500).json({ message: err.message });
+        }
+      },
 };

@@ -133,5 +133,6 @@ router.post("/updateVehicleDisposal",authenticateJWT,checkRole(['admin','employe
 router.post("/createSalaryType",authenticateJWT,checkRole(['admin','employee']),salaryType.createSalaryType);
 
 router.get("/getAllExpense",authenticateJWT,checkRole(['admin','employee']),getAllExpense.getAllExpense);
+router.get("/getSingleExpense",authenticateJWT,checkRole(['admin','employee']),getAllExpense.getExpenseByHeadOfAccount);
 
 module.exports = router
