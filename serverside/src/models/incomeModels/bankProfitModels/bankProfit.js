@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const Schema=mongoose.Schema
 
 const bankProfitSchema = new Schema({
-    date:{
+    paidDate:{
         type: Date,
     },
     headOfAccount:{

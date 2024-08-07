@@ -3,7 +3,7 @@ const Schema=mongoose.Schema
 const Member=require('../../memberModels/memberList')
 
 const possessionFeeSchema = new Schema({
-    date:{
+    paidDate:{
         type: Date,
     },
     memberNo:{
@@ -11,16 +11,16 @@ const possessionFeeSchema = new Schema({
         ref: 'MemberList',
         required: true
     },
-    posessionFee:{
+    amount:{
         type: Number,
     },
     challanNo:{
         type: Number,
     },
-    headOfAccount:{
+    headOfAccount: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'IncomeHeadOfAccount',
-    },
+    }],
 }
 )
 
