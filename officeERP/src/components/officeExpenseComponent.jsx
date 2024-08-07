@@ -6,6 +6,7 @@ import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { showErrorToastMessage, showSuccessToastMessage } from './toastUtils';
 import { ToastContainer } from "react-toastify";
+import Loading from './loading';
 
 
 function OfficeExpenseComponent() {
@@ -50,6 +51,7 @@ function OfficeExpenseComponent() {
   const [bankList,setBankList]=useState('')
   const [selectedAccount, setSelectedAccount] = useState("");
   const [expenseId,setExpenseId]=useState("")
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -132,7 +134,10 @@ function OfficeExpenseComponent() {
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
   };
-  
+  const convertDate=(e)=>{
+    const dateValue = new Date(e).toISOString().split('T')[0];
+    return dateValue;
+  }
   const handleDateChange = (e) => {
     setDate(e.target.value);
   };
@@ -203,25 +208,90 @@ function OfficeExpenseComponent() {
     setVendor("")
 
   }
-  const handleEditSection = (member) => {
+
+
+
+  const handleEditSection = async (member) => {
+    setIsLoading(true)
     setSelectedMember(member);
-    setHeadOfAccount(member.mainHeadOfAccount.headOfAccount);
-    setExpenseId(member.mainHeadOfAccount._id)
-    setSubHeadOfAccount(member.subHeadOfAccount);
-    setAmount(member.amount);
-    setParticular(member.particular);
-    setDate(member.date);
-    setVendor(member.vendor);
-    setEmployeeName(member.employeeName);
-    setBillingMonth(member.billingMonth);
-    setAdvTax(member.advTax);
-    setBillReference(member.billReference);
-    setAuditYear(member.auditYear);
-    setLegalName(member.legalName);
-    setDescription(member.description);
-    setBankName(member.bankName);
-    setShowOptions(false);
-    setEditSection(true)
+
+    const mainId=member._id;
+    setExpenseId(mainId);
+    const headOfAccountId = member.mainHeadOfAccount?._id || member.subHeadOfAccount?._id;
+    console.log(headOfAccountId)
+
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + `/user/getSingleExpense?headOfAccountId=${headOfAccountId}&mainId=${mainId}`, config);
+      console.log(response)
+      const expenseData = response.data;
+      let headOfAccountValue=expenseData.mainHeadOfAccount.headOfAccount
+      if(expenseData.subHeadOfAccount)
+        headOfAccountValue=expenseData.subHeadOfAccount.headOfAccount
+      if (expenseData.mainHeadOfAccount.headOfAccount === 'TA/DA' || expenseData.mainHeadOfAccount.headOfAccount === 'Misc') {
+        headOfAccountValue = 'Misc';
+        if(expenseData.mainHeadOfAccount.headOfAccount === 'TA/DA')
+        setSubHeadOfAccount("TA/DA")
+        if(expenseData.mainHeadOfAccount.headOfAccount === 'Misc')
+          setSubHeadOfAccount("Misc")
+        
+      }
+    //   if(expenseData.subHeadOfAccount){
+    //     console.log("subhead")
+    //   if (expenseData.subHeadOfAccount.headOfAccount === "Water" || expenseData.subHeadOfAccount.headOfAccount === 'Gas') {
+    //     headOfAccountValue = 'Utility';
+    //     console.log("here")
+    //     if(expenseData.subHeadOfAccount.headOfAccount === 'Gas')
+    //     setSubHeadOfAccount("Gas")
+    //     if(expenseData.subHeadOfAccount.headOfAccount === 'Water')
+    //       setSubHeadOfAccount("Water")
+    //   }
+    // }
+      // else if(expenseData.mainHeadOfAccount.headOfAccount === 'Tax Consultant' || expenseData.mainHeadOfAccount.headOfAccount === 'Account and Consultant'){
+      //   headOfAccountValue = 'Legal/Professional';
+      //   if(expenseData.mainHeadOfAccount.headOfAccount === 'Tax Consultant')
+      //     setSubHeadOfAccount("Tax Consultant")
+      //   if(expenseData.mainHeadOfAccount.headOfAccount === 'Account and Consultant')
+      //     setSubHeadOfAccount("Accounts Consultant")
+      // }
+
+      setHeadOfAccount(headOfAccountValue);
+      if(headOfAccountValue==="Bank Charges")
+        setHeadOfAccount("Bank Charges Expense")
+      if(headOfAccountValue==="Printing And Stationary")
+        setHeadOfAccount("Printing/Stationary")
+      if(headOfAccountValue==="Salaries Office Employees")
+        setHeadOfAccount("Salary")
+      setSubHeadOfAccount(expenseData.mainHeadOfAccount.headOfAccount);
+      console.log(headOfAccountValue)
+      setAmount(expenseData.amount);
+      setParticular(expenseData.particulor );
+      setDate(convertDate(expenseData.paidDate));
+      setVendor(expenseData.vendor);
+      setEmployeeName(expenseData.employeeName );
+      setBillingMonth(expenseData.billingMonth );
+      setAdvTax(expenseData.advTax);
+      setBillReference(expenseData.billReference );
+      setAuditYear(expenseData.year);
+      setLegalName(expenseData.legalName );
+      setDescription(expenseData.description );
+      setBankAccount(expenseData.bank)
+      setBankName(expenseData.bankName );
+      
+    } catch (error) {
+      console.error("Error fetching expense data:", error);
+      closeSection()
+      showErrorToastMessage("Error Occured Try Again!")
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
+      setShowOptions(false);
+      setEditSection(true);
+    }
   };
   
   const handleShowOptions = (member) => {
@@ -429,7 +499,7 @@ const EditOfficeExpense = (e) => {
       }
       break;
 
-    case 'Bank Charges':
+    case 'Bank Charges Expense':
       url = '/user/updateBankExpense?id=' + expenseId;
       data = { amount:amount, bank_account: bankAccount, head_of_account:"Bank Charges", paid_date:date };
       break;
@@ -489,7 +559,7 @@ const EditOfficeExpense = (e) => {
 
     case 'Audit':
       url = '/user/updateAuditExpense?id=' + expenseId;
-      data = { year: auditYear.getFullYear(), amount:amount, paid_date:date, head_of_account:"Audit" };
+      data = { year: auditYear, amount:amount, paid_date:date, head_of_account:"Audit" };
       break;
 
     case 'Misc':
@@ -584,7 +654,7 @@ const EditOfficeExpense = (e) => {
               <div className="member-details">
               <p>
             {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}</p>
-                <p>{member.paidDate}</p>
+                <p>{convertDate(member.paidDate)}</p>
                 <p>{member.amount}</p>
                 <img
                   onClick={() => handleShowOptions(member)}
@@ -1272,7 +1342,7 @@ const EditOfficeExpense = (e) => {
               <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
               <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
                 <option value="select" hidden>
-                  Select
+                  {SubHeadOfAccount}
                 </option>
                 {MISC_OFFICE_SUBHEADS.map((subHead, index) => (
                   <option key={index} value={subHead}>
@@ -1413,7 +1483,6 @@ const EditOfficeExpense = (e) => {
               id="employeeName"
               value={employeeName}
               onChange={(e) => setEmployeeName(e.target.value)}
-              required
             />
             <label htmlFor="amount">Amount: </label>
             <input
@@ -1498,7 +1567,7 @@ const EditOfficeExpense = (e) => {
                 />
               </>
             )}
-            {subHeadOfAccount === "Telephone" && (
+            {SubHeadOfAccount === "Telephone" && (
               <>
                 <label htmlFor="billingMonth">Billing Month: </label>
                 <input
@@ -1547,7 +1616,7 @@ const EditOfficeExpense = (e) => {
                 />
               </>
             )}
-            {subHeadOfAccount === "Sui Gas" && (
+            {SubHeadOfAccount === "Sui Gas" && (
               <>
                 <label htmlFor="billingMonth">Billing Month: </label>
                 <input
@@ -1587,7 +1656,7 @@ const EditOfficeExpense = (e) => {
                 />
               </>
             )}
-            {subHeadOfAccount === "Water" && (
+            {SubHeadOfAccount === "Water" && (
               <>
                 <label htmlFor="billingMonth">Billing Month: </label>
                 <input
@@ -1633,55 +1702,148 @@ const EditOfficeExpense = (e) => {
         {headOfAccount === "Legal/Professional" && (
           <>
             <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
-            <select name="subHeadOfAccount" id="subHeadOfAccount" value={SubHeadOfAccount} onChange={(e) => setSubHeadOfAccount(e.target.value)}>
+            <select
+              name="subHeadOfAccount"
+              id="subHeadOfAccount"
+              onChange={handleSubHeadOfAccountChange}
+            >
               <option value="select" hidden>
-                {SubHeadOfAccount}
+                Select
               </option>
-              {LEGAL_PROFESSIONAL_SUBHEADS.map((expense, index) => (
-                <option key={index} value={expense}>
-                  {expense}
+              {LEGAL_PROFESSIONAL_SUBHEADS.map((subHead, index) => (
+                <option key={index} value={subHead}>
+                  {subHead}
                 </option>
               ))}
             </select>
-            <label htmlFor="description">Description: </label>
-            <textarea
-              name="description"
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            ></textarea>
-            <label htmlFor="legalName">Name: </label>
-            <input
-              type="text"
-              name="legalName"
-              id="legalName"
-              value={legalName}
-              onChange={(e) => setLegalName(e.target.value)}
-              required
-            />
-            <label htmlFor="amount">Amount: </label>
-            <input
-              type="number"
-              name="amount"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-            <label htmlFor="date">Date: </label>
-            <input
-              type="date"
-              name="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
+
+            {SubHeadOfAccount === 'Legal' && (
+              <>
+                <label htmlFor="legalName">Legal Name: </label>
+                <input
+                  type="text"
+                  name="legalName"
+                  id="legalName"
+                  value={legalName}
+                  onChange={(e) => setLegalName(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Accounts Consultant' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Billing Software' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Tax Consultant' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
           </>
         )}
 
-        {headOfAccount === "Bank Charges" && (
+        {headOfAccount === "Bank Charges" || headOfAccount === "Bank Charges Expense" && (
           <>
             <label htmlFor="amount">Amount: </label>
     <input
@@ -1718,7 +1880,7 @@ const EditOfficeExpense = (e) => {
     />
   </>
         )}
-        {headOfAccount === "Printing And Stationary" && (
+        {headOfAccount === "Printing And Stationary" || headOfAccount==="Printing/Stationary" && (
           <>
             <label htmlFor="amount">Amount: </label>
             <input
@@ -1760,15 +1922,15 @@ const EditOfficeExpense = (e) => {
         )}
         {headOfAccount === "Audit" && (
         <>
-          <label htmlFor="auditYear">Audit Year: </label>
-          <input
-            type="text"
-            name="auditYear"
-            id="auditYear"
-            value={auditYear}
-            onChange={(e) => setAuditYear(e.target.value)}
-            required
-          />
+          <label htmlFor="auditYear">Audit Year</label>
+            <DatePicker
+              selected={auditYear}
+              onChange={handleAuditYearChange}
+              showYearPicker
+              dateFormat="yyyy"
+              placeholderText="Select Year"
+              value={auditYear}
+            />
           <label htmlFor="amount">Amount: </label>
           <input
             type="number"
@@ -1789,7 +1951,6 @@ const EditOfficeExpense = (e) => {
           />
         </>
       )}
-
         {headOfAccount === "Repair/Maintenance" && (
           <>
             <label htmlFor="particular">Particular: </label>
@@ -1821,17 +1982,10 @@ const EditOfficeExpense = (e) => {
             />
           </>
         )}
-
+      
         {headOfAccount === "Advertisement" && (
           <>
-            <label htmlFor="description">Description: </label>
-            <textarea
-              name="description"
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            ></textarea>
+            
             <label htmlFor="amount">Amount: </label>
             <input
               type="number"
@@ -1841,6 +1995,24 @@ const EditOfficeExpense = (e) => {
               onChange={(e) => setAmount(e.target.value)}
               required
             />
+             <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={(e) => setParticular(e.target.value)}
+              required
+            />
+            <label htmlFor="vendor">Vendor: </label>
+    <input
+      type="text"
+      name="vendor"
+      id="vendor"
+      value={vendor}
+      onChange={(e) => setVendor(e.target.value)}
+      required
+    />
             <label htmlFor="date">Date: </label>
             <input
               type="date"
@@ -1884,44 +2056,131 @@ const EditOfficeExpense = (e) => {
             />
           </>
         )}
+        {headOfAccount === "News Paper/Periodicals" && (
+  <>
+    <label htmlFor="amount">Amount: </label>
+    <input
+      type="number"
+      name="amount"
+      id="amount"
+      value={amount}
+      onChange={(e) => setAmount(e.target.value)}
+      required
+    />
+    <label htmlFor="particular">Particular: </label>
+    <input
+      type="text"
+      name="particular"
+      id="particular"
+      value={particular}
+      onChange={(e) => setParticular(e.target.value)}
+      required
+    />
+    <label htmlFor="date">Date: </label>
+    <input
+      type="date"
+      name="date"
+      id="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      required
+    />
+    <label htmlFor="vendor">Vendor: </label>
+    <input
+      type="text"
+      name="vendor"
+      id="vendor"
+      value={vendor}
+      onChange={(e) => setVendor(e.target.value)}
+      required
+    />
+  </>
+        )}
+
 
         {headOfAccount === "Misc" && (
-          <>
-            <label htmlFor="description">Description: </label>
-            <textarea
-              name="description"
-              id="description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              required
-            ></textarea>
-            <label htmlFor="amount">Amount: </label>
-            <input
-              type="number"
-              name="amount"
-              id="amount"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-            />
-            <label htmlFor="date">Date: </label>
-            <input
-              type="date"
-              name="date"
-              id="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-              required
-            />
-          </>
-        )}
+                  <>
+                      <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+                      <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
+                        <option value="select" hidden>
+                          Select
+                        </option>
+                        {MISC_OFFICE_SUBHEADS.map((subHead, index) => (
+                          <option key={index} value={subHead}>
+                            {subHead}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {SubHeadOfAccount === 'Misc' && (
+                        <>
+                        <label htmlFor="amount">Amount: </label>
+                          <input
+                            type="number"
+                            name="amount"
+                            id="amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                          /><label htmlFor="amount">Date: </label>
+                          <input
+                            type="date"
+                            name="date"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                          />
+                          <label htmlFor="amount">Discription: </label>
+                          <input
+                            type="text"
+                            name="description"
+                            id="discription"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                          /></>
+                        )}
+                        {SubHeadOfAccount === 'TA/DA' && (
+                        <>
+                          <label htmlFor="amount">Amount: </label>
+                          <input
+                            type="number"
+                            name="amount"
+                            id="amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                          /><label htmlFor="amount">Date: </label>
+                          <input
+                            type="date"
+                            name="date"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                          />
+                          <label htmlFor="amount">Discription: </label>
+                          <input
+                            type="text"
+                            name="description"
+                            id="discription"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                          /></>
+                        )}
+                    
+                  </>
+                )}
 
         <br></br>
         <button type="submit" className="submit-button">
           Update
         </button>
+        {isLoading && (
+          <div className="loading-indicator">
+            <div className="spinner"></div>
+          </div>
+        )}
       </form>
+      
     </div>
+    
   </div>
 )}
 

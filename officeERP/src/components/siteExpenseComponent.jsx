@@ -1010,51 +1010,509 @@ function SiteExpenseComponent() {
           <div className="horizontal-divider"></div>
           <form onSubmit={EditsiteExpense}>
           <label htmlFor="headOfAccount">Head Of Account: </label>
+        <select name="headOfAccount" id="headOfAccount" onChange={handleHeadOfAccountChange}>
+          <option value={headOfAccount} hidden>
+            {headOfAccount}
+          </option>
+          {HEADOFACCOUNTLIST.map((headOfAccount, index) => (
+            <option key={index} value={headOfAccount}>
+              {headOfAccount}
+            </option>
+          ))}
+        </select>
+
+            {headOfAccount === "Salary" && (
+          <>
+            <label htmlFor="chequeNumber">Cheque Number: </label>
             <input
-              type="text"
-              name="headOfAccount"
-              id="headOfAccount"
-              value={headOfAccount}
-              onChange={(e) => setHeadOfAccount(e.target.value)}
+              type="number"
+              name="chequeNumber"
+              id="chequeNumber"
+              value={chequeNumber}
+              onChange={handleChequeNumberChange}
             />
-            <label htmlFor="particulor">Particular: </label>
-            <select name="particular-name" id="particular-name" onChange={handleParticularChange}>
+            <label htmlFor="bank-name">Bank Name: </label>
+    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+     <option value="select" hidden>{bankName}</option>
+                {bankList.map((bank) => (
+                    <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
+                  ))}
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
+              <option value="select" hidden>Select</option>
+              {bankList
+                .filter((bank) => bank._id === bankName)
+                .map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
+                ))}
+            </select>
+               <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={handleAmountChange}
+                />
+                 <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={handleDateChange}
+                />
+                
+
+          </>
+        )}
+
+        {headOfAccount === "Utility" && (
+          <>
+            <label htmlFor="subHeadOfAccount">Sub Head Of Account </label>
+            <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
               <option value="select" hidden>
-                {particular}
+                {SubHeadOfAccount}
               </option>
-              {Expenses.map((expense, index) => (
+              {SubHeads.map((expense, index) => (
+                <option key={index} value={expense}>
+                  {expense}
+                </option>
+              ))}
+            </select>
+            {SubHeadOfAccount === "Lesco" && (
+              <>
+              <label htmlFor="lescoSubHead">Select Block: </label>
+            <select name="lescoSubHead" id="lescoSubHead" onChange={handleLescoSubHeadChange}>
+              <option value="select" hidden>
+                {lescoSubHead}
+              </option>
+              {Sub_Lesco_Heads.map((expense, index) => (
                 <option key={index} value={expense}>
                   {expense}
                 </option>
               ))}
             </select>
 
-            <label htmlFor="vendor">Vendor</label>
-            <select name="vendor-name" id="vendor-name" onChange={handleVendorChange}>
-              <option value="select" hidden>
-                {vendor}
-              </option>
-              {Expenses.map((expense, index) => (
-                <option key={index} value={expense}>
-                  {expense}
-                </option>
-              ))}
-            </select>
+              {lescoSubHead === "Block A"}
+
+                <label htmlFor="billingMonth">Billing Month </label>
+                <input
+                  type="text"
+                  name="billingMonth"
+                  id="billingMonth"
+                  value={billingMonth}
+                  onChange={handleBillingMonthChange}
+                />
+                <label htmlFor="advTax">Adv Tax </label>
+                <input
+                  type="text"
+                  name="advTax"
+                  id="advTax"
+                  value={advTax}
+                  onChange={handleAdvTaxChange}
+                />
+                <label htmlFor="billReference">Bill Reference </label>
+                <input
+                  type="text"
+                  name="billReference"
+                  id="billReference"
+                  value={billReference}
+                  onChange={handleBillReferenceChange}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={handleDateChange}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={handleAmountChange}
+                />
+              </>
+            )}
+                
+          </>
+        )}
+         {headOfAccount === "Vehicle/Disposal" && (
+        <>
+        <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+        <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
+          <option value="select" hidden>
+            Select
+          </option>
+          {Sub_Disposal_Heads.map((subHead, index) => (
+            <option key={index} value={subHead}>
+              {subHead}
+            </option>
+          ))}
+        </select>
+      
+        {SubHeadOfAccount === 'Disposal' && (
+          <>
+            <label htmlFor="fuelLitre">Fuel Litre: </label>
+            <input
+              type="number"
+              name="fuelLitre"
+              id="fuelLitre"
+              value={fuelLitre}
+              onChange={(e) => setFuelLitre(e.target.value)}
+            />
             <label htmlFor="amount">Amount: </label>
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+            <label htmlFor="paidDate">Paid Date: </label>
+          <input
+            type="date"
+            name="paidDate"
+            id="paidDate"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+          </>
+        )}
+
+      {SubHeadOfAccount === 'Vehicle' && (
+        <>
+          <label htmlFor="vehichleNumber">Vehicle Number: </label>
+          <input
+            type="number"
+            name="vehichleNumber"
+            id="vehichleNumber"
+            value={vehichleNumber}
+            onChange={(e) => setVehicleNumber(e.target.value)}
+          />
+          <label htmlFor="vehicleType">Vehicle Type: </label>
+          <input
+            type="text"
+            name="vehicleType"
+            id="vehicleType"
+            value={vehicleType}
+            onChange={(e) => setVehicleType(e.target.value)}
+          />
+          <label htmlFor="fuelLitre">Fuel Litre: </label>
+            <input
+              type="number"
+              name="fuelLitre"
+              id="fuelLitre"
+              value={fuelLitre}
+              onChange={(e) => setFuelLitre(e.target.value)}
+            />
+            <label htmlFor="amount">Amount: </label>
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+          />
+            <label htmlFor="paidDate">Paid Date: </label>
+          <input
+            type="date"
+            name="paidDate"
+            id="paidDate"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          />
+        </>
+      )}
+        </>
+       )}
+       {headOfAccount === "Repair/Maintainance" && (
+        <>
+        <label htmlFor="subHeadOfAccount">Select Phase: </label>
+        <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
+          <option value="select" hidden>
+            Select
+          </option>
+          {Repair_site_SUBHEADS.map((subHead, index) => (
+            <option key={index} value={subHead}>
+              {subHead}
+            </option>
+          ))}
+        </select>
+      
+        {SubHeadOfAccount === 'Phase 1' && (
+          <>
+           <label htmlFor="amount">Amount: </label>
             <input
               type="number"
               name="amount"
               id="amount"
               value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-            /><label htmlFor="amount">Date: </label>
+              onChange={handleAmountChange}
+            />
+            <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={handleParticularChange}
+            />
+            <label htmlFor="date">Date: </label>
             <input
               type="date"
               name="date"
               id="date"
               value={date}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={handleDateChange}
             />
+            <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
+          
+            
+          </>
+        )}
+
+      {SubHeadOfAccount === 'Phase 2' && (
+        <>
+ <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+            <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={handleParticularChange}
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={handleDateChange}
+            />
+            <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
+          
+        </>
+      )}
+        </>
+       )}
+        
+        {headOfAccount === "Misc" && (
+          <>
+              <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+              <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
+                <option value="select" hidden>
+                  Select
+                </option>
+                {MISC_site_SUBHEADS.map((subHead, index) => (
+                  <option key={index} value={subHead}>
+                    {subHead}
+                  </option>
+                ))}
+              </select>
+              
+              {SubHeadOfAccount === 'Weapon' && (
+                <>
+                 <label htmlFor="amount">Amount: </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    id="amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  /><label htmlFor="amount">Date: </label>
+                  <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                  <label htmlFor="vendor">Vendor</label>
+                  <input
+                    type="text"
+                    name="vendor"
+                    id="vendor"
+                    value={vendor}
+                    onChange={handleVendorChange}
+                  />
+
+                  </>
+                )}
+                {SubHeadOfAccount === 'Demarcation' && (
+                <>
+                  <label htmlFor="amount">Amount: </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    id="amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  /><label htmlFor="amount">Date: </label>
+                  <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                  <label htmlFor="amount">Discription: </label>
+                  <input
+                    type="text"
+                    name="description"
+                    id="discription"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  /></>
+                )}
+                {SubHeadOfAccount === 'Dengue' && (
+                <>
+                  <label htmlFor="amount">Amount: </label>
+                  <input
+                    type="number"
+                    name="amount"
+                    id="amount"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
+                  /><label htmlFor="amount">Date: </label>
+                  <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    value={date}
+                    onChange={(e) => setDate(e.target.value)}
+                  />
+                  <label htmlFor="amount">Discription: </label>
+                  <input
+                    type="text"
+                    name="description"
+                    id="discription"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  /></>
+                )}
+            
+          </>
+        )}
+        {headOfAccount === "Eletricity/Water Connection" && (
+        <>
+        <label htmlFor="subHeadOfConnection">Select Coonection: </label>
+        <select name="subHeadOfConnection" id="subHeadOfConnection" onChange={handleSubHeadOfAccountChange}>
+          <option value="select" hidden>
+            Select
+          </option>
+          {Connection_site_SUBHEADS.map((subHead, index) => (
+            <option key={index} value={subHead}>
+              {subHead}
+            </option>
+          ))}
+        </select>
+      
+        {SubHeadOfAccount === 'Electricity' && (
+          <>
+           <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+            <label htmlFor="description">Description: </label>
+            <input
+              type="text"
+              name="description"
+              id="description"
+              value={description}
+              onChange={handleDescriptionChange}
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={handleDateChange}
+            />
+            <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
+          
+            
+          </>
+        )}
+
+      {SubHeadOfAccount === 'Water' && (
+        <>
+ <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+             <label htmlFor="description">Description: </label>
+            <input
+              type="text"
+              name="description"
+              id="description"
+              value={description}
+              onChange={handleDescriptionChange}
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={handleDateChange}
+            />
+            <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={handleVendorChange}
+            />
+          
+        </>
+      )}
+        </>
+       )}
             <button type="submit" className="blue-button" onSubmit={EditsiteExpense}>
               Save
             </button>
