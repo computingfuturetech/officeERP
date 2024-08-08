@@ -60,27 +60,42 @@ module.exports = {
   },
   getWaterMaintenanceBill: async (req, res) => {
     try {
-      const { plotNo, sortBy, sortOrder } = req.query; 
+      const { plotNo, sort, id, member_no } = req.query;
       const filter = {};
       if (plotNo) {
-        filter['plotNo'] = plotNo; 
+        filter.plotNo = plotNo;
       }
   
-      const sort = {};
-      if (sortBy) {
-        sort[sortBy] = sortOrder === 'asc' ? 1 : -1; 
+      let sortOrder = {};
+      if (sort === 'asc') {
+        sortOrder = { amount: 1 };
+      } else if (sort === 'desc') {
+        sortOrder = { amount: -1 };
       }
   
-      const waterMaintenanceBill = await WaterMaintenancBill.find(filter)
-        .populate('memberNo', 'msNo purchaseName')
-        .populate('incomeHeadOfAccount', 'headOfAccount')
-        .sort(sort) 
-        .exec();
+      let waterMaintenanceBill;
+      if (id) {
+        waterMaintenanceBill = await WaterMaintenancBill.findById(id)
+          .populate('memberNo', 'msNo purchaseName')
+          .populate('incomeHeadOfAccount', 'headOfAccount')
+          .exec();
+      } else {
+        waterMaintenanceBill = await WaterMaintenancBill.find(filter)
+          .populate('memberNo', 'msNo purchaseName')
+          .populate('incomeHeadOfAccount', 'headOfAccount')
+          .sort(sortOrder)
+          .exec();
+      }
   
       if (waterMaintenanceBill.length === 0) {
-        return res.status(404).json({ message: 'Water Maintenance Bill not found' });
+        res.status(404).json({ message: 'Water Maintenance Bill not found' });
+      } else if (member_no) {
+        const filteredWaterMaintenanceBill = waterMaintenanceBill.filter((bill) => bill.memberNo.msNo === member_no);
+        res.status(200).json(filteredWaterMaintenanceBill);
+      } else {
+        res.status(200).json(waterMaintenanceBill);
       }
-      res.status(200).json(waterMaintenanceBill);
+  
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
