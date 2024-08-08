@@ -24,7 +24,7 @@ const salariesSchema = new Schema({
     paidDate: {
         type: Date,
     },
-    checkNumber:{
+    chequeNumber:{
         type: Number,
     },
     bank:{

@@ -79,13 +79,13 @@ module.exports = {
       
           const expenses = await Promise.all([
             AuditFeeExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
-            BankChargesExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            BankChargesExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").populate("bank","bankName accountNo").exec(),
             ElectricityAndWaterConnectionExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
             LegalProfessionalExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
             MiscellaneousExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
             OfficeExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
             OfficeUtilExpense.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
-            Salaries.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
+            Salaries.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").populate("bank","bankName accountNo").exec(),
             VechicleDisposal.findOne(query).populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").exec(),
           ]);
       
