@@ -3,7 +3,7 @@ const Schema=mongoose.Schema
 const Member=require('../../memberModels/memberList')
 
 const possessionFeeSchema = new Schema({
-    date:{
+    paidDate:{
         type: Date,
     },
     memberNo:{
@@ -11,30 +11,16 @@ const possessionFeeSchema = new Schema({
         ref: 'MemberList',
         required: true
     },
-    posessionFee:{
+    amount:{
         type: Number,
     },
     challanNo:{
         type: Number,
     },
-    electricityConnectionCharges:{
-        type: Number,
-    },
-    waterConnectionCharges:{
-        type: Number,
-    },
-    masjidFund:{
-        type:Number,
-    },
-    constructionWater:{
-        type: Number,
-    },
-    buildingBylawsCharges:{
-        type: Number,
-    },
-    masjidFund:{
-        type: Number,
-    }
+    headOfAccount: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
+    }],
 }
 )
 

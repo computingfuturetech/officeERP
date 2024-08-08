@@ -1,6 +1,8 @@
 const mongoose = require('mongoose');
 const PossessionFee = require("../../models/incomeModels/pssessionFeeModel/possessionFee");
 const Member = require("../../models/memberModels/memberList");
+const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
+
 
 mongoose.model('Member', Member.schema);
 
@@ -9,57 +11,66 @@ module.exports = {
     const {
       member_no,
       challan_no,
-      possession_fee,
-      electricity_connection_charges,
-      water_connection_charges,
-      masjid_fund,
-      construction_water,
-      building_by_law_charges,
-      date,
+      amount,
+      head_of_account, // This is a comma-separated string
+      paid_date,
     } = req.body;
     console.log(req.body);
     try {
       if (
-        !date ||
+        !paid_date ||
         !member_no ||
         !challan_no ||
-        !possession_fee ||
-        !electricity_connection_charges ||
-        !water_connection_charges ||
-        !masjid_fund ||
-        !construction_water ||
-        !building_by_law_charges
+        !amount ||
+        !head_of_account
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
-
+  
+      const headOfAccountIds = head_of_account.split(',').map((id) => id.trim());
+  
       try {
-        const member = await Member.findOne({ msNo: member_no });
+        const member = await Member.findOne({ $expr: { $eq: [ { $toString: "$msNo" }, `${req.body.member_no}` ] } });
         if (!member) {
-            return res.status(404).json({ message: 'Member not found' });
+          return res.status(404).json({ message: "Member not found" });
         }
-        const possessionFee = new PossessionFee({
-            date: date,
-            memberNo: member._id,
-            challanNo: challan_no,
-            possessionFee: possession_fee,
-            electricityConnectionCharges: electricity_connection_charges,
-            waterConnectionCharges: water_connection_charges,
-            masjidFund: masjid_fund,
-            constructionWater: construction_water,
-            buildingBylawsCharges: building_by_law_charges,
-        });
+  
+        const incomeHeadOfAccounts = await IncomeHeadOfAccount.find({ _id: { $in: headOfAccountIds } }).exec();
+        if (incomeHeadOfAccounts.length !== headOfAccountIds.length) {
+          return res.status(404).json({ message: "One or more income head of account not found" });
+        }
 
+        const possessionFee = new PossessionFee({
+          memberNo: member._id,
+          challanNo: challan_no,
+          amount: amount,
+          headOfAccount: incomeHeadOfAccounts.map((account) => account._id),
+          paidDate: paid_date,
+        });
+  
         await possessionFee.save();
         res.status(201).json({
-            message: 'Possession Fee created successfully',
-            data: possessionFee,
+          message: 'Possession Fee created successfully',
+          data: possessionFee,
         });
-    } catch (err) {
+      } catch (err) {
         res.status(500).json({ message: err.message });
-    }
+      }
     } catch (err) {
       res.status(500).json({ message: err });
+    }
+  },
+  getHeadOfAccountPossessionFee: async (req, res) => {
+    try {
+      const headOfAccount = await IncomeHeadOfAccount.find({incomeType: 'Possession Heads'}).exec();
+      if (headOfAccount.length === 0) {
+        res.status(404).json({ message: "No head of accounts found" });
+      } else {
+        res.status(200).json(headOfAccount);
+      }
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal server error" });
     }
   },
   updatePossessionFee: async (req, res) => {
@@ -75,7 +86,7 @@ module.exports = {
       const updateData = {};
       if (req.body.member_no) {
         console.log(req.body.member_no);
-        const member = await Member.findOne({ msNo: req.body.member_no });
+        const member = await Member.findOne({ $expr: { $eq: [ { $toString: "$msNo" }, `${req.body.member_no}` ] } });
         if (!member) {
           return res.status(404).json({ message: "Member not found" });
         }
@@ -84,21 +95,18 @@ module.exports = {
       if (req.body.challan_no) {
         updateData.challanNo = req.body.challan_no;
       }
-      if (req.body.date) {
-        updateData.date = req.body.date;
+      if (req.body.paid_date) {
+        updateData.paidDate = req.body.paid_date;
       }
-      if (req.body.possession_fee)
-        updateData.possessionFee = req.body.possession_fee;
-      if (req.body.electricity_connection_charges)
-        updateData.electricityConnectionCharges =
-          req.body.electricity_connection_charges;
-      if (req.body.water_connection_charges)
-        updateData.waterConnectionCharges = req.body.water_connection_charges;
-      if (req.body.masjid_fund) updateData.masjidFund = req.body.masjid_fund;
-      if (req.body.construction_water)
-        updateData.constructionWater = req.body.construction_water;
-      if (req.body.building_by_law_charges)
-        updateData.buildingBylawsCharges = req.body.building_by_law_charges;
+      if (req.body.head_of_account) {
+        const headOfAccountIds = req.body.head_of_account.split(',').map((id) => id.trim());
+        const incomeHeadOfAccounts = await IncomeHeadOfAccount.find({ _id: { $in: headOfAccountIds } }).exec();
+        if (incomeHeadOfAccounts.length !== headOfAccountIds.length) {
+          return res.status(404).json({ message: "One or more income head of account not found" });
+        }
+        const newHeadOfAccounts = incomeHeadOfAccounts.filter((account) => !possessionFee.headOfAccount.includes(account._id));
+        updateData.headOfAccount = [...possessionFee.headOfAccount, ...newHeadOfAccounts.map((account) => account._id)];
+      }
       await PossessionFee.findByIdAndUpdate(
         id,
         { $set: updateData },
@@ -112,17 +120,17 @@ module.exports = {
       res.status(500).json({ message: err });
     }
   },
-  getPossessionFee: async (req, res) => {
-    try {
-        const possessionFees = await PossessionFee.find()
-            .populate('memberNo', 'msNo purchaseName')
-            .exec();
-        if (possessionFees.length === 0) {
-            return res.status(404).json({ message: 'Possession Fee not found for this member' });
-        }
-        res.status(200).json(possessionFees);
-    } catch (err) {
-        res.status(500).json({ message: err.message });
-    }
-  },
+  // getPossessionFee: async (req, res) => {
+  //   try {
+  //       const possessionFees = await PossessionFee.find()
+  //           .populate('memberNo', 'msNo purchaseName')
+  //           .exec();
+  //       if (possessionFees.length === 0) {
+  //           return res.status(404).json({ message: 'Possession Fee not found for this member' });
+  //       }
+  //       res.status(200).json(possessionFees);
+  //   } catch (err) {
+  //       res.status(500).json({ message: err.message });
+  //   }
+  // },
 };

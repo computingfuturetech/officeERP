@@ -23,6 +23,10 @@ const waterMaintenaceBillSchema = new Schema({
     amount:{
         type: Number,
     },
+    incomeHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
+    },
 }
 )
 
