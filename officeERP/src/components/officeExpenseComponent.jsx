@@ -53,21 +53,23 @@ function OfficeExpenseComponent() {
   const [expenseId,setExpenseId]=useState("")
   const [isLoading, setIsLoading] = useState(false);
 
+
+  const fetchBanks = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Office%20Expense', config);
+      setOfficeExpensesList(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
   useEffect(() => {
-    const fetchBanks = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token'),
-          },
-        };
-        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Office%20Expense', config);
-        setOfficeExpensesList(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchBanks();
   }, []);
 
@@ -213,6 +215,7 @@ function OfficeExpenseComponent() {
 
   const handleEditSection = async (member) => {
     setIsLoading(true)
+    scrollToTop()
     setSelectedMember(member);
 
     const mainId=member._id;
@@ -229,36 +232,34 @@ function OfficeExpenseComponent() {
       const response = await axios.get(process.env.REACT_APP_API_URL + `/user/getSingleExpense?headOfAccountId=${headOfAccountId}&mainId=${mainId}`, config);
       console.log(response)
       const expenseData = response.data;
-      let headOfAccountValue=expenseData.mainHeadOfAccount.headOfAccount
-      if(expenseData.subHeadOfAccount)
-        headOfAccountValue=expenseData.subHeadOfAccount.headOfAccount
-      if (expenseData.mainHeadOfAccount.headOfAccount === 'TA/DA' || expenseData.mainHeadOfAccount.headOfAccount === 'Misc') {
-        headOfAccountValue = 'Misc';
-        if(expenseData.mainHeadOfAccount.headOfAccount === 'TA/DA')
-        setSubHeadOfAccount("TA/DA")
-        if(expenseData.mainHeadOfAccount.headOfAccount === 'Misc')
-          setSubHeadOfAccount("Misc")
-        
-      }
-    //   if(expenseData.subHeadOfAccount){
-    //     console.log("subhead")
-    //   if (expenseData.subHeadOfAccount.headOfAccount === "Water" || expenseData.subHeadOfAccount.headOfAccount === 'Gas') {
-    //     headOfAccountValue = 'Utility';
-    //     console.log("here")
-    //     if(expenseData.subHeadOfAccount.headOfAccount === 'Gas')
-    //     setSubHeadOfAccount("Gas")
-    //     if(expenseData.subHeadOfAccount.headOfAccount === 'Water')
-    //       setSubHeadOfAccount("Water")
-    //   }
-    // }
-      // else if(expenseData.mainHeadOfAccount.headOfAccount === 'Tax Consultant' || expenseData.mainHeadOfAccount.headOfAccount === 'Account and Consultant'){
-      //   headOfAccountValue = 'Legal/Professional';
-      //   if(expenseData.mainHeadOfAccount.headOfAccount === 'Tax Consultant')
-      //     setSubHeadOfAccount("Tax Consultant")
-      //   if(expenseData.mainHeadOfAccount.headOfAccount === 'Account and Consultant')
-      //     setSubHeadOfAccount("Accounts Consultant")
-      // }
+      let headOfAccountValue=expenseData.mainHeadOfAccount ? expenseData.mainHeadOfAccount.headOfAccount : expenseData.subHeadOfAccount.headOfAccount
+      console.log("Head of Account", headOfAccountValue)
+      if(expenseData.subHeadOfAccount){
+        const headMapping = {
+          'TA/DA': 'Misc',
+          'Misc': 'Misc',
+          'Water': 'Utility',
+          'Gas': 'Utility',
+          'Telephone': 'Utility',
+          'Lesco':'Utility',
+          'IT Billing': 'Legal/Professional',
+          'Tax Consultant': 'Legal/Professional'
+      };
 
+      const subHeadMapping = {
+          'TA/DA': 'TA/DA',
+          'Misc': 'Misc',
+          'Water': 'Water',
+          'Telephone':'Telephone',
+          'Gas': 'Sui Gas',
+          'IT Billing': 'Billing Software',
+          'Tax Consultant': 'Tax Consultant'
+      };
+      headOfAccountValue = headMapping[headOfAccountValue] || headOfAccountValue;
+      setSubHeadOfAccount(subHeadMapping[expenseData.subHeadOfAccount?.headOfAccount] || expenseData.subHeadOfAccount?.headOfAccount);
+      console.log("The subhead set is : ",SubHeadOfAccount)
+      console.log("The head set is : ",headOfAccount)
+      }
       setHeadOfAccount(headOfAccountValue);
       if(headOfAccountValue==="Bank Charges")
         setHeadOfAccount("Bank Charges Expense")
@@ -266,7 +267,7 @@ function OfficeExpenseComponent() {
         setHeadOfAccount("Printing/Stationary")
       if(headOfAccountValue==="Salaries Office Employees")
         setHeadOfAccount("Salary")
-      setSubHeadOfAccount(expenseData.mainHeadOfAccount.headOfAccount);
+      // setSubHeadOfAccount(expenseData.mainHeadOfAccount.headOfAccount);
       console.log(headOfAccountValue)
       setAmount(expenseData.amount);
       setParticular(expenseData.particulor );
@@ -279,6 +280,10 @@ function OfficeExpenseComponent() {
       setAuditYear(expenseData.year);
       setLegalName(expenseData.legalName );
       setDescription(expenseData.description );
+      if(expenseData.bank){
+        setBankAccount(expenseData.bank.accountNo)
+      setBankName(expenseData.bank.bankName );
+      }
       setBankAccount(expenseData.bank)
       setBankName(expenseData.bankName );
       
@@ -302,6 +307,19 @@ function OfficeExpenseComponent() {
   const closeSection = () => {
     setAddNew(false);
     setAmount('');
+    setDate("")
+        setAdvTax("")
+        setAuditFeeChange("")
+        setAuditYear("")
+        setBankAccount("")
+        setBankName("")
+        setHeadOfAccount("")
+        setSubHeadOfAccount("")
+        setBillingMonth("")
+        setDescription("")
+        setEmployeeName("")
+        setParticular("")
+        setVendor("")
     setEditSection(false);
   };
 
@@ -407,8 +425,8 @@ function OfficeExpenseComponent() {
           break;
     
         case 'Repair/Maintenance':
-          url = '/user/createRepairMaintenanceExpense';
-          data = { amount:amount, particular:particular, paid_date:date, vendor:vendor};
+          url = '/user/createLegalProfessionalExpense';
+          data = { head_of_account:"Office Repair/Maintenance",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
           break;
     
         case 'Audit':
@@ -450,6 +468,7 @@ function OfficeExpenseComponent() {
         // console.log(response.data);
         showSuccessToastMessage("Expense Added Succesfully!")
         closeSection();
+        fetchBanks()
         setAmount("")
         setDate("")
         setAdvTax("")
@@ -457,7 +476,10 @@ function OfficeExpenseComponent() {
         setAuditYear("")
         setBankAccount("")
         setBankName("")
+        setHeadOfAccount("")
+        setSubHeadOfAccount("")
         setBillingMonth("")
+        setBillReference("")
         setDescription("")
         setEmployeeName("")
         setParticular("")
@@ -553,8 +575,8 @@ const EditOfficeExpense = (e) => {
       break;
 
     case 'Repair/Maintenance':
-      url = '/user/updateRepairMaintenanceExpense?id=' + expenseId;
-      data = { amount:amount, particular:particular, paid_date:date, vendor:vendor };
+      url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+      data = { head_of_account:"Repair/Maintenance",amount:amount, particulor:particular, paid_date:date, vendor:vendor };
       break;
 
     case 'Audit':
@@ -596,12 +618,14 @@ const EditOfficeExpense = (e) => {
       );
       console.log(response.data);
       showSuccessToastMessage("Expense Updated Successfully!");
+      fetchBanks()
       closeSection();
       setAmount("");
       setDate("");
       setAdvTax("");
       setAuditFeeChange("");
       setAuditYear("");
+      setBillReference("")
       setBankAccount("");
       setBankName("");
       setBillingMonth("");
@@ -1708,7 +1732,7 @@ const EditOfficeExpense = (e) => {
               onChange={handleSubHeadOfAccountChange}
             >
               <option value="select" hidden>
-                Select
+                {SubHeadOfAccount}
               </option>
               {LEGAL_PROFESSIONAL_SUBHEADS.map((subHead, index) => (
                 <option key={index} value={subHead}>
@@ -1845,17 +1869,10 @@ const EditOfficeExpense = (e) => {
 
         {headOfAccount === "Bank Charges" || headOfAccount === "Bank Charges Expense" && (
           <>
-            <label htmlFor="amount">Amount: </label>
-    <input
-      type="number"
-      name="amount"
-      id="amount"
-      value={amount}
-      onChange={handleAmountChange}
-    />
-     <label htmlFor="bank-name">Bank Name: </label>
-    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
-     <option value="select" hidden>{bankName}</option>
+
+            <label htmlFor="bank-name">Bank Name: </label>
+            <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+            <option value="select" hidden>{bankName}</option>
                 {bankList.map((bank) => (
                     <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
                   ))}
@@ -1870,15 +1887,24 @@ const EditOfficeExpense = (e) => {
                 ))}
             </select>
     
-    <label htmlFor="date">Date: </label>
-    <input
-      type="date"
-      name="date"
-      id="date"
-      value={date}
-      onChange={handleDateChange}
-    />
-  </>
+              <label htmlFor="date">Date: </label>
+              <input
+                type="date"
+                name="date"
+                readOnly
+                id="date"
+                value={date}
+                onChange={handleDateChange}
+              />
+              <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+           </>
         )}
         {headOfAccount === "Printing And Stationary" || headOfAccount==="Printing/Stationary" && (
           <>

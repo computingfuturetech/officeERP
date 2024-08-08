@@ -32,7 +32,7 @@ function SiteExpenseComponent() {
   const Repair_site_SUBHEADS=['Phase 1','Phase 2']
   const Sub_Lesco_Heads=['Block A','Block D']
   const Sub_Disposal_Heads=['Disposal','Vehicle']
-  const HEADOFACCOUNTLIST = ['Salary','Utility','Vehicle/Disposal','Eletricity/Water Connection','Repair/Maintainance','Misc'];
+  const HEADOFACCOUNTLIST = ['Salary','Utility','Vehicle/Disposal','Electricity/Water Connection','Repair/Maintainance','Misc'];
   const [HeadOfAccountssiteList,setHeadOfAccountssiteList]=useState([])
   const [billingMonth, setBillingMonth] = useState('');
   const [advTax, setAdvTax] = useState('');
@@ -50,25 +50,28 @@ function SiteExpenseComponent() {
   const [chequeNumber,setChequeNumber]=useState("")
   const [lescoSubHead,setLescoSubHead]=useState("")
   const [bankList,setBankList]=useState('')
+  const [isLoading, setIsLoading] = useState(false);
+  const [expenseId,setExpenseId]=useState("")
+  
+
 
   useEffect(() => {
-    const fetchBanks = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token'),
-          },
-        };
-        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Site%20Expense', config);
-        setsiteExpensesList(response.data);
-        // console.log(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchBanks();
   }, []);
-
+  const fetchBanks = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Site%20Expense', config);
+      setsiteExpensesList(response.data);
+      // console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   useEffect(() => {
     const fetchHeadOfAccounts = async () => {
       try {
@@ -156,7 +159,324 @@ function SiteExpenseComponent() {
   };
   const handleBankAccountChange = (e) => setBankAccount(e.target.value);
   const handleBankNameChange = (e) => setBankName(e.target.value);
+  const formatDate = (date) => {
+    const d = new Date(date);
+    let month = '' + (d.getMonth() + 1);
+    let day = '' + d.getDate();
+    const year = d.getFullYear();
+  
+    if (month.length < 2) month = '0' + month;
+    if (day.length < 2) day = '0' + day;
+  
+    return [year, month, day].join('-');
+  };
+  const handleDescriptionChange=(e)=>{
+    setDescription(e.target.value)
+  }
+  const handleLescoSubHeadChange=(e)=>{
+    setLescoSubHead(e.target.value)
+  }
+  const handleChequeNumberChange=(e)=>{
+    setChequeNumber(e.target.value)
+  }
 
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+  
+  };
+  const handleAuditYearChange=(e)=>{
+    setAuditYear(e)
+  }
+  const handleParticularChange=(e)=>{
+    setParticular(e.target.value)
+  }
+  const handleVendorChange=(e)=>{
+    setVendor(e.target.value)
+  }
+  const handleHeadOfAccountChange=(e)=>{
+    setHeadOfAccount(e.target.value)
+    setAmount("")
+    setDate("")
+    setAdvTax("")
+    setAuditFeeChange("")
+    setAuditYear("")
+    setBankAccount("")
+    setBankName("")
+    setBillingMonth("")
+    setDescription("")
+    setEmployeeName("")
+    setParticular("")
+    setVendor("")
+    setFuelLitre("")
+    setVehicleNumber("")
+    setVehicleType("")
+
+  }
+  const handleEditSection = async (member) => {
+    setIsLoading(true)
+    scrollToTop()
+    setSelectedMember(member);
+    const mainId=member._id;
+    setExpenseId(mainId);
+    const headOfAccountId = member.mainHeadOfAccount?._id || member.subHeadOfAccount?._id;
+    console.log(headOfAccountId)
+
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + `/user/getSingleExpense?headOfAccountId=${headOfAccountId}&mainId=${mainId}`, config);
+      console.log(response)
+      const expenseData = response.data;
+      let headOfAccountValue=expenseData.mainHeadOfAccount ? expenseData.mainHeadOfAccount.headOfAccount : expenseData.subHeadOfAccount.headOfAccount
+      console.log("Head of Account", headOfAccountValue)
+      if(expenseData.subHeadOfAccount){
+        
+        if (expenseData.subHeadOfAccount.headOfAccount === 'A Block') {
+          setLescoSubHead('A Block');
+          console.log("Lesco Sub head:",lescoSubHead)
+      } else if (expenseData.subHeadOfAccount.headOfAccount === 'D Block') {
+          setLescoSubHead('D Block');
+      }
+        const headMapping = {
+          'Dengue': 'Misc',
+          'Weapon': 'Misc',
+          'Demarcation': 'Misc',
+          'A Block': 'Utility',
+          'D Block':'Utility',
+          'Disposal': 'Vehicle/Disposal',
+          'Vehicle': 'Vehicle/Disposal'
+      };
+
+      const subHeadMapping = {
+          'Dengue': 'Dengue',
+          'Weapon': 'Weapon',
+          'A Block': 'Lesco',
+          'D Block': 'Lesco',
+          'Vehicle': 'Vehicle',
+          'Disposal': 'Disposal'
+      };
+      headOfAccountValue = headMapping[headOfAccountValue] || headOfAccountValue;
+      setSubHeadOfAccount(subHeadMapping[expenseData.subHeadOfAccount?.headOfAccount] || expenseData.subHeadOfAccount?.headOfAccount);
+      console.log("The subhead set is : ",SubHeadOfAccount)
+      console.log("The head set is : ",headOfAccount)
+      
+
+      }
+      setHeadOfAccount(headOfAccountValue);
+      if(headOfAccountValue==="Electricity")
+        setHeadOfAccount("Electricity/Water Connection")
+      if(headOfAccountValue==="Salaries Site Employees")
+        setHeadOfAccount("Salary")
+      if(headOfAccountValue==="Salaries Office Employees")
+        setHeadOfAccount("Salary")
+      // setSubHeadOfAccount(expenseData.mainHeadOfAccount.headOfAccount);
+      console.log(headOfAccountValue)
+      setAmount(expenseData.amount);
+      setParticular(expenseData.particulor );
+      setDate(convertDate(expenseData.paidDate));
+      setVendor(expenseData.vendor);
+      setEmployeeName(expenseData.employeeName );
+      setBillingMonth(expenseData.billingMonth );
+      setAdvTax(expenseData.advTax)
+      setBillReference(expenseData.billReference );
+      setAuditYear(expenseData.year);
+      setFuelLitre(expenseData.fuelLitre)
+      setPlotNumber(expenseData.plotNumber)
+      setDescription(expenseData.description );
+      if(expenseData.bank){
+        setBankAccount(expenseData.bank.accountNo)
+      setBankName(expenseData.bank.bankName );
+      }
+      
+      setChequeNumber(expenseData.chequeNumber)
+      
+    } catch (error) {
+      console.error("Error fetching expense data:", error);
+      closeSection()
+      showErrorToastMessage("Error Occured Try Again!")
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
+      setShowOptions(false);
+      setEditSection(true);
+    }
+  };
+  const handleShowOptions = (member) => {
+    setSelectedMember(member);
+    setShowOptions(!showOptions);
+  };
+
+  const closeSection = () => {
+    setAddNew(false);
+    setAmount('');
+    setEditSection(false);
+  };
+
+  const handleRefresh = () => {
+    window.location.reload();
+  };
+
+const handlePlotNumberChange = (e) => {
+  setPlotNumber(e.target.value);
+};
+
+  const convertDate=(e)=>{
+    const dateValue = new Date(e).toISOString().split('T')[0];
+    return dateValue;
+  }
+
+  const handleScroll = () => {
+    console.log('scrolling');
+    if (membersRef.current) {
+      const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
+      if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
+        setPage((prevPage) => prevPage + 1);
+      }
+    }
+  };
+  const handleSubHeadOfAccountChange=(e)=>{
+    setSubHeadOfAccount(e.target.value)
+  }
+
+  // Api Intergration For Editing
+  const EditsiteExpense = (e) => {
+    e.preventDefault();
+    let data = {};
+    let url = '';
+  
+    switch (headOfAccount) {
+      case 'Utility':
+        switch (SubHeadOfAccount) {
+          case 'Lesco':
+            console.log(lescoSubHead)
+            switch (lescoSubHead) {
+              case 'A Block':
+                url = `/user/updateOfficeUtilExpense?id=${expenseId}`;
+                data = { head_of_account: 'A Block', bill_reference: billReference, amount: amount, billing_month: billingMonth, paid_date: date, adv_tax: advTax };
+                break;
+              case 'D Block':
+                url = `/user/updateOfficeUtilExpense?id=${expenseId}`;
+                data = { head_of_account: 'D Block', bill_reference: billReference, amount: amount, billing_month: billingMonth, paid_date: date, adv_tax: advTax };
+                break;
+              default:
+                return;
+            }
+            break;
+          default:
+            return;
+        }
+        break;
+  
+      case 'Salary':
+        url = `/user/updateSalary?id=${expenseId}`;
+        data = { salary_type: "Site", head_of_account: 'Salaries Site Employees', cheque_no: chequeNumber, amount: amount, bank_account: bankAccount, paid_date: date };
+        break;
+  
+      case 'Vehicle/Disposal':
+        switch (SubHeadOfAccount) {
+          case 'Disposal':
+            url = `/user/updateVehicleDisposal?id=${expenseId}`;
+            data = { head_of_account: "Disposal", amount: amount, paid_date: date, fuel_litre: fuelLitre };
+            break;
+          case 'Vehicle':
+            url = `/user/updateVehicleDisposal?id=${expenseId}`;
+            data = { head_of_account: "Vehicle", amount: amount, vehicle_number: vehicleNumber, vehicle_type: vehicleType, paid_date: date, fuel_litre: fuelLitre };
+            break;
+          default:
+            return;
+        }
+        break;
+  
+      case 'Electricity/Water Connection':
+        url = `/user/updateElectricityWaterExpense?id=${expenseId}`;
+        data = { head_of_account: SubHeadOfAccount, amount: amount, paid_date: date, vendor: vendor ,description:description};
+        break;
+  
+      case 'Repair/Maintainance':
+        switch (SubHeadOfAccount) {
+          case 'Phase 1':
+            url = `/user/updateLegalProfessionalExpense?id=/${expenseId}`;
+            data = { head_of_account: "Phase 1", amount: amount, particular: particular, paid_date: date, vendor: vendor };
+            break;
+          case 'Phase 2':
+            url = `/user/updateLegalProfessionalExpense?id=${expenseId}`;
+            data = { head_of_account: "Phase 2", amount: amount, particular: particular, paid_date: date, vendor: vendor };
+            break;
+          default:
+            return;
+        }
+        break;
+  
+      case 'Misc':
+        switch (SubHeadOfAccount) {
+          case 'Dengue':
+            url = `/user/updateMiscellaneousExpense?id=${expenseId}`;
+            data = { head_of_account: SubHeadOfAccount, amount: amount, paid_date: date, description: description };
+            break;
+          case 'Weapon':
+            url = `/user/updateMiscellaneousExpense?id=${expenseId}`;
+            data = { head_of_account: SubHeadOfAccount, amount: amount, paid_date: date, description: description };
+            break;
+          case 'Demarcation':
+            url = `/user/updateMiscellaneousExpense?id=${expenseId}`;
+            data = { head_of_account: SubHeadOfAccount, amount: amount, paid_date: date, plot_number:plotNumber,vendor:vendor};
+            break;
+          default:
+            return;
+        }
+        break;
+  
+      default:
+        return;
+    }
+  
+    const updateExpense = async () => {
+      console.log(data);
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        };
+        const response = await axios.post(
+          process.env.REACT_APP_API_URL + url,
+          data,
+          config
+        );
+        console.log(response.data);
+        showSuccessToastMessage("Expense Updated Successfully!");
+        closeSection();
+        fetchBanks()
+        setAmount("");
+        setDate("");
+        setAdvTax("");
+        setHeadOfAccount("")
+        setSubHeadOfAccount("")
+        setAuditFeeChange("");
+        setAuditYear("");
+        setBankAccount("");
+        setBankName("");
+        setBillReference("")
+        setBillingMonth("");
+        setDescription("");
+        setEmployeeName("");
+        setParticular("");
+        setVendor("");
+      } catch (error) {
+        console.error(error);
+        showErrorToastMessage("Error Updating. Please Try Again!");
+      }
+    };
+  
+    updateExpense();
+  };
+  // Api Integration For Adding New
   const createNewSiteExpense = (e) => {
     e.preventDefault();
     let data = {};
@@ -203,15 +523,15 @@ function SiteExpenseComponent() {
             }
             break;
 
-        case 'Eletricity/Water Connection':
+        case 'Electricity/Water Connection':
             switch (SubHeadOfAccount) {
 
                 case 'Electricity':
                   url = '/user/createElectricityWaterExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  particular: particular, paid_date: date, description:description,vendor:vendor };
                 case 'Water':
                     url = '/user/createElectricityWaterExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    data = { head_of_account: SubHeadOfAccount, amount: amount, particular: particular, paid_date: date, vendor: vendor,description:description };
                     break;
                 default:
                     return;
@@ -219,16 +539,14 @@ function SiteExpenseComponent() {
             break;
 
         case 'Repair/Maintainance':
-          console.log(SubHeadOfAccount)
             switch (SubHeadOfAccount) {
-              
                 case 'Phase 1':
                   url = '/user/createLegalProfessionalExpense';
-                  data = { head_of_account:"Phase 1", amount: amount,  particular: particular, paid_date: date, vendor: vendor };
+                  data = { head_of_account:"Phase1", amount: amount,  particulor: particular, paid_date: date, vendor: vendor };
                   break;
                 case 'Phase 2':
                     url = '/user/createLegalProfessionalExpense';
-                    data = { head_of_account:"Phase 2", amount: amount, particular: particular, paid_date: date, vendor: vendor };
+                    data = { head_of_account:"Phase 2", amount: amount, particulor: particular, paid_date: date, vendor: vendor };
                     break;
                 default:
                     return;
@@ -243,11 +561,11 @@ function SiteExpenseComponent() {
                     break;
                 case 'Weapon':
                   url = '/user/createMiscellaneousExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount, plot_number: plotNumber, paid_date: date, description: description,vendor:vendor };
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  paid_date: date, description: description };
                     break;
                 case 'Demarcation':
                   url = '/user/createMiscellaneousExpense';
-                    data = { head_of_account: SubHeadOfAccount, amount: amount,  paid_date: date, description: description };
+                    data = { head_of_account: SubHeadOfAccount, amount: amount,  paid_date: date,vendor_name:vendor,plot_number:plotNumber };
                     break;
                 default:
                     return;
@@ -275,9 +593,13 @@ function SiteExpenseComponent() {
             showSuccessToastMessage("Expense Is Added Successfully")
             setAmount("")
             setDate("")
+            fetchBanks()
             setAdvTax("")
             setAuditFeeChange("")
             setAuditYear("")
+            setHeadOfAccount("")
+            setSubHeadOfAccount("")
+            setBillReference("")
             setBankAccount("")
             setBankName("")
             setBillingMonth("")
@@ -295,133 +617,7 @@ function SiteExpenseComponent() {
         }
     };
     createExpense();
-};
-
-  const formatDate = (date) => {
-    const d = new Date(date);
-    let month = '' + (d.getMonth() + 1);
-    let day = '' + d.getDate();
-    const year = d.getFullYear();
-  
-    if (month.length < 2) month = '0' + month;
-    if (day.length < 2) day = '0' + day;
-  
-    return [year, month, day].join('-');
-  };
-  const handleDescriptionChange=(e)=>{
-    setDescription(e.target.value)
-  }
-
-  const scrollToTop = () => {
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
-  
-  };
-  const handleAuditYearChange=(e)=>{
-    setAuditYear(e)
-  }
-  const handleParticularChange=(e)=>{
-    setParticular(e.target.value)
-  }
-  const handleVendorChange=(e)=>{
-    setVendor(e.target.value)
-  }
-  const handleHeadOfAccountChange=(e)=>{
-    setHeadOfAccount(e.target.value)
-    setAmount("")
-    setDate("")
-    setAdvTax("")
-    setAuditFeeChange("")
-    setAuditYear("")
-    setBankAccount("")
-    setBankName("")
-    setBillingMonth("")
-    setDescription("")
-    setEmployeeName("")
-    setParticular("")
-    setVendor("")
-    setFuelLitre("")
-    setVehicleNumber("")
-    setVehicleType("")
-
-  }
-  const handleEditSection = (member) => {
-    setSelectedMember(member);
-    setParticular(member.particulor);
-    setAmount(member.amount)
-    setDate(formatDate(member.paidDate))
-    setVendor(member.vendor)
-    setHeadOfAccount(member.headOfAccount)
-    setEditSection(true);
-    setShowOptions(false);
-  };
-
-  const handleShowOptions = (member) => {
-    setSelectedMember(member);
-    setShowOptions(!showOptions);
-  };
-
-  const closeSection = () => {
-    setAddNew(false);
-    setAmount('');
-    setEditSection(false);
-  };
-
-  const handleRefresh = () => {
-    window.location.reload();
-  };
-
-  const handleScroll = () => {
-    console.log('scrolling');
-    if (membersRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
-        setPage((prevPage) => prevPage + 1);
-      }
-    }
-  };
-  const handleSubHeadOfAccountChange=(e)=>{
-    setSubHeadOfAccount(e.target.value)
-  }
-  const EditsiteExpense=()=>{
-    e.preventDefault();
-    const data = {
-      head_of_account: headOfAccount,
-      particulor: particular,
-      amount:amount,
-      paid_date: date,
-      vendor:vendor
-    };
-    
-    const update = async () => {
-      console.log(data);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          process.env.REACT_APP_API_URL+`/user/updatesiteExpense`,
-          data,
-          config
-        );
-        console.log(response.data);
-        closeSection();
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    update();
-  }
-  const handleChequeNumberChange=(e)=>{
-    setChequeNumber(e.target.value)
-  }
-  const handleLescoSubHeadChange=(e)=>{
-    setLescoSubHead(e.target.value)
-  }
+};  
   return (
     <>
       <div className="member-list">
@@ -457,7 +653,7 @@ function SiteExpenseComponent() {
               <div className="member-details">
               <p>
             {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}</p>
-                <p>{member.paidDate}</p>
+                <p>{convertDate(member.paidDate)}</p>
                 <p>{member.amount}</p>
                 <img
                   onClick={() => handleShowOptions(member)}
@@ -831,20 +1027,20 @@ function SiteExpenseComponent() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
-                  <label htmlFor="vendor">Vendor</label>
+                  <label htmlFor="amount">Discription: </label>
                   <input
                     type="text"
-                    name="vendor"
-                    id="vendor"
-                    value={vendor}
-                    onChange={handleVendorChange}
+                    name="description"
+                    id="discription"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
 
                   </>
                 )}
                 {SubHeadOfAccount === 'Demarcation' && (
                 <>
-                  <label htmlFor="amount">Amount: </label>
+                 <label htmlFor="amount">Amount: </label>
                   <input
                     type="number"
                     name="amount"
@@ -859,13 +1055,22 @@ function SiteExpenseComponent() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
-                  <label htmlFor="amount">Discription: </label>
+                  
+                  <label htmlFor="vendor">Vendor</label>
                   <input
                     type="text"
-                    name="description"
-                    id="discription"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    name="vendor"
+                    id="vendor"
+                    value={vendor}
+                    onChange={handleVendorChange}
+                  />
+                  <label htmlFor="plotNumber">Plot Number</label>
+                  <input
+                    type="text"
+                    name="plotNumber"
+                    id="plotNumber"
+                    value={plotNumber}
+                    onChange={handlePlotNumberChange}
                   /></>
                 )}
                 {SubHeadOfAccount === 'Dengue' && (
@@ -897,9 +1102,9 @@ function SiteExpenseComponent() {
             
           </>
         )}
-        {headOfAccount === "Eletricity/Water Connection" && (
+        {headOfAccount === "Electricity/Water Connection" && (
         <>
-        <label htmlFor="subHeadOfConnection">Select Coonection: </label>
+        <label htmlFor="subHeadOfConnection">Select Connection: </label>
         <select name="subHeadOfConnection" id="subHeadOfConnection" onChange={handleSubHeadOfAccountChange}>
           <option value="select" hidden>
             Select
@@ -1023,6 +1228,17 @@ function SiteExpenseComponent() {
 
             {headOfAccount === "Salary" && (
           <>
+           
+            <label htmlFor="bank-name">Bank Name: </label>
+    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+     <option value="select" hidden>{bankName}</option>
+               
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
+              <option value="select" hidden>{bankAccount}</option>
+              
+            </select>
             <label htmlFor="chequeNumber">Cheque Number: </label>
             <input
               type="number"
@@ -1031,22 +1247,6 @@ function SiteExpenseComponent() {
               value={chequeNumber}
               onChange={handleChequeNumberChange}
             />
-            <label htmlFor="bank-name">Bank Name: </label>
-    <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
-     <option value="select" hidden>{bankName}</option>
-                {bankList.map((bank) => (
-                    <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
-                  ))}
-              </select>
-              <label htmlFor="purchaseName">Account Number: </label>
-              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
-              <option value="select" hidden>Select</option>
-              {bankList
-                .filter((bank) => bank._id === bankName)
-                .map((bank) => (
-                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
-                ))}
-            </select>
                <label htmlFor="amount">Amount: </label>
                 <input
                   type="number"
@@ -1355,14 +1555,15 @@ function SiteExpenseComponent() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
-                  <label htmlFor="vendor">Vendor</label>
+                  <label htmlFor="amount">Discription: </label>
                   <input
                     type="text"
-                    name="vendor"
-                    id="vendor"
-                    value={vendor}
-                    onChange={handleVendorChange}
+                    name="description"
+                    id="discription"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
                   />
+
 
                   </>
                 )}
@@ -1383,13 +1584,22 @@ function SiteExpenseComponent() {
                     value={date}
                     onChange={(e) => setDate(e.target.value)}
                   />
-                  <label htmlFor="amount">Discription: </label>
+                  
+                  <label htmlFor="vendor">Vendor</label>
                   <input
                     type="text"
-                    name="description"
-                    id="discription"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
+                    name="vendor"
+                    id="vendor"
+                    value={vendor}
+                    onChange={handleVendorChange}
+                  />
+                  <label htmlFor="plotNumber">Plot Number</label>
+                  <input
+                    type="text"
+                    name="plotNumber"
+                    id="plotNumber"
+                    value={plotNumber}
+                    onChange={handlePlotNumberChange}
                   /></>
                 )}
                 {SubHeadOfAccount === 'Dengue' && (
@@ -1421,9 +1631,9 @@ function SiteExpenseComponent() {
             
           </>
         )}
-        {headOfAccount === "Eletricity/Water Connection" && (
+        {headOfAccount === "Electricity/Water Connection" && (
         <>
-        <label htmlFor="subHeadOfConnection">Select Coonection: </label>
+        <label htmlFor="subHeadOfConnection">Select Connection: </label>
         <select name="subHeadOfConnection" id="subHeadOfConnection" onChange={handleSubHeadOfAccountChange}>
           <option value="select" hidden>
             Select
@@ -1516,6 +1726,11 @@ function SiteExpenseComponent() {
             <button type="submit" className="blue-button" onSubmit={EditsiteExpense}>
               Save
             </button>
+            {isLoading && (
+          <div className="loading-indicator">
+            <div className="spinner"></div>
+          </div>
+        )}
           </form>
         </div>
       </div>
