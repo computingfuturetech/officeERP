@@ -4,6 +4,10 @@ import './style/memberListStyle.css';
 import axios from 'axios';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
+import { showErrorToastMessage, showSuccessToastMessage } from './toastUtils';
+import { ToastContainer } from "react-toastify";
+import Loading from './loading';
+
 
 function OfficeExpenseComponent() {
   const [selectedMember, setSelectedMember] = useState(null);
@@ -46,22 +50,26 @@ function OfficeExpenseComponent() {
   const [bankName, setBankName] = useState('');
   const [bankList,setBankList]=useState('')
   const [selectedAccount, setSelectedAccount] = useState("");
+  const [expenseId,setExpenseId]=useState("")
+  const [isLoading, setIsLoading] = useState(false);
+
+
+  const fetchBanks = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Office%20Expense', config);
+      setOfficeExpensesList(response.data);
+      console.log(response.data);
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   useEffect(() => {
-    const fetchBanks = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: 'Bearer ' + localStorage.getItem('token'),
-          },
-        };
-        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/getAllExpense?expense_type=Office%20Expense', config);
-        setOfficeExpensesList(response.data);
-        console.log(response.data);
-      } catch (error) {
-        console.error(error);
-      }
-    };
     fetchBanks();
   }, []);
 
@@ -94,7 +102,7 @@ function OfficeExpenseComponent() {
             Authorization: 'Bearer ' + localStorage.getItem('token'),
           },
         };
-        const response = await axios.get(process.env.REACT_APP_API_URL + 'user/listOfHeadOfAccount?expense_type=Office%20Expense', config);
+        const response = await axios.get(process.env.REACT_APP_API_URL + '/user/listOfHeadOfAccount?expense_type=Office%20Expense', config);
         setHeadOfAccountsOfficeList(response.data);
         // console.log(response.data);
       } catch (error) {
@@ -128,7 +136,10 @@ function OfficeExpenseComponent() {
   const handleAmountChange = (e) => {
     setAmount(e.target.value);
   };
-  
+  const convertDate=(e)=>{
+    const dateValue = new Date(e).toISOString().split('T')[0];
+    return dateValue;
+  }
   const handleDateChange = (e) => {
     setDate(e.target.value);
   };
@@ -153,149 +164,6 @@ function OfficeExpenseComponent() {
   };
   const handleBankAccountChange = (e) => setBankAccount(e.target.value);
   const handleBankNameChange = (e) => setBankName(e.target.value);
-
-  const createNewOfficeExpense = (e) => {
-    e.preventDefault();
-    let data = {};
-    let url = '';
-
-    switch (headOfAccount) {
-      case 'Utility':
-        switch (SubHeadOfAccount) {
-          case 'Water':
-            url = '/user/createOfficeUtilExpense';
-            data = {head_of_account:'Water' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
-            break;
-          case 'Lesco':
-            url = '/user/createOfficeUtilExpense';
-            data = {head_of_account:'Lesco', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax };
-            break;
-          case 'Telephone':
-            url = '/user/createOfficeUtilExpense';
-            data = {head_of_account:'Telephone' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax};
-            break;
-          case 'Sui Gas':
-            url = '/user/createOfficeUtilExpense';
-            data = {head_of_account:'Gas', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
-            break;  
-          default:
-            return;
-        }
-        break;
-        case 'Bank Charges Expense':
-          url = '/user/createBankExpense';
-          data = { amount:amount, bank_account: bankAccount, bank_name: bankName,paid_date:date };
-          break;
-    
-        case 'Legal/Professional':
-          switch (SubHeadOfAccount) {
-            case 'Legal':
-              url = '/user/createLegalProfessionalExpense';
-              data = { head_of_account:"Legal",legal_name: legalName };
-              break;
-            case 'Accounts Consultant':
-              url = '/user/createLegalProfessionalExpense';
-              data = { head_of_account:"Account and Consultant" , amount:amount, particulor:particular, paid_date:date, vendor:vendor};
-              break;
-            case 'Billing Software':
-              url = '/user/createLegalProfessionalExpense';
-              data = {head_of_account:"IT Billing", amount:amount, particulor:particular, paid_date:date, vendor:vendor};
-              break;
-            case 'Tax Consultant':
-              url = '/user/createLegalProfessionalExpense';
-              data = { head_of_account:"Tax Consultant",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
-              break;
-            default:
-              return;
-          }
-          break;
-    
-        case 'Salary':
-          url = '/user/createSalary';
-          data = { salary_type:"Office",employee_name: employeeName, amount:amount,date:date,head_of_account:"Salaries Office Employees" };
-          break;
-    
-        case 'Printing/Stationary':
-          url = '/user/createOfficeExpense';
-          data = {head_of_account: "Printing And Stationary", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
-          break;
-    
-        case 'News Paper/Periodicals':
-          url = '/user/createOfficeExpense';
-          data = { head_of_account:"Newspaper",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
-          break;
-    
-        case 'Rent Rate/Taxes':
-          url = '/user/createOfficeExpense';
-          data = { head_of_account:"Rent Rate/Taxes",amount:amount, particulor:particular, paid_date:date, vendor:vendor };
-          break;
-    
-        case 'Advertisement':
-          url = '/user/createOfficeExpense';
-          data = {head_of_account:"Advertisement", amount, particulor: particular, paid_date:date, vendor:vendor };
-          break;
-    
-        case 'Repair/Maintenance':
-          url = '/user/createRepairMaintenanceExpense';
-          data = { amount:amount, particular:particular, paid_date:date, vendor:vendor};
-          break;
-    
-        case 'Audit':
-          url = '/user/createAuditExpense';
-          data = { year: auditYear.getFullYear(), amount:amount, paid_date:date,head_of_account:"Audit" };
-          break;
-
-        case 'Misc':
-          switch (SubHeadOfAccount) {
-            case 'Misc':
-              url = '/user/createMiscellaneousExpense';
-              data = {head_of_account:'Misc' ,amount:amount, paid_date:date,description:description};
-              break;
-            case 'TA/DA':
-              url = '/user/createMiscellaneousExpense';
-              data = {head_of_account:'TA/DA',amount:amount, paid_date:date,description:description};
-              break;
-              default:
-            return;
-          }
-          break;
-      default:
-        return;
-    }
-    
-    const createExpense = async () => {
-      console.log(data);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          process.env.REACT_APP_API_URL+url,
-          data,
-          config
-        );
-        console.log(response.data);
-        closeSection();
-        setAmount("")
-    setDate("")
-    setAdvTax("")
-    setAuditFeeChange("")
-    setAuditYear("")
-    setBankAccount("")
-    setBankName("")
-    setBillingMonth("")
-    setDescription("")
-    setEmployeeName("")
-    setParticular("")
-    setVendor("")
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    createExpense();
-  };
   const formatDate = (date) => {
     const d = new Date(date);
     let month = '' + (d.getMonth() + 1);
@@ -342,17 +210,95 @@ function OfficeExpenseComponent() {
     setVendor("")
 
   }
-  const handleEditSection = (member) => {
-    setSelectedMember(member);
-    setParticular(member.particulor);
-    setAmount(member.amount)
-    setDate(formatDate(member.paidDate))
-    setVendor(member.vendor)
-    setHeadOfAccount(member.mainHeadOfAccount.headOfAccount)
-    setEditSection(true);
-    setShowOptions(false);
-  };
 
+
+
+  const handleEditSection = async (member) => {
+    setIsLoading(true)
+    scrollToTop()
+    setSelectedMember(member);
+
+    const mainId=member._id;
+    setExpenseId(mainId);
+    const headOfAccountId = member.mainHeadOfAccount?._id || member.subHeadOfAccount?._id;
+    console.log(headOfAccountId)
+
+    try {
+      const config = {
+        headers: {
+          Authorization: 'Bearer ' + localStorage.getItem('token'),
+        },
+      };
+      const response = await axios.get(process.env.REACT_APP_API_URL + `/user/getSingleExpense?headOfAccountId=${headOfAccountId}&mainId=${mainId}`, config);
+      console.log(response)
+      const expenseData = response.data;
+      let headOfAccountValue=expenseData.mainHeadOfAccount ? expenseData.mainHeadOfAccount.headOfAccount : expenseData.subHeadOfAccount.headOfAccount
+      console.log("Head of Account", headOfAccountValue)
+      if(expenseData.subHeadOfAccount){
+        const headMapping = {
+          'TA/DA': 'Misc',
+          'Misc': 'Misc',
+          'Water': 'Utility',
+          'Gas': 'Utility',
+          'Telephone': 'Utility',
+          'Lesco':'Utility',
+          'IT Billing': 'Legal/Professional',
+          'Tax Consultant': 'Legal/Professional'
+      };
+
+      const subHeadMapping = {
+          'TA/DA': 'TA/DA',
+          'Misc': 'Misc',
+          'Water': 'Water',
+          'Telephone':'Telephone',
+          'Gas': 'Sui Gas',
+          'IT Billing': 'Billing Software',
+          'Tax Consultant': 'Tax Consultant'
+      };
+      headOfAccountValue = headMapping[headOfAccountValue] || headOfAccountValue;
+      setSubHeadOfAccount(subHeadMapping[expenseData.subHeadOfAccount?.headOfAccount] || expenseData.subHeadOfAccount?.headOfAccount);
+      console.log("The subhead set is : ",SubHeadOfAccount)
+      console.log("The head set is : ",headOfAccount)
+      }
+      setHeadOfAccount(headOfAccountValue);
+      if(headOfAccountValue==="Bank Charges")
+        setHeadOfAccount("Bank Charges Expense")
+      if(headOfAccountValue==="Printing And Stationary")
+        setHeadOfAccount("Printing/Stationary")
+      if(headOfAccountValue==="Salaries Office Employees")
+        setHeadOfAccount("Salary")
+      // setSubHeadOfAccount(expenseData.mainHeadOfAccount.headOfAccount);
+      console.log(headOfAccountValue)
+      setAmount(expenseData.amount);
+      setParticular(expenseData.particulor );
+      setDate(convertDate(expenseData.paidDate));
+      setVendor(expenseData.vendor);
+      setEmployeeName(expenseData.employeeName );
+      setBillingMonth(expenseData.billingMonth );
+      setAdvTax(expenseData.advTax);
+      setBillReference(expenseData.billReference );
+      setAuditYear(expenseData.year);
+      setLegalName(expenseData.legalName );
+      setDescription(expenseData.description );
+      if(expenseData.bank){
+        setBankAccount(expenseData.bank.accountNo)
+      setBankName(expenseData.bank.bankName );
+      }
+      setBankAccount(expenseData.bank)
+      setBankName(expenseData.bankName );
+      
+    } catch (error) {
+      console.error("Error fetching expense data:", error);
+      closeSection()
+      showErrorToastMessage("Error Occured Try Again!")
+      setIsLoading(false)
+    } finally {
+      setIsLoading(false);
+      setShowOptions(false);
+      setEditSection(true);
+    }
+  };
+  
   const handleShowOptions = (member) => {
     setSelectedMember(member);
     setShowOptions(!showOptions);
@@ -361,6 +307,19 @@ function OfficeExpenseComponent() {
   const closeSection = () => {
     setAddNew(false);
     setAmount('');
+    setDate("")
+        setAdvTax("")
+        setAuditFeeChange("")
+        setAuditYear("")
+        setBankAccount("")
+        setBankName("")
+        setHeadOfAccount("")
+        setSubHeadOfAccount("")
+        setBillingMonth("")
+        setDescription("")
+        setEmployeeName("")
+        setParticular("")
+        setVendor("")
     setEditSection(false);
   };
 
@@ -380,17 +339,120 @@ function OfficeExpenseComponent() {
   const handleSubHeadOfAccountChange=(e)=>{
     setSubHeadOfAccount(e.target.value)
   }
-  const EditOfficeExpense=()=>{
+
+
+  // Api Integration For Expense Creation
+
+  const createNewOfficeExpense = (e) => {
     e.preventDefault();
-    const data = {
-      head_of_account: headOfAccount,
-      particulor: particular,
-      amount:amount,
-      paid_date: date,
-      vendor:vendor
-    };
+    let data = {};
+    let url = '';
+
+    switch (headOfAccount) {
+      case 'Utility':
+        switch (SubHeadOfAccount) {
+          case 'Water':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Water' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+            break;
+          case 'Lesco':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Lesco', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax };
+            break;
+          case 'Telephone':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Telephone' ,bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date,adv_tax:advTax};
+            break;
+          case 'Sui Gas':
+            url = '/user/createOfficeUtilExpense';
+            data = {head_of_account:'Gas', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+            break;  
+          default:
+            return;
+        }
+        break;
+        case 'Bank Charges Expense':
+          url = '/user/createBankExpense';
+          data = { amount:amount, bank_account: bankAccount, head_of_account:"Bank Charges",paid_date:date };
+          break;
     
-    const update = async () => {
+        case 'Legal/Professional':
+          switch (SubHeadOfAccount) {
+            case 'Legal':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Legal",legal_name: legalName };
+              break;
+            case 'Accounts Consultant':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Account and Consultant" , amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            case 'Billing Software':
+              url = '/user/createLegalProfessionalExpense';
+              data = {head_of_account:"IT Billing", amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            case 'Tax Consultant':
+              url = '/user/createLegalProfessionalExpense';
+              data = { head_of_account:"Tax Consultant",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+              break;
+            default:
+              return;
+          }
+          break;
+    
+        case 'Salary':
+          url = '/user/createSalary';
+          data = { salary_type:"Office",employee_name: employeeName, amount:amount,paid_date:date,head_of_account:"Salaries Office Employees",bank_account:bankAccount };
+          break;
+    
+        case 'Printing/Stationary':
+          url = '/user/createOfficeExpense';
+          data = {head_of_account: "Printing And Stationary", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'News Paper/Periodicals':
+          url = '/user/createOfficeExpense';
+          data = { head_of_account:"Newspaper",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+          break;
+    
+        case 'Rent Rate/Taxes':
+          url = '/user/createOfficeExpense';
+          data = { head_of_account:"Rent Rate/Taxes",amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'Advertisement':
+          url = '/user/createOfficeExpense';
+          data = {head_of_account:"Advertisement", amount, particulor: particular, paid_date:date, vendor:vendor };
+          break;
+    
+        case 'Repair/Maintenance':
+          url = '/user/createLegalProfessionalExpense';
+          data = { head_of_account:"Office Repair/Maintenance",amount:amount, particulor:particular, paid_date:date, vendor:vendor};
+          break;
+    
+        case 'Audit':
+          url = '/user/createAuditExpense';
+          data = { year: auditYear.getFullYear(), amount:amount, paid_date:date,head_of_account:"Audit" };
+          break;
+
+        case 'Misc':
+          switch (SubHeadOfAccount) {
+            case 'Misc':
+              url = '/user/createMiscellaneousExpense';
+              data = {head_of_account:'Misc' ,amount:amount, paid_date:date,description:description};
+              break;
+            case 'TA/DA':
+              url = '/user/createMiscellaneousExpense';
+              data = {head_of_account:'TA/DA',amount:amount, paid_date:date,description:description};
+              break;
+              default:
+            return;
+          }
+          break;
+      default:
+        return;
+    }
+    
+    const createExpense = async () => {
       console.log(data);
       try {
         const config = {
@@ -399,23 +461,186 @@ function OfficeExpenseComponent() {
           },
         };
         const response = await axios.post(
-          process.env.REACT_APP_API_URL+`/user/updateOfficeExpense`,
+          process.env.REACT_APP_API_URL+url,
           data,
           config
         );
-        console.log(response.data);
+        // console.log(response.data);
+        showSuccessToastMessage("Expense Added Succesfully!")
         closeSection();
+        fetchBanks()
+        setAmount("")
+        setDate("")
+        setAdvTax("")
+        setAuditFeeChange("")
+        setAuditYear("")
+        setBankAccount("")
+        setBankName("")
+        setHeadOfAccount("")
+        setSubHeadOfAccount("")
+        setBillingMonth("")
+        setBillReference("")
+        setDescription("")
+        setEmployeeName("")
+        setParticular("")
+        setVendor("")
       } catch (error) {
         console.error(error);
+        showErrorToastMessage("Error Adding Please Try Again!")
       }
     };
-    update();
+    createExpense();
+  };
+//Api Integration For Expense Edit Form
+const EditOfficeExpense = (e) => {
+  e.preventDefault();
+  let data = {};
+  let url = '';
+
+  switch (headOfAccount) {
+    case 'Utility':
+      switch (SubHeadOfAccount) {
+        case 'Water':
+          url = '/user/updateOfficeUtilExpense?id=' + expenseId;
+          data = {head_of_account:'Water', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+          break;
+        case 'Lesco':
+          url = '/user/updateOfficeUtilExpense?id=' + expenseId;
+          data = {head_of_account:'Lesco', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date, adv_tax:advTax };
+          break;
+        case 'Telephone':
+          url = '/user/updateOfficeUtilExpense?id=' + expenseId;
+          data = {head_of_account:'Telephone', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date, adv_tax:advTax };
+          break;
+        case 'Sui Gas':
+          url = '/user/updateOfficeUtilExpense?id=' + expenseId;
+          data = {head_of_account:'Gas', bill_reference:billReference, amount:amount, billing_month:billingMonth, paid_date:date };
+          break;  
+        default:
+          return;
+      }
+      break;
+
+    case 'Bank Charges Expense':
+      url = '/user/updateBankExpense?id=' + expenseId;
+      data = { amount:amount, bank_account: bankAccount, head_of_account:"Bank Charges", paid_date:date };
+      break;
+
+    case 'Legal/Professional':
+      switch (SubHeadOfAccount) {
+        case 'Legal':
+          url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+          data = { head_of_account:"Legal", legal_name: legalName };
+          break;
+        case 'Accounts Consultant':
+          url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+          data = { head_of_account:"Account and Consultant", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+        case 'Billing Software':
+          url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+          data = {head_of_account:"IT Billing", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+        case 'Tax Consultant':
+          url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+          data = { head_of_account:"Tax Consultant", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+          break;
+        default:
+          return;
+      }
+      break;
+
+    case 'Salary':
+      url = '/user/updateSalary?id=' + expenseId;
+      data = { salary_type:"Office", employee_name: employeeName, amount:amount, paid_date:date, head_of_account:"Salaries Office Employees", bank_account:bankAccount };
+      break;
+
+    case 'Printing/Stationary':
+      url = '/user/updateOfficeExpense?id=' + expenseId;
+      data = {head_of_account: "Printing And Stationary", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+      break;
+
+    case 'News Paper/Periodicals':
+      url = '/user/updateOfficeExpense?id=' + expenseId;
+      data = { head_of_account:"Newspaper", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+      break;
+
+    case 'Rent Rate/Taxes':
+      url = '/user/updateOfficeExpense?id=' + expenseId;
+      data = { head_of_account:"Rent Rate/Taxes", amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+      break;
+
+    case 'Advertisement':
+      url = '/user/updateOfficeExpense?id=' + expenseId;
+      data = { head_of_account:"Advertisement", amount, particulor: particular, paid_date:date, vendor:vendor };
+      break;
+
+    case 'Repair/Maintenance':
+      url = '/user/updateLegalProfessionalExpense?id=' + expenseId;
+      data = { head_of_account:"Repair/Maintenance",amount:amount, particulor:particular, paid_date:date, vendor:vendor };
+      break;
+
+    case 'Audit':
+      url = '/user/updateAuditExpense?id=' + expenseId;
+      data = { year: auditYear, amount:amount, paid_date:date, head_of_account:"Audit" };
+      break;
+
+    case 'Misc':
+      switch (SubHeadOfAccount) {
+        case 'Misc':
+          url = '/user/updateMiscellaneousExpense?id=' + expenseId;
+          data = { head_of_account:'Misc', amount:amount, paid_date:date, description:description };
+          break;
+        case 'TA/DA':
+          url = '/user/updateMiscellaneousExpense?id=' + expenseId;
+          data = { head_of_account:'TA/DA', amount:amount, paid_date:date, description:description };
+          break;
+        default:
+          return;
+      }
+      break;
+
+    default:
+      return;
   }
 
+  const updateExpense = async () => {
+    console.log(data);
+    try {
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+      const response = await axios.post(
+        process.env.REACT_APP_API_URL + url,
+        data,
+        config
+      );
+      console.log(response.data);
+      showSuccessToastMessage("Expense Updated Successfully!");
+      fetchBanks()
+      closeSection();
+      setAmount("");
+      setDate("");
+      setAdvTax("");
+      setAuditFeeChange("");
+      setAuditYear("");
+      setBillReference("")
+      setBankAccount("");
+      setBankName("");
+      setBillingMonth("");
+      setDescription("");
+      setEmployeeName("");
+      setParticular("");
+      setVendor("");
+    } catch (error) {
+      console.error(error);
+      showErrorToastMessage("Error Updating. Please Try Again!");
+    }
+  };
 
-  // Api Integration For Expense Creation
-
-
+  updateExpense();
+};
 
 
   return (
@@ -453,7 +678,7 @@ function OfficeExpenseComponent() {
               <div className="member-details">
               <p>
             {member.mainHeadOfAccount ? member.mainHeadOfAccount.headOfAccount : member.subHeadOfAccount?.headOfAccount}</p>
-                <p>{member.paidDate}</p>
+                <p>{convertDate(member.paidDate)}</p>
                 <p>{member.amount}</p>
                 <img
                   onClick={() => handleShowOptions(member)}
@@ -503,6 +728,7 @@ function OfficeExpenseComponent() {
               id="employeeName"
               value={employeeName}
               onChange={handleEmployeeNameChange}
+              required
             />
             <label htmlFor="amount">Amount: </label>
                 <input
@@ -511,6 +737,7 @@ function OfficeExpenseComponent() {
                   id="amount"
                   value={amount}
                   onChange={handleAmountChange}
+                  required
                 />
             <label htmlFor="date">Date: </label>
             <input
@@ -519,6 +746,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             
           </>
@@ -546,6 +774,7 @@ function OfficeExpenseComponent() {
                   id="billingMonth"
                   value={billingMonth}
                   onChange={handleBillingMonthChange}
+                  required
                 />
                 <label htmlFor="advTax">Adv Tax </label>
                 <input
@@ -554,6 +783,7 @@ function OfficeExpenseComponent() {
                   id="advTax"
                   value={advTax}
                   onChange={handleAdvTaxChange}
+                  required
                 />
                 <label htmlFor="billReference">Bill Reference </label>
                 <input
@@ -562,6 +792,7 @@ function OfficeExpenseComponent() {
                   id="billReference"
                   value={billReference}
                   onChange={handleBillReferenceChange}
+                  required
                 />
                 <label htmlFor="paidDate">Paid Date: </label>
                 <input
@@ -570,6 +801,7 @@ function OfficeExpenseComponent() {
                   id="paidDate"
                   value={date}
                   onChange={handleDateChange}
+                  required
                 />
                 <label htmlFor="amount">Amount: </label>
                 <input
@@ -578,6 +810,7 @@ function OfficeExpenseComponent() {
                   id="amount"
                   value={amount}
                   onChange={handleAmountChange}
+                  required
                 />
               </>
             )}
@@ -590,6 +823,7 @@ function OfficeExpenseComponent() {
                   id="billingMonth"
                   value={billingMonth}
                   onChange={handleBillingMonthChange}
+                  required
                 />
                 <label htmlFor="amount">Amount: </label>
                 <input
@@ -598,6 +832,7 @@ function OfficeExpenseComponent() {
                   id="amount"
                   value={amount}
                   onChange={handleAmountChange}
+                  required
                 />
                 <label htmlFor="advTax">Adv Tax: </label>
                 <input
@@ -606,6 +841,7 @@ function OfficeExpenseComponent() {
                   id="advTax"
                   value={advTax}
                   onChange={handleAdvTaxChange}
+                  required
                 />
                 <label htmlFor="billReference">Bill Reference: </label>
                 <input
@@ -614,6 +850,7 @@ function OfficeExpenseComponent() {
                   id="billReference"
                   value={billReference}
                   onChange={handleBillReferenceChange}
+                  required
                 />
                 <label htmlFor="paidDate">Paid Date: </label>
                 <input
@@ -622,6 +859,7 @@ function OfficeExpenseComponent() {
                   id="paidDate"
                   value={date}
                   onChange={handleDateChange}
+                  required
                 />
               </>
             )}
@@ -634,6 +872,7 @@ function OfficeExpenseComponent() {
               id="billingMonth"
               value={billingMonth}
               onChange={handleBillingMonthChange}
+              required
             />
             <label htmlFor="amount">Amount: </label>
             <input
@@ -642,6 +881,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="billReference">Bill Reference: </label>
             <input
@@ -650,6 +890,7 @@ function OfficeExpenseComponent() {
               id="billReference"
               value={billReference}
               onChange={handleBillReferenceChange}
+              required
             />
             <label htmlFor="paidDate">Paid Date: </label>
             <input
@@ -658,6 +899,7 @@ function OfficeExpenseComponent() {
               id="paidDate"
               value={date}
               onChange={handleDateChange}
+              required
             />
           </>
         )}
@@ -670,6 +912,7 @@ function OfficeExpenseComponent() {
               id="billingMonth"
               value={billingMonth}
               onChange={handleBillingMonthChange}
+              required
             />
             <label htmlFor="amount">Amount: </label>
             <input
@@ -678,6 +921,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="billReference">Bill Reference: </label>
             <input
@@ -686,6 +930,7 @@ function OfficeExpenseComponent() {
               id="billReference"
               value={billReference}
               onChange={handleBillReferenceChange}
+              required
             />
             <label htmlFor="paidDate">Paid Date: </label>
             <input
@@ -694,6 +939,7 @@ function OfficeExpenseComponent() {
               id="paidDate"
               value={date}
               onChange={handleDateChange}
+              required
             />
           </>
         )}
@@ -710,6 +956,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="particular">Particular: </label>
             <input
@@ -718,6 +965,7 @@ function OfficeExpenseComponent() {
               id="particular"
               value={particular}
               onChange={handleParticularChange}
+              required
             />
             <label htmlFor="date">Date: </label>
             <input
@@ -726,6 +974,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             <label htmlFor="vendor">Vendor</label>
             <input
@@ -734,6 +983,7 @@ function OfficeExpenseComponent() {
               id="vendor"
               value={vendor}
               onChange={handleVendorChange}
+              required
             />
           </>
         )}
@@ -747,6 +997,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="particular">Particular: </label>
             <input
@@ -755,6 +1006,7 @@ function OfficeExpenseComponent() {
               id="particular"
               value={particular}
               onChange={handleParticularChange}
+              required
             />
             <label htmlFor="date">Date: </label>
             <input
@@ -763,6 +1015,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             <label htmlFor="vendor">Vendor</label>
             <input
@@ -771,6 +1024,7 @@ function OfficeExpenseComponent() {
               id="vendor"
               value={vendor}
               onChange={handleVendorChange}
+              required
             />
           </>
         )}
@@ -784,6 +1038,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="particular">Particular: </label>
             <input
@@ -792,6 +1047,7 @@ function OfficeExpenseComponent() {
               id="particular"
               value={particular}
               onChange={handleParticularChange}
+              required
             />
             <label htmlFor="date">Date: </label>
             <input
@@ -800,6 +1056,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             <label htmlFor="vendor">Vendor</label>
             <input
@@ -808,6 +1065,7 @@ function OfficeExpenseComponent() {
               id="vendor"
               value={vendor}
               onChange={handleVendorChange}
+              required
             />
           </>
         )}
@@ -820,6 +1078,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             <label htmlFor="particular">Particular: </label>
             <input
@@ -828,6 +1087,7 @@ function OfficeExpenseComponent() {
               id="particular"
               value={particular}
               onChange={handleParticularChange}
+              required
             />
             <label htmlFor="date">Date: </label>
             <input
@@ -836,6 +1096,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             <label htmlFor="vendor">Vendor</label>
             <input
@@ -844,6 +1105,7 @@ function OfficeExpenseComponent() {
               id="vendor"
               value={vendor}
               onChange={handleVendorChange}
+              required
             />
           </>
         )}
@@ -856,6 +1118,7 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={handleAmountChange}
+              required
             />
             {/* <label htmlFor="auditFee">Audit Fee: </label>
             <input
@@ -872,6 +1135,7 @@ function OfficeExpenseComponent() {
               id="date"
               value={date}
               onChange={handleDateChange}
+              required
             />
             <label htmlFor="auditYear">Audit Year</label>
             <DatePicker
@@ -1102,7 +1366,7 @@ function OfficeExpenseComponent() {
               <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
               <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
                 <option value="select" hidden>
-                  Select
+                  {SubHeadOfAccount}
                 </option>
                 {MISC_OFFICE_SUBHEADS.map((subHead, index) => (
                   <option key={index} value={subHead}>
@@ -1214,22 +1478,35 @@ function OfficeExpenseComponent() {
   </div>
 )}
 
+{/* Edit Section */}
+{editSection && (
+  <div className="left-section">
+    <div className="left-section-content">
+      <div onClick={closeSection} className="close-button"></div>
+      <h3>Edit Office Expense</h3>
+      <div className="horizontal-divider"></div>
+      <form onSubmit={EditOfficeExpense}>
+        <label htmlFor="headOfAccount">Head Of Account: </label>
+        <select name="headOfAccount" id="headOfAccount" value={headOfAccount} onChange={(e) => setHeadOfAccount(e.target.value)}>
+          <option value={headOfAccount} hidden>
+            {headOfAccount}
+          </option>
+          {HEADOFACCOUNTLIST.map((headOfAccount, index) => (
+            <option key={index} value={headOfAccount}>
+              {headOfAccount}
+            </option>
+          ))}
+        </select>
 
-{/* Edit SEction */}
-      {editSection && (
-        <div className="left-section">
-        <div className="left-section-content">
-          <div onClick={closeSection} className="close-button"></div>
-          <h3>Edit Office Expense</h3>
-          <div className="horizontal-divider"></div>
-          <form onSubmit={EditOfficeExpense}>
-          <label htmlFor="headOfAccount">Head Of Account: </label>
+        {headOfAccount === "Salary" && (
+          <>
+            <label htmlFor="employeeName">Employee Name: </label>
             <input
               type="text"
-              name="headOfAccount"
-              id="headOfAccount"
-              value={headOfAccount}
-              onChange={(e) => setHeadOfAccount(e.target.value)}
+              name="employeeName"
+              id="employeeName"
+              value={employeeName}
+              onChange={(e) => setEmployeeName(e.target.value)}
             />
             <label htmlFor="amount">Amount: </label>
             <input
@@ -1238,22 +1515,704 @@ function OfficeExpenseComponent() {
               id="amount"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-            /><label htmlFor="amount">Date: </label>
+              required
+            />
+            <label htmlFor="date">Date: </label>
             <input
               type="date"
               name="date"
               id="date"
               value={date}
               onChange={(e) => setDate(e.target.value)}
+              required
             />
-            <button type="submit" className="blue-button" onSubmit={EditOfficeExpense}>
-              Save
-            </button>
-          </form>
-        </div>
-      </div>
+          </>
+        )}
+
+        {headOfAccount === "Utility" && (
+          <>
+            <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+            <select name="subHeadOfAccount" id="subHeadOfAccount" value={SubHeadOfAccount} onChange={(e) => setSubHeadOfAccount(e.target.value)}>
+              <option value="select" hidden>
+                {SubHeadOfAccount}
+              </option>
+              {SubHeads.map((expense, index) => (
+                <option key={index} value={expense}>
+                  {expense}
+                </option>
+              ))}
+            </select>
+            {SubHeadOfAccount === "Lesco" && (
+              <>
+                <label htmlFor="billingMonth">Billing Month: </label>
+                <input
+                  type="text"
+                  name="billingMonth"
+                  id="billingMonth"
+                  value={billingMonth}
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                  required
+                />
+                <label htmlFor="advTax">Adv Tax: </label>
+                <input
+                  type="text"
+                  name="advTax"
+                  id="advTax"
+                  value={advTax}
+                  onChange={(e) => setAdvTax(e.target.value)}
+                  required
+                />
+                <label htmlFor="billReference">Bill Reference: </label>
+                <input
+                  type="text"
+                  name="billReference"
+                  id="billReference"
+                  value={billReference}
+                  onChange={(e) => setBillReference(e.target.value)}
+                  required
+                />
+                <label htmlFor="date">Paid Date: </label>
+                <input
+                  type="date"
+                  name="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+              </>
+            )}
+            {SubHeadOfAccount === "Telephone" && (
+              <>
+                <label htmlFor="billingMonth">Billing Month: </label>
+                <input
+                  type="text"
+                  name="billingMonth"
+                  id="billingMonth"
+                  value={billingMonth}
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                  required
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+                <label htmlFor="advTax">Adv Tax: </label>
+                <input
+                  type="number"
+                  name="advTax"
+                  id="advTax"
+                  value={advTax}
+                  onChange={(e) => setAdvTax(e.target.value)}
+                  required
+                />
+                <label htmlFor="billReference">Bill Reference: </label>
+                <input
+                  type="text"
+                  name="billReference"
+                  id="billReference"
+                  value={billReference}
+                  onChange={(e) => setBillReference(e.target.value)}
+                  required
+                />
+                <label htmlFor="date">Paid Date: </label>
+                <input
+                  type="date"
+                  name="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </>
+            )}
+            {SubHeadOfAccount === "Sui Gas" && (
+              <>
+                <label htmlFor="billingMonth">Billing Month: </label>
+                <input
+                  type="text"
+                  name="billingMonth"
+                  id="billingMonth"
+                  value={billingMonth}
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                  required
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+                <label htmlFor="billReference">Bill Reference: </label>
+                <input
+                  type="text"
+                  name="billReference"
+                  id="billReference"
+                  value={billReference}
+                  onChange={(e) => setBillReference(e.target.value)}
+                  required
+                />
+                <label htmlFor="date">Paid Date: </label>
+                <input
+                  type="date"
+                  name="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </>
+            )}
+            {SubHeadOfAccount === "Water" && (
+              <>
+                <label htmlFor="billingMonth">Billing Month: </label>
+                <input
+                  type="text"
+                  name="billingMonth"
+                  id="billingMonth"
+                  value={billingMonth}
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                  required
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  required
+                />
+                <label htmlFor="billReference">Bill Reference: </label>
+                <input
+                  type="text"
+                  name="billReference"
+                  id="billReference"
+                  value={billReference}
+                  onChange={(e) => setBillReference(e.target.value)}
+                  required
+                />
+                <label htmlFor="date">Paid Date: </label>
+                <input
+                  type="date"
+                  name="date"
+                  id="date"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                  required
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {headOfAccount === "Legal/Professional" && (
+          <>
+            <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+            <select
+              name="subHeadOfAccount"
+              id="subHeadOfAccount"
+              onChange={handleSubHeadOfAccountChange}
+            >
+              <option value="select" hidden>
+                {SubHeadOfAccount}
+              </option>
+              {LEGAL_PROFESSIONAL_SUBHEADS.map((subHead, index) => (
+                <option key={index} value={subHead}>
+                  {subHead}
+                </option>
+              ))}
+            </select>
+
+            {SubHeadOfAccount === 'Legal' && (
+              <>
+                <label htmlFor="legalName">Legal Name: </label>
+                <input
+                  type="text"
+                  name="legalName"
+                  id="legalName"
+                  value={legalName}
+                  onChange={(e) => setLegalName(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Accounts Consultant' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Billing Software' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
+
+            {SubHeadOfAccount === 'Tax Consultant' && (
+              <>
+                <label htmlFor="vendor">Vendor</label>
+                <input
+                  type="text"
+                  name="vendor"
+                  id="vendor"
+                  value={vendor}
+                  onChange={(e) => setVendor(e.target.value)}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="number"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <label htmlFor="particular">Particular: </label>
+                <input
+                  type="text"
+                  name="particular"
+                  id="particular"
+                  value={particular}
+                  onChange={(e) => setParticular(e.target.value)}
+                />
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id="paidDate"
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
+                />
+              </>
+            )}
+          </>
+        )}
+
+        {headOfAccount === "Bank Charges" || headOfAccount === "Bank Charges Expense" && (
+          <>
+
+            <label htmlFor="bank-name">Bank Name: </label>
+            <select name="bank-name" id="bank-name" onChange={handleBankNameChange}>
+            <option value="select" hidden>{bankName}</option>
+                {bankList.map((bank) => (
+                    <option value={bank._id} key={bank._id}>{bank.bankName} - {bank.branchCode}</option>
+                  ))}
+              </select>
+              <label htmlFor="purchaseName">Account Number: </label>
+              <select name="account-number" id="account-number" onChange={handleBankAccountChange}>
+              <option value="select" hidden>Select</option>
+              {bankList
+                .filter((bank) => bank._id === bankName)
+                .map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
+                ))}
+            </select>
+    
+              <label htmlFor="date">Date: </label>
+              <input
+                type="date"
+                name="date"
+                readOnly
+                id="date"
+                value={date}
+                onChange={handleDateChange}
+              />
+              <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={handleAmountChange}
+            />
+           </>
+        )}
+        {headOfAccount === "Printing And Stationary" || headOfAccount==="Printing/Stationary" && (
+          <>
+            <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+            <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={(e) => setParticular(e.target.value)}
+              required
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+            <label htmlFor="vendor">Vendor</label>
+            <input
+              type="text"
+              name="vendor"
+              id="vendor"
+              value={vendor}
+              onChange={(e) => setVendor(e.target.value)}
+              required
+            />
+          </>
+        )}
+        {headOfAccount === "Audit" && (
+        <>
+          <label htmlFor="auditYear">Audit Year</label>
+            <DatePicker
+              selected={auditYear}
+              onChange={handleAuditYearChange}
+              showYearPicker
+              dateFormat="yyyy"
+              placeholderText="Select Year"
+              value={auditYear}
+            />
+          <label htmlFor="amount">Amount: </label>
+          <input
+            type="number"
+            name="amount"
+            id="amount"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            required
+          />
+          <label htmlFor="date">Date: </label>
+          <input
+            type="date"
+            name="date"
+            id="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+          />
+        </>
       )}
+        {headOfAccount === "Repair/Maintenance" && (
+          <>
+            <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={(e) => setParticular(e.target.value)}
+              required
+            />
+            <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </>
+        )}
+      
+        {headOfAccount === "Advertisement" && (
+          <>
+            
+            <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+             <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={(e) => setParticular(e.target.value)}
+              required
+            />
+            <label htmlFor="vendor">Vendor: </label>
+    <input
+      type="text"
+      name="vendor"
+      id="vendor"
+      value={vendor}
+      onChange={(e) => setVendor(e.target.value)}
+      required
+    />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </>
+        )}
+
+        {headOfAccount === "Rent Rate/Taxes" && (
+          <>
+            <label htmlFor="particular">Particular: </label>
+            <input
+              type="text"
+              name="particular"
+              id="particular"
+              value={particular}
+              onChange={(e) => setParticular(e.target.value)}
+              required
+            />
+            <label htmlFor="amount">Amount: </label>
+            <input
+              type="number"
+              name="amount"
+              id="amount"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              required
+            />
+            <label htmlFor="date">Date: </label>
+            <input
+              type="date"
+              name="date"
+              id="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+            />
+          </>
+        )}
+        {headOfAccount === "News Paper/Periodicals" && (
+  <>
+    <label htmlFor="amount">Amount: </label>
+    <input
+      type="number"
+      name="amount"
+      id="amount"
+      value={amount}
+      onChange={(e) => setAmount(e.target.value)}
+      required
+    />
+    <label htmlFor="particular">Particular: </label>
+    <input
+      type="text"
+      name="particular"
+      id="particular"
+      value={particular}
+      onChange={(e) => setParticular(e.target.value)}
+      required
+    />
+    <label htmlFor="date">Date: </label>
+    <input
+      type="date"
+      name="date"
+      id="date"
+      value={date}
+      onChange={(e) => setDate(e.target.value)}
+      required
+    />
+    <label htmlFor="vendor">Vendor: </label>
+    <input
+      type="text"
+      name="vendor"
+      id="vendor"
+      value={vendor}
+      onChange={(e) => setVendor(e.target.value)}
+      required
+    />
+  </>
+        )}
+
+
+        {headOfAccount === "Misc" && (
+                  <>
+                      <label htmlFor="subHeadOfAccount">Sub Head Of Account: </label>
+                      <select name="subHeadOfAccount" id="subHeadOfAccount" onChange={handleSubHeadOfAccountChange}>
+                        <option value="select" hidden>
+                          Select
+                        </option>
+                        {MISC_OFFICE_SUBHEADS.map((subHead, index) => (
+                          <option key={index} value={subHead}>
+                            {subHead}
+                          </option>
+                        ))}
+                      </select>
+                      
+                      {SubHeadOfAccount === 'Misc' && (
+                        <>
+                        <label htmlFor="amount">Amount: </label>
+                          <input
+                            type="number"
+                            name="amount"
+                            id="amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                          /><label htmlFor="amount">Date: </label>
+                          <input
+                            type="date"
+                            name="date"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                          />
+                          <label htmlFor="amount">Discription: </label>
+                          <input
+                            type="text"
+                            name="description"
+                            id="discription"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                          /></>
+                        )}
+                        {SubHeadOfAccount === 'TA/DA' && (
+                        <>
+                          <label htmlFor="amount">Amount: </label>
+                          <input
+                            type="number"
+                            name="amount"
+                            id="amount"
+                            value={amount}
+                            onChange={(e) => setAmount(e.target.value)}
+                          /><label htmlFor="amount">Date: </label>
+                          <input
+                            type="date"
+                            name="date"
+                            id="date"
+                            value={date}
+                            onChange={(e) => setDate(e.target.value)}
+                          />
+                          <label htmlFor="amount">Discription: </label>
+                          <input
+                            type="text"
+                            name="description"
+                            id="discription"
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                          /></>
+                        )}
+                    
+                  </>
+                )}
+
+        <br></br>
+        <button type="submit" className="submit-button">
+          Update
+        </button>
+        {isLoading && (
+          <div className="loading-indicator">
+            <div className="spinner"></div>
+          </div>
+        )}
+      </form>
+      
+    </div>
+    
+  </div>
+)}
+
       </div>
+      <ToastContainer />
+
     </>
   );
 }
