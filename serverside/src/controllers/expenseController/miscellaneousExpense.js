@@ -21,7 +21,7 @@ module.exports = {
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
         amount: amount,
-        vendorName: vendor_name,
+        vendor: vendor_name,
         plotNumber: plot_number,
         description: description
       });
@@ -88,7 +88,7 @@ module.exports = {
         updateData.amount = req.body.amount;
       }
       if (req.body.vendor_name) {
-        updateData.vendor_name = req.body.vendor_name;
+        updateData.vendor = req.body.vendor_name;
       }
       if (req.body.plot_number) {
         updateData.plot_number = req.body.plot_number;

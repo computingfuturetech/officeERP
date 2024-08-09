@@ -79,6 +79,9 @@ module.exports = {
             if (req.body.bill_reference) {
                 updateData.billReference = req.body.bill_reference;
             }
+            if (req.body.cheque_no) {
+                updateData.chequeNumber = req.body.cheque_no;
+            }
             if (req.body.salary_type) {
                 const foundSalaryType = await SalaryType.findOne({ salaryType: req.body.salary_type });
                 if (!foundSalaryType) {

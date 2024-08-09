@@ -20,9 +20,9 @@ const miscellaneousExpenseSchema = new Schema({
         type: String,
     },
     plotNumber:{
-        type: Number,
+        type: String,
     },
-    vendorName:{
+    vendor:{
         type: String,
     }
 }
