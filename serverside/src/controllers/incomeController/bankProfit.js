@@ -1,6 +1,7 @@
 const BankList = require("../../models/bankModel/bank");
 const BankProfit = require("../../models/incomeModels/bankProfitModels/bankProfit");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
+const mongoose = require('mongoose')
 
 module.exports = {
   createBankProfit: async (req, res) => {
@@ -95,49 +96,53 @@ module.exports = {
       res.status(500).json({ message: 'Internal Server Error' });
     }
   },
-  // getBankProfits: async (req, res) => {
-  //   const { id, bankname, sort, page_no = 1, limit = 10 } = req.query;
-  //   let sortOrder = {};
-  //   if (sort === 'asc') {
-  //     sortOrder = { amount: 1 };
-  //   } else if (sort === 'desc') {
-  //     sortOrder = { amount: -1 };
-  //   }
+  getBankProfits: async (req, res) => {
+    const { id, bank_name, sort, profit_month, page_no = 1, limit = 10 } = req.query;
+    let sortOrder = {};
+    if (sort === 'asc') {
+      sortOrder = { amount: 1 };
+    } else if (sort === 'desc') {
+      sortOrder = { amount: -1 };
+    }
 
-  //   try {
-  //     if (id) {
-  //       const bankProfit = await BankProfit.findById(id).exec();
-  //       if (!bankProfit) {
-  //         return res.status(404).json({ message: "Bank Profit not found" });
-  //       }
-  //       res.status(200).json(bankProfit);
-  //     } else if (bankname) {
-  //       const totalBankProfits = await BankProfit.countDocuments({ bankName: bankname });
-  //       const skip = (page_no - 1) * limit; 
-  //       const bankProfits = await BankProfit.find({ bankName: bankname })
-  //        .sort(sortOrder)
-  //        .skip(skip) 
-  //        .limit(limit)
-  //        .exec();
-  //       const hasMore = page_no * limit < totalBankProfits;
-  //       if (bankProfits.length === 0) {
-  //         return res.status(404).json({ message: "Bank Profits not found" });
-  //       }
-  //       res.status(200).json({ bankProfits, hasMore });
-  //     } else {
-  //       const totalBankProfits = await BankProfit.countDocuments();
-  //       const skip = (page_no - 1) * limit; 
-  //       const bankProfits = await BankProfit.find()
-  //        .sort(sortOrder)
-  //        .skip(skip)
-  //        .limit(limit)
-  //        .exec();
-  //       const hasMore = page_no * limit < totalBankProfits;
-  //       res.status(200).json({ bankProfits, hasMore });
-  //     }
-  //   } catch (err) {
-  //     res.status(500).json({ message: err.message });
-  //   }
-  // }
+    try {
+      let filter = {};
 
+      if (profit_month) {
+        filter.profitMonth = profit_month;
+      }
+
+      if (id) {
+        const bankProfit = await BankProfit.findById(id)
+          .populate('bank', 'bankName')
+          .populate('headOfAccount', 'headOfAccount')
+          .exec();
+        if (!bankProfit) {
+          return res.status(404).json({ message: "Bank Profit not found" });
+        }
+        res.status(200).json(bankProfit);
+      } else {
+        const bankProfits = await BankProfit.find(filter)
+          .populate('bank', 'bankName')
+          .populate('headOfAccount', 'headOfAccount')
+          .skip((page_no - 1) * limit)
+          .limit(limit)
+          .sort(sortOrder)
+          .exec();
+
+        if (bankProfits.length === 0) {
+          return res.status(404).json({ message: "Bank Profits not found" });
+        }
+
+        if (bank_name) {
+          const filteredBankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.bankName === bank_name);
+          res.status(200).json(filteredBankProfits);
+        } else {
+          res.status(200).json(bankProfits);
+        }
+      }
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  },
 };

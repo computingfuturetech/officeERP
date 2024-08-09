@@ -34,6 +34,9 @@ const legalProfessionalExpense = require('./src/models/expenseModel/legalProfess
 dotenv.config();
 
 const coreRouter = require("./src/routes/coreRoutes/coreApi");
+const incomeRouter = require("./src/routes/coreRoutes/incomeApi");
+const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
+const memberRouter = require("./src/routes/coreRoutes/memberApi");
 
 app.use(express.json());
 app.use(cors());
@@ -48,6 +51,9 @@ app.use((req, res, next) => {
 });
 
 app.use("/user", coreRouter);
+app.use("/user", incomeRouter);
+app.use("/user", expenseRouter);
+app.use("/user", memberRouter);
 
 
 const port = 3001;

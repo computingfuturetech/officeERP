@@ -1,52 +1,51 @@
 const Member = require("../../models/memberModels/memberList");
 const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount")
 const SellerPurchaseIncome = require("../../models/incomeModels/sellerPurchaseIncome/sellerPurchaseIncome")
+const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 
 module.exports = {
   createSellerPurchaseIncome: async (req, res) => {
     const {
-      ms_no,
+      member_no,
       challan_no,
-      noc_fee,
-      masjid_fund,
-      dual_owner_fee,
-      covered_area_fee,
-      share_money,
-      deposit_for_land_cost,
-      deposit_for_development_charges,
-      additional_development_charges,
-      electricity_charges,
       address,
-      date,
+      paid_date,
+      amount,
+      head_of_account,
+      type
     } = req.body;
     try {
       if (
-        !date ||
-        !ms_no ||
+        !paid_date ||
+        !member_no ||
         !challan_no ||
-        !address
+        !address ||
+        !amount  ||
+        !head_of_account ||
+        !type
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }
-      const member = await Member.findOne({ msNo: ms_no });
+      const member = await Member.findOne({ $expr: { $eq: [ { $toString: "$msNo" }, `${req.body.member_no}` ] } });
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
+
+      const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+      if (!incomeHeadOfAccount) {
+        return res.status(404).json({ message: 'Income head of account not found' });
+      }
+
       const sellerPurchaseIncome = new SellerPurchaseIncome({
-        date: date,
+        paidDate: paid_date,
         memberNo: member._id,
         challanNo: challan_no,
         address: address,
-        nocFee: noc_fee ?? 0,
-        masjidFund: masjid_fund ?? 0,
-        dualOwnerFee: dual_owner_fee ?? 0,
-        coveredAreaFee: covered_area_fee ?? 0,
-        shareMoney: share_money ?? 0,
-        depositForLandCost: deposit_for_land_cost ?? 0,
-        depositForDevelopmentCharges: deposit_for_development_charges ?? 0,
-        additionalDevelopmentCharges: additional_development_charges ?? 0,
-        electricityCharges: electricity_charges ?? 0
+        amount: amount,
+        headOfAccount:incomeHeadOfAccount._id,
+        type: type,
       });
+
       await sellerPurchaseIncome.save();
       res.status(201).json({
         message: "Seller Purchaser created successfully",
@@ -68,73 +67,54 @@ module.exports = {
         return res.status(404).json({ message: "Seller Purchase Income not found" });
       }
       const {
-        ms_no,
+        member_no,
         challan_no,
-        noc_fee,
-        masjid_fund,
-        dual_owner_fee,
-        covered_area_fee,
-        share_money,
-        deposit_for_land_cost,
-        deposit_for_development_charges,
-        additional_development_charges,
-        electricity_charges,
         address,
-        date,
+        paid_date,
+        amount,
+        head_of_account,
       } = req.body;
       const updateData = {};
-      if (date) {
-        updateData.date = date;
+      if (paid_date) {
+        updateData.paidDate = paid_date;
       }
-      if (ms_no) {
-        const member = await Member.findOne({ msNo: ms_no });
+      if (member_no) {
+        const member = await Member.findOne({ $expr: { $eq: [ { $toString: "$msNo" }, `${req.body.member_no}` ] } });
         if (!member) {
           return res.status(404).json({ message: "Member not found" });
         }
         updateData.memberNo = member._id;
       }
+
+      if (head_of_account) {
+        const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+        if (!incomeHeadOfAccount) {
+          return res.status(404).json({ message: 'Income head of account not found' });
+        }
+        updateData.headOfAccount = incomeHeadOfAccount._id;
+      }
+
       if (challan_no) {
         updateData.challanNo = challan_no;
       }
       if (address) {
         updateData.address = address;
       }
-      if (noc_fee !== undefined) {
-        updateData.nocFee = noc_fee;
+      if (paid_date) {
+        updateData.paidDate = paid_date;
       }
-      if (masjid_fund !== undefined) {
-        updateData.masjidFund = masjid_fund;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (dual_owner_fee !== undefined) {
-        updateData.dualOwnerFee = dual_owner_fee;
-      }
-      if (covered_area_fee !== undefined) {
-        updateData.coveredAreaFee = covered_area_fee;
-      }
-      if (share_money !== undefined) {
-        updateData.shareMoney = share_money;
-      }
-      if (deposit_for_land_cost !== undefined) {
-        updateData.depositForLandCost = deposit_for_land_cost;
-      }
-      if (deposit_for_development_charges !== undefined) {
-        updateData.depositForDevelopmentCharges = deposit_for_development_charges;
-      }
-      if (additional_development_charges !== undefined) {
-        updateData.additionalDevelopmentCharges = additional_development_charges;
-      }
-      if (electricity_charges !== undefined) {
-        updateData.electricityCharges = electricity_charges;
-      }
-      console.log("Update Data:", updateData);
-      const updatedSellerPurchaseIncome = await SellerPurchaseIncome.findByIdAndUpdate(
+      
+      const updateSellerPurchase = await SellerPurchaseIncome.findByIdAndUpdate(
         id,
         { $set: updateData },
         { new: true }
       ).exec();
       res.status(200).json({
-        message: "Seller Purchase Income updated successfully",
-        data: updatedSellerPurchaseIncome,
+        message: "Seller Purchase Income update successfully",
+        data: updateSellerPurchase,
       });
     } catch (err) {
       console.error("Error:", err);
@@ -142,30 +122,46 @@ module.exports = {
     }
   },
   getSellerPurchaseIncome: async (req, res) => {
-    const { ms_no } = req.query;
+    const { member_no, type, sort, id } = req.query;
     try {
+      let sortOrder = {};
+      if (sort === 'asc') {
+        sortOrder = { amount: 1 };
+      } else if (sort === 'desc') {
+        sortOrder = { amount: -1 };
+      }
+  
+      let filter = {};
+      if (type) {
+        filter.type = type;
+      }
+  
       let sellerPurchaseIncome;
-
-      if (ms_no) {
-        const memberNo = await Member.findOne({ msNo: ms_no }).exec();
-        if (!memberNo) {
-          return res.status(404).json({ message: 'Member not found' });
-        }
-
-        sellerPurchaseIncome = await SellerPurchaseIncome.find({ memberNo: memberNo._id })
+  
+      if (id) {
+        sellerPurchaseIncome = await SellerPurchaseIncome.findById(id)
           .populate('memberNo', 'msNo purchaseName')
+          .populate('headOfAccount', 'headOfAccount incomeType')
           .exec();
       } else {
-        sellerPurchaseIncome = await SellerPurchaseIncome.find()
+        sellerPurchaseIncome = await SellerPurchaseIncome.find(filter)
           .populate('memberNo', 'msNo purchaseName')
+          .populate('headOfAccount', 'headOfAccount incomeType')
+          .sort(sortOrder)
           .exec();
       }
-
-      if (sellerPurchaseIncome.length > 0) {
-        return res.status(200).json(sellerPurchaseIncome);
-      } else {
+  
+      if (sellerPurchaseIncome.length === 0) {
         return res.status(404).json({ message: 'Seller Purchase Income not found' });
       }
+  
+      if (member_no) {
+        const filteredSellerPurchaseIncome = sellerPurchaseIncome.filter((sellerPurchaseIncome) => sellerPurchaseIncome.memberNo.msNo === member_no);
+        res.status(200).json(filteredSellerPurchaseIncome);
+      } else {
+        res.status(200).json(sellerPurchaseIncome);
+      }
+  
     } catch (err) {
       res.status(500).json({ message: err.message });
     }

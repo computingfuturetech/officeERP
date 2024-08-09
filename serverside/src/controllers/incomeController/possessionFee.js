@@ -12,7 +12,7 @@ module.exports = {
       member_no,
       challan_no,
       amount,
-      head_of_account, // This is a comma-separated string
+      head_of_account,
       paid_date,
     } = req.body;
     console.log(req.body);
@@ -120,17 +120,40 @@ module.exports = {
       res.status(500).json({ message: err });
     }
   },
-  // getPossessionFee: async (req, res) => {
-  //   try {
-  //       const possessionFees = await PossessionFee.find()
-  //           .populate('memberNo', 'msNo purchaseName')
-  //           .exec();
-  //       if (possessionFees.length === 0) {
-  //           return res.status(404).json({ message: 'Possession Fee not found for this member' });
-  //       }
-  //       res.status(200).json(possessionFees);
-  //   } catch (err) {
-  //       res.status(500).json({ message: err.message });
-  //   }
-  // },
+  getPossessionFee: async (req, res) => {
+    const { id, sort,member_no } = req.query;
+    let sortOrder = {};
+    if (sort === 'asc') {
+      sortOrder = { amount: 1 };
+    } else if (sort === 'desc') {
+      sortOrder = { amount: -1 };
+    }
+
+    try {
+        if (id) {
+          const possessionFee = await PossessionFee.findById(id)
+            .populate('memberNo', 'msNo purchaseName')
+            .populate('headOfAccount', 'headOfAccount')
+            .exec();
+          res.status(200).json(possessionFee);
+        }
+        const possessionFees = await PossessionFee.find()
+            .populate('memberNo', 'msNo purchaseName')
+            .populate('headOfAccount', 'headOfAccount')
+            .sort(sortOrder)
+            .exec();
+        if (possessionFees.length === 0) {
+            return res.status(404).json({ message: 'Possession Fee not found for this member' });
+        }
+
+        if (member_no) {
+          const filteredPossessionFees = possessionFees.filter((possessionFee) => possessionFee.memberNo.msNo === member_no);
+          res.status(200).json(filteredPossessionFees);
+        } else {
+          res.status(200).json(possessionFees);
+        }
+    } catch (err) {
+        res.status(500).json({ message: err.message });
+    }
+  },
 };

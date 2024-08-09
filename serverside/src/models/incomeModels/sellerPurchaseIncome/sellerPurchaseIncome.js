@@ -4,7 +4,7 @@ const Member=require('../../memberModels/memberList')
 const HeadOfAccount=require('../../headOfAccountModel/headOfAccount')
 
 const sellerPurchaseIncomeSchema = new Schema({
-    date:{
+    paidDate:{
         type: Date,
     },
     memberNo:{
@@ -18,34 +18,18 @@ const sellerPurchaseIncomeSchema = new Schema({
     address:{
         type:String,
     },
-    nocFee:{
-        type: Number,
+    headOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
+        required: true
     },
-    masjidFund:{
+    amount:{
         type: Number,
+        required: true
     },
-    dualOwnerFee:{
-        type: Number,
-    },
-    coveredAreaFee:{
-        type: Number,
-    },
-    shareMoney:{
-        type: Number,
-    },
-    depositForLandCost:{
-        type: Number,
-    },
-    depositForDevelopmentCharges:{
-        type: Number,
-    },
-    additionalDevelopmentCharges:{
-        type: Number,
-    },
-    electricityCharges:{
-        type: Number,
-    },
-
+    type:{
+        type: String,
+    }
 }
 )
 
