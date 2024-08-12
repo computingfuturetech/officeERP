@@ -49,7 +49,7 @@ export default function BankProfitComponent() {
 //           },
 //       }
 //       const response=await axios.get(
-//         `http://192.168.0.189:3001/user/getBankProfit`,
+//         process.env.REACT_APP_API_URL+`/user/getBankProfit`,
 //         config
 //       )
 //       setBankProfitList(response.data)
@@ -71,7 +71,7 @@ export default function BankProfitComponent() {
           },
       }
       const response=await axios.get(
-        `http://192.168.0.189:3001/user/bankList`,
+        process.env.REACT_APP_API_URL+`/user/bankList`,
         config
       )
       setBankList(response.data)
@@ -99,7 +99,7 @@ useEffect(() => {
       };
 
       const response = await axios.get(
-        `http://192.168.0.189:3001/user/getBankProfit/?page_no=${page}`,
+        process.env.REACT_APP_API_URL+`/user/getBankProfit/?page_no=${page}`,
         config
       );
       console.log(response.data);
@@ -241,7 +241,7 @@ useEffect(() => {
           },
         };
         const response = await axios.post(
-          `http://192.168.0.189:3001/user/createBankProfit`,
+          process.env.REACT_APP_API_URL+`/user/createBankProfit`,
           data,
           config
         );
@@ -394,8 +394,8 @@ useEffect(() => {
             onRemove={handleRemove}
             showCheckbox
             style={{
-              chips: { background: "#1640d6" },
-              searchBox: { border: "1px solid #ccc", borderRadius: "4px"},
+              chips: { background: "#1640d6",maxHeight:"11px" },
+              searchBox: { border: "1px solid #ccc", borderRadius: "4px", maxHeight:"31px"},
             }}
             placeholder="Filter by Bank"
             avoidHighlightFirstOption

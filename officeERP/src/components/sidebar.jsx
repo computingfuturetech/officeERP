@@ -12,7 +12,7 @@ export default function Sidebar() {
   const [showSeller, setShowSeller] = useState(false);
   const [showBank, setShowBank] = useState(false);
   const [showPurchaser, setShowPurchaser] = useState(false);
-  const [postPurchase, setPostPurchase] = useState(false);
+  const [postPurchase, setPossessionIncome] = useState(false);
   const [showMonthly, setShowMonthly] = useState(false);
   const [showExpense, setShowExpense] = useState(false);
   const [showOfficeExpense, setShowOfficeExpense] = useState(false);
@@ -72,10 +72,10 @@ export default function Sidebar() {
   const handlePurchaser = () => {
     setShowPurchaser(!showPurchaser);
   };
-  const handlePostPurchase = () => {
-    setPostPurchase(!postPurchase);
+  const handlePossessionIncome = () => {
+    setPossessionIncome(!postPurchase);
   };
-  const handleMonthly = () => {
+  const handleWaterMaintanance = () => {
     setShowMonthly(!showMonthly);
   };
   const handleExpense=()=>{
@@ -144,7 +144,7 @@ export default function Sidebar() {
                     showGeneral ? "active" : ""
                   }`}
                 >
-                  General
+                  General Income
                 </div>
                 {showGeneral && (
                   <>
@@ -166,17 +166,7 @@ export default function Sidebar() {
                           activeClassName="active"
                           onClick={() => handlePurchaser(false)}
                         >
-                          Purchaser
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink
-                          exact
-                          to="/income/annual"
-                          activeClassName="active"
-                          onClick={() => setIncome(false)}
-                        >
-                          Post Purchase
+                          Add New Purchaser 
                         </NavLink>
                       </li>
                     </ul>
@@ -185,14 +175,53 @@ export default function Sidebar() {
               </>
             )}
             {showIncome && (
+                  <>
+                    <div
+                      onClick={handleBank}
+                      className={`dropdown dropdown-item ${
+                        showBank ? "active" : ""
+                      }`}
+                    >
+                      Bank Income
+                    </div>
+                    {showBank && (
+                      <>
+                        <ul className="dropdown-menu">
+                          <li>
+                            <NavLink
+                              exact
+                              to="/income/bank-profit"
+                              activeClassName="active"
+                              onClick={() => setIncome(false)}
+                            >
+                              Bank Profit
+                            </NavLink>
+                          </li>
+                          <li>
+                            <NavLink
+                              exact
+                              to="/income/annual"
+                              activeClassName="active"
+                              onClick={() => setIncome(false)}
+                            >
+                              Annual
+                            </NavLink>
+                          </li>
+                        </ul>
+                      </>
+                    )}
+                  </>
+                )
+              }
+            {showIncome && (
               <>
                 <div
-                  onClick={handleMonthly}
+                  onClick={handleWaterMaintanance}
                   className={`dropdown dropdown-item ${
                     showMonthly ? "active" : ""
                   }`}
                 >
-                  Monthly Income
+                  Water/Maintainance
                 </div>
                 {showMonthly && (
                   <>
@@ -225,12 +254,12 @@ export default function Sidebar() {
               showIncome && (
                 <>
                   <div
-                    onClick={handlePostPurchase}
+                    onClick={handlePossessionIncome}
                     className={`dropdown dropdown-item ${
                       postPurchase ? "active" : ""
                     }`}
                   >
-                    Post Purchase
+                    Possession Income
                   </div>
                   {postPurchase && (
                     <>
@@ -260,50 +289,7 @@ export default function Sidebar() {
                   )}
                 </>
               )}
-              {
-                showIncome && (
-                  <>
-                    <div
-                      onClick={handleBank}
-                      className={`dropdown dropdown-item ${
-                        showBank ? "active" : ""
-                      }`}
-                    >
-                      Bank
-                    </div>
-                    {showBank && (
-                      <>
-                        <ul className="dropdown-menu">
-                          <li>
-                            <NavLink
-                              exact
-                              to="/income/bank-profit"
-                              activeClassName="active"
-                              onClick={() => setIncome(false)}
-                            >
-                              Bank Profit
-                            </NavLink>
-                          </li>
-                          <li>
-                            <NavLink
-                              exact
-                              to="/income/annual"
-                              activeClassName="active"
-                              onClick={() => setIncome(false)}
-                            >
-                              Annual
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </>
-                    )}
-                  </>
-                )
-              }
           </li>
-
-
-
 
 
 
