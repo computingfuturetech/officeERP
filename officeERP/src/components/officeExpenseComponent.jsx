@@ -82,7 +82,7 @@ function OfficeExpenseComponent() {
           },
       }
       const response=await axios.get(
-        `http://192.168.0.189:3001/user/bankList`,
+        process.env.REACT_APP_API_URL+`/user/bankList`,
         config
       )
       setBankList(response.data)

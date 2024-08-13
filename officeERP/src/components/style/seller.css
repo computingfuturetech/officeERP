@@ -1,0 +1,6 @@
+.action-buttons{
+    .blue-button{
+        width:-webkit-fill-available;
+        height:43px
+    }
+}
