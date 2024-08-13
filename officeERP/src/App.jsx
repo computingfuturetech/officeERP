@@ -14,6 +14,8 @@ import Seller from './general/seller'
 import Purchaser from './general/purchaser'
 import OfficeExpense from './expense/office-expense'
 import SiteExpense from './expense/site-expense'
+import WaterMaintainance from './income/water-maintainance'
+import Possession from './income/possession'
 
 function App() {
   
@@ -33,7 +35,9 @@ function App() {
           <Route path="/expense/office-expense" element={<OfficeExpense/>}/>
           <Route path="/expense/site-expense" element={<SiteExpense/>}/>
           <Route path="/income/seller" element={<Seller/>}/>
+          <Route path="/income/possession" element={<Possession/>}/>
           <Route path="/income/purchaser" element={<Purchaser/>}/>
+          <Route path="/income/water-maintainance" element={<WaterMaintainance/>}/>
           <Route path="/dummy3" element={<Dummy2/>}/>
           <Route path="/dummy4" element={<Dummy3/>}/>
           <Route path="/dummy5" element={<Dummy4/>}/>
