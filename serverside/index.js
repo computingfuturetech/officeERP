@@ -56,7 +56,7 @@ app.use("/user", expenseRouter);
 app.use("/user", memberRouter);
 
 
-const port = 3001;
+const port = process.env.PORT;
 const ip = process.env.IP;
 
 app.get("/", function (req, res) {
