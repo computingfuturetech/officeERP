@@ -35,16 +35,23 @@ module.exports = {
           return res.status(404).json({ message: "Member not found" });
         }
   
-        const incomeHeadOfAccounts = await IncomeHeadOfAccount.find({ _id: { $in: headOfAccountIds } }).exec();
-        if (incomeHeadOfAccounts.length !== headOfAccountIds.length) {
-          return res.status(404).json({ message: "One or more income head of account not found" });
-        }
+        const incomeHeadOfAccounts = await IncomeHeadOfAccount.find({
+          incomeType: type
+      }).exec();
+  
+      if (incomeHeadOfAccounts.length === 0) {
+          return res.status(404).json({ message: "No income head of account found for the given type" });
+      }
+  
+      const headOfAccountIds = incomeHeadOfAccounts.map(account => account._id);
+
+
 
         const possessionFee = new PossessionFee({
           memberNo: member._id,
           challanNo: challan_no,
           amount: amount,
-          headOfAccount: incomeHeadOfAccounts.map((account) => account._id),
+          headOfAccount: headOfAccountIds,
           paidDate: paid_date,
         });
   

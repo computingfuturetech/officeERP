@@ -18,18 +18,52 @@ const sellerPurchaseIncomeSchema = new Schema({
     address:{
         type:String,
     },
-    headOfAccount:{
+    headOfAccount: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'IncomeHeadOfAccount',
-        required: true
-    },
-    amount:{
-        type: Number,
-        required: true
-    },
+    }],
     type:{
         type: String,
-    }
+    },
+    nocFee:{
+        type: Number,
+    },
+    masjidFund:{
+        type: Number,
+    },
+    dualOwnerFee:{
+        type: Number,
+    },
+    coveredAreaFee:{
+        type: Number,
+    },
+    shareMoney:{
+        type: Number,
+    },
+    depositForLandCost:{
+        type: Number,
+    },
+    depositForDevelopmentCharges:{
+        type: Number,
+    },
+    additionalDevelopmentCharges:{
+        type: Number,
+    },
+    electricityCharges:{
+        type: Number,
+    },  
+    transferFee:{
+        type: Number,
+    },
+    membershipFee:{
+        type: Number,
+    },
+    admissionFee:{
+        type: Number,
+    },
+    preferenceFee:{
+        type: Number,
+    },
 }
 )
 
