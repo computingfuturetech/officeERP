@@ -144,7 +144,7 @@ export default function Sidebar() {
                     showGeneral ? "active" : ""
                   }`}
                 >
-                  General Income
+                  Transfer Income
                 </div>
                 {showGeneral && (
                   <>
@@ -156,7 +156,7 @@ export default function Sidebar() {
                           activeClassName="active"
                           onClick={() => setIncome(false)}
                         >
-                          Seller
+                          Transfer Income
                         </NavLink>
                       </li>
                       <li>
@@ -197,98 +197,53 @@ export default function Sidebar() {
                               Bank Profit
                             </NavLink>
                           </li>
-                          <li>
-                            <NavLink
-                              exact
-                              to="/income/annual"
-                              activeClassName="active"
-                              onClick={() => setIncome(false)}
-                            >
-                              Annual
-                            </NavLink>
-                          </li>
                         </ul>
                       </>
                     )}
                   </>
                 )
               }
-            {showIncome && (
-              <>
-                <div
-                  onClick={handleWaterMaintanance}
-                  className={`dropdown dropdown-item ${
-                    showMonthly ? "active" : ""
-                  }`}
-                >
-                  Water/Maintainance
-                </div>
-                {showMonthly && (
-                  <>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <NavLink
-                          exact
-                          to="/income/purchaser"
-                          activeClassName="active"
-                          onClick={() => setIncome(false)}
-                        >
-                          Purchaser
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink
-                          exact
-                          to="/income/annual"
-                          activeClassName="active"
-                          onClick={() => setIncome(false)}
-                        >
-                          Annual
-                        </NavLink>
-                      </li>
-                    </ul>
-                  </>
-                )}
-              </>
-            )}{
-              showIncome && (
+              {showIncome && (
                 <>
                   <div
-                    onClick={handlePossessionIncome}
-                    className={`dropdown dropdown-item ${
-                      postPurchase ? "active" : ""
-                    }`}
+                    onClick={() => {
+                      handleWaterMaintanance();
+                      setShowIncome(false); 
+                    }}
+                    className={`dropdown dropdown-item ${showMonthly ? "active" : ""}`}
                   >
-                    Possession Income
+                    <NavLink
+                      exact
+                      to="/income/water-maintainance"
+                      activeClassName="active"
+                      style={{ textDecoration: 'none', color: 'inherit' }} // Ensuring it looks like a dropdown item
+                    >
+                      Water/Maintainance
+                    </NavLink>
                   </div>
-                  {postPurchase && (
-                    <>
-                      <ul className="dropdown-menu">
-                        <li>
-                          <NavLink
-                            exact
-                            to="/income/bank-profit"
-                            activeClassName="active"
-                            onClick={() => setIncome(false)}
-                          >
-                            Bank Profit
-                          </NavLink>
-                        </li>
-                        <li>
-                          <NavLink
-                            exact
-                            to="/income/annual"
-                            activeClassName="active"
-                            onClick={() => setIncome(false)}
-                          >
-                            Annual
-                          </NavLink>
-                        </li>
-                      </ul>
-                    </>
-                  )}
                 </>
               )}
+              {showIncome && (
+                <>
+                  <div
+                    onClick={() => {
+                      handlePossessionIncome();
+                      setShowIncome(false); 
+                    }}
+                    className={`dropdown dropdown-item ${postPurchase ? "active" : ""}`}
+                  >
+                    <NavLink
+                      exact
+                      to="/income/possession"
+                      activeClassName="active"
+                      style={{ textDecoration: 'none', color: 'inherit' }} // Ensuring it looks like a dropdown item
+                    >
+                      Possession
+                    </NavLink>
+                  </div>
+                </>
+              )}
+
           </li>
 
 

@@ -1,0 +1,38 @@
+.water-maintenance-form {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    margin-top: 30px;
+  
+    .action-buttons{
+        display: flex;
+        justify-content: center;
+        width: 100%;
+        
+    }
+  
+  .purchaser-input-wrapper {
+    display: flex; 
+    justify-content: start;
+  }
+  
+  .input {
+    flex: 1 1 calc(33.33% - 1rem); 
+    max-width: 200px;
+  }
+  
+  .blue-button {
+    margin-top: 1.5rem;
+    align-self: center;
+    width: 100%;
+    max-width: 200px;
+    text-align: center;
+  }
+  .small-input{
+    width: 105px;
+  }
+  label{
+    margin-top: 0px;
+    margin-right: 5px;
+  }
+}
