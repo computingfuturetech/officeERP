@@ -2,6 +2,11 @@ const Member = require("../../models/memberModels/memberList");
 const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
 const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/officeutilExpense");
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
+const VoucherNo = require('../../middleware/generateVoucherNo')
+const CashBookLedger = require('../../middleware/createCashBookLedger')
+
 
 module.exports = {
   createOfficeUtilExpense: async (req, res) => {
@@ -12,6 +17,11 @@ module.exports = {
       bill_reference,
       adv_tax,
       paid_date,
+      check,
+      bank_account,
+      cheque_no,
+      challan_no
+
     } = req.body;
     console.log(req.body)
     try {
@@ -37,6 +47,20 @@ module.exports = {
         billReference: bill_reference,
         advTax: adv_tax,
       });
+
+      const type = "expense";
+
+      if(check == "cash")
+        {
+          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
+          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,billing_month, amount, paid_date);
+          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billing_month, amount, paid_date, null, null);
+        }else if(check == "bank"){
+          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
+          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,billing_month, amount, paid_date,cheque_no, challan_no);
+          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, billing_month, amount, paid_date, cheque_no, challan_no);
+        }
+
       await officeUtilExpense.save();
       res.status(201).json({
         message: "OfficeUtil Expense created successfully",

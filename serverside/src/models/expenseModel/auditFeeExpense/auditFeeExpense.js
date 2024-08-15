@@ -19,6 +19,15 @@ const auditFeeExpenseSchema = new Schema({
     year:{
         type: Number,
     },
+    particular:{
+        type: String,
+    },
+    chequeNo:{
+        type: Number,
+    },
+    accountNo:{
+        type: Number,
+    },
 }
 )
 

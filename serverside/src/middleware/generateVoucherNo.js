@@ -1,6 +1,6 @@
 const BankList = require('../models/bankModel/bank');
-const BankLedger=require('../models/ledgerModels/bankLedger')
-const CashLedger=require('../models/ledgerModels/cashLedger')
+const BankLedger = require('../models/ledgerModels/bankLedger')
+const CashLedger = require('../models/ledgerModels/cashBookLedger')
 
 module.exports = {
     generateBankVoucherNo: async (req, res, accountNo, type) => {
@@ -13,10 +13,15 @@ module.exports = {
             const narration = bankName.match(/\(([^)]+)\)/)[1];
             const lastTwoDigits = accountNo.slice(-2);
             const prefix = type === "income" ? "BRV" : "BPV";
-            const latestVoucher = await BankLedger.findOne({})
-            .sort({ voucherNo: -1 })
-            .exec();
+            const latestVoucher = await BankLedger.findOne({
+                voucherNo: new RegExp(`^${prefix}-${narration}-${lastTwoDigits}-\\d+$`)
+            })
+                .sort({
+                    $natural: -1 
+                })
+                .exec();
             let lastNumber = 0;
+
             if (latestVoucher) {
                 const match = latestVoucher.voucherNo.match(/-(\d+)$/);
                 if (match) {
@@ -25,7 +30,7 @@ module.exports = {
             }
             const newNumber = lastNumber + 1;
             const voucherNo = `${prefix}-${narration}-${lastTwoDigits}-${newNumber}`;
-            return res.status(200).send({ voucherNo });
+            return voucherNo;
         } catch (error) {
             console.error("Error generating voucher number:", error);
             return res.status(500).send("An error occurred while generating the voucher number");
@@ -35,9 +40,13 @@ module.exports = {
         try {
             const prefix = type === "income" ? "CRV" : "CPV";
 
-            const latestVoucher = await CashLedger.findOne({})
-            .sort({ voucherNo: -1 })
-            .exec();
+            const latestVoucher = await CashLedger.findOne({
+                voucherNo: new RegExp(`^${prefix}-\\d+$`)
+            })
+                .sort({
+                    $natural: -1 
+                })
+                .exec();
             let lastNumber = 0;
 
             if (latestVoucher) {
@@ -48,10 +57,12 @@ module.exports = {
             }
             const newNumber = lastNumber + 1;
             const voucherNo = `${prefix}-${newNumber}`;
-            return res.status(200).send({ voucherNo });
+            return voucherNo;
         } catch (error) {
             console.error("Error generating voucher number:", error);
             return res.status(500).send("An error occurred while generating the voucher number");
         }
     }
 };
+
+

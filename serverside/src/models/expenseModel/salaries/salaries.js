@@ -31,7 +31,13 @@ const salariesSchema = new Schema({
     bank:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'BankListSchema',
-    }
+    },
+    particular:{
+        type: String,
+    },
+    challanNo:{
+        type: Number,
+    },
     
 });
 

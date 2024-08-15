@@ -4,10 +4,14 @@ const OfficeExpense = require("../../models/expenseModel/officeExpense/officeExp
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
+const VoucherNo = require('../../middleware/generateVoucherNo')
+const CashBookLedger = require('../../middleware/createCashBookLedger')
 
 module.exports = { 
   createOfficeExpense: async (req, res) => {
-    const { head_of_account, amount, particulor, vendor, paid_date } = req.body;
+    const { head_of_account, amount, particulor, vendor, paid_date,check,bank_account,cheque_no,challan_no } = req.body;
     console.log(req.body);
     try {
       if (!paid_date || !particulor || !vendor || !head_of_account || !amount) {
@@ -26,6 +30,20 @@ module.exports = {
         particulor: particulor,
         vendor: vendor,
       });
+
+      const type = "expense";
+
+      if(check == "cash")
+        {
+          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
+          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particulor, amount, paid_date);
+          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particulor, amount, paid_date, null, null);
+        }else if(check == "bank"){
+          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
+          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particulor, amount, paid_date,cheque_no, challan_no);
+          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particulor, amount, paid_date, cheque_no, challan_no);
+        }
+
       await officeExpense.save();
       res.status(201).json({
         message: "Office Expense created successfully",

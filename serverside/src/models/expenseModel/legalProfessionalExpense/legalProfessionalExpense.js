@@ -22,6 +22,15 @@ const legalProfessionalExpenseSchema = new Schema({
     vendor:{
         type: String,
     },
+    challaNo:{
+        type: Number,
+    },
+    chequeNo:{
+        type: Number,
+    },
+    accountNo:{
+        type: Number,
+    },
 }
 )
 

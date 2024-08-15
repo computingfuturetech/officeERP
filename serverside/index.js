@@ -37,6 +37,7 @@ const coreRouter = require("./src/routes/coreRoutes/coreApi");
 const incomeRouter = require("./src/routes/coreRoutes/incomeApi");
 const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
 const memberRouter = require("./src/routes/coreRoutes/memberApi");
+const fixedAmountRouter = require("./src/routes/coreRoutes/fixedAmountApi");
 
 app.use(express.json());
 app.use(cors());
@@ -54,6 +55,7 @@ app.use("/user", coreRouter);
 app.use("/user", incomeRouter);
 app.use("/user", expenseRouter);
 app.use("/user", memberRouter);
+app.use("/user", fixedAmountRouter);
 
 
 const port = process.env.PORT;

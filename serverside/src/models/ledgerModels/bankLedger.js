@@ -8,7 +8,7 @@ const bankLedgerSchema = new Schema({
     headOfAccount:{
         type: String,
     },
-    particulor:{
+    particular:{
         type: String,
     },
     accountNumber:{
@@ -32,15 +32,9 @@ const bankLedgerSchema = new Schema({
     debit:{
         type: Number,
     },  
-    openingBalance:{
+    balance:{
         type: Number,
-    },  
-    closingBalance:{
-        type: Number,
-    },
-    bankName:{
-        type: String,
-    },
+    }, 
 })
 
 const BankLedger = mongoose.model('BankLedger',bankLedgerSchema)

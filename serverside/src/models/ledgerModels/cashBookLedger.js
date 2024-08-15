@@ -8,11 +8,11 @@ const cashBookSchema = new Schema({
     headOfAccount:{
         type: String,
     },
-    particulor:{
+    particular:{
         type: String,
     },
     voucherNo:{
-        type: Number,
+        type: String,
     },
     credit:{
         type: Number,
@@ -20,10 +20,7 @@ const cashBookSchema = new Schema({
     debit:{
         type: Number,
     },  
-    openingBalance:{
-        type: Number,
-    },  
-    closingBalance:{
+    balance:{
         type: Number,
     },  
 })
