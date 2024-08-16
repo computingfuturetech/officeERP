@@ -3,11 +3,14 @@ const AuditFeeExpense = require("../../models/expenseModel/auditFeeExpense/audit
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const VoucherNo = require('../../middleware/generateVoucherNo')
+const CashBookLedger = require('../../middleware/createCashBookLedger')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
 
 module.exports = {
   createAuditFeeExpense: async (req, res) => {
-    const { head_of_account, amount, year, paid_date } = req.body;
-    console.log(req.body);
+    const { head_of_account, amount, year, paid_date, check,particular,cheque_no,challan_no,bank_account } = req.body;
     try {
       if (!paid_date || !year || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
@@ -23,7 +26,25 @@ module.exports = {
         subHeadOfAccount: sub_head_id,
         amount: amount,
         year: year,
+        particular: particular,
+        chequeNo: cheque_no,
+        challanNo: challan_no,
+        accountNo: bank_account
       });
+
+      const type = "expense";
+
+      if(check == "cash")
+      {
+        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
+        await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date);
+        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null);
+      }else if(check == "bank"){
+        const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
+        await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no);
+        await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no);
+      }
+
       await auditFeeExpense.save();
       res.status(201).json({
         message: "Audit Fee Expense created successfully",

@@ -26,6 +26,15 @@ const officeUtilExpenseSchema = new Schema({
     advTax:{
         type: Number,
     },
+    chequeNo:{
+        type: Number,
+    },
+    challanNo:{
+        type: Number,
+    },
+    accountNo:{
+        type: Number,
+    },
 }
 )
 

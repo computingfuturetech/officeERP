@@ -24,7 +24,16 @@ const miscellaneousExpenseSchema = new Schema({
     },
     vendor:{
         type: String,
-    }
+    },
+    chequeNo:{
+        type: Number,
+    },
+    challanNo:{
+        type: Number,
+    },
+    accountNo:{
+        type: Number,
+    },
 }
 )
 

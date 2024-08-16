@@ -2,10 +2,14 @@ const VehicleDisposalExpense = require("../../models/expenseModel/vehicleDisposa
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
+const VoucherNo = require('../../middleware/generateVoucherNo')
+const CashBookLedger = require('../../middleware/createCashBookLedger')
 
 module.exports = { 
   createVehicleDisposalExpense: async (req, res) => {
-    const { head_of_account, amount, fuel_litre, vehicle_number, paid_date, vehicle_type } = req.body;
+    const { head_of_account, amount, fuel_litre, vehicle_number, paid_date, vehicle_type,particular } = req.body;
     console.log(req.body);
     try {
       if (!paid_date || !fuel_litre || !head_of_account || !amount) {
@@ -25,6 +29,14 @@ module.exports = {
         vehicleNumber: vehicle_number,
         vehicleType: vehicle_type,
       });
+
+      const type = "expense";
+
+      const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
+      await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date);
+      await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null);
+
+
       await vehicleDisposalExpense.save();
       res.status(201).json({
         message: "Vehicle Disposal Expense created successfully",

@@ -25,6 +25,9 @@ const vehicleDisposalExpenseSchema = new Schema({
     vehicleType:{
         type: String,
     },
+    particular:{
+        type: String,
+    },
 }
 )
 

@@ -19,7 +19,16 @@ const bankChargesExpenseSchema = new Schema({
     bank:{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'BankListSchema',
-    }
+    },
+    particular:{
+        type: String,
+    },
+    chequeNo:{
+        type: Number,
+    },
+    challanNo:{
+        type: Number,
+    },
 }
 )
 

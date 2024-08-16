@@ -2,10 +2,14 @@ const ElectricityAndWaterConnectionExpense = require("../../models/expenseModel/
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
 const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
+const VoucherNo = require('../../middleware/generateVoucherNo')
+const CashBookLedger = require('../../middleware/createCashBookLedger')
 
 module.exports = {
   createElectricityAndWaterConnectionExpense: async (req, res) => {
-    const { head_of_account, amount, vendor, description, paid_date } = req.body;
+    const { head_of_account, amount, vendor, description, paid_date,cheque_no,challan_no,check,bank_account } = req.body;
     console.log(req.body);
     try {
       if (!paid_date || !head_of_account || !amount) {
@@ -24,6 +28,20 @@ module.exports = {
         vendor: vendor,
         description: description,
       });
+
+      const type = "expense";
+
+      if(check == "cash")
+        {
+          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
+          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,description, amount, paid_date);
+          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, description, amount, paid_date, null, null);
+        }else if(check == "bank"){
+          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
+          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,description, amount, paid_date,cheque_no, challan_no);
+          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, description, amount, paid_date, cheque_no, challan_no);
+        }
+
       await electricityAndWaterConnectionExpense.save();
       res.status(201).json({
         message: "Electricity and Water connection Expense created successfully",

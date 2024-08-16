@@ -35,9 +35,10 @@ const generalLedgerSchema = new Schema({
     },
     type:{
         type:String,
-        enum:['cash','bank'],
-        default:'bank'
     },
+    balance:{
+        type: Number,
+    }, 
 })
 
 const GeneralLedger = mongoose.model('GeneralLedger',generalLedgerSchema)

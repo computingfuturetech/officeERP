@@ -1,7 +1,10 @@
 const BankList = require("../../models/bankModel/bank");
 const BankProfit = require("../../models/incomeModels/bankProfitModels/bankProfit");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
+const bankLedger = require("../../models/ledgerModels/bankLedger")
+const fixedAmount = require("../../models/fixedAmountModel/fixedAmount")
 const mongoose = require('mongoose')
+const VoucherNo = require('../../middleware/generateVoucherNo')
 
 module.exports = {
   createBankProfit: async (req, res) => {
@@ -17,7 +20,9 @@ module.exports = {
         return res.status(404).json({ message: 'Income head of account not found' });
       }
 
-      console.log(incomeHeadOfAccount);
+      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account,"income")
+
+
 
       const bankList = await BankList.findOne({
         accountNo: bank_account
@@ -34,6 +39,7 @@ module.exports = {
         paidDate: paid_date,
         headOfAccount: incomeHeadOfAccount._id
       });
+      
       await bankProfit.save();
       res.status(200).json({
         message: "Bank profit created successfully",
