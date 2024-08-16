@@ -11,7 +11,7 @@ module.exports = {
     const { amount, bank_account, profit_month, paid_date, head_of_account } = req.body;
     console.log(req.body);
     try {
-      if (!amount || !bank_account || !profit_month || !paid_date || !head_of_account) {
+      if (!amount || !bank_account || !profit_month || !head_of_account) {
         return res.status(400).json({ message: "All fields are required" });
       }
 
@@ -110,17 +110,17 @@ module.exports = {
     } else if (sort === 'desc') {
       sortOrder = { amount: -1 };
     }
-
+  
     try {
       let filter = {};
-
+  
       if (profit_month) {
         filter.profitMonth = profit_month;
       }
-
+  
       if (id) {
         const bankProfit = await BankProfit.findById(id)
-          .populate('bank', 'bankName')
+          .populate('bank', 'bankName accountNo')
           .populate('headOfAccount', 'headOfAccount')
           .exec();
         if (!bankProfit) {
@@ -129,22 +129,25 @@ module.exports = {
         res.status(200).json(bankProfit);
       } else {
         const bankProfits = await BankProfit.find(filter)
-          .populate('bank', 'bankName')
+          .populate('bank', 'bankName accountNo')
           .populate('headOfAccount', 'headOfAccount')
           .skip((page_no - 1) * limit)
           .limit(limit)
           .sort(sortOrder)
           .exec();
-
+  
         if (bankProfits.length === 0) {
           return res.status(404).json({ message: "Bank Profits not found" });
         }
-
+  
+        const totalCount = await BankProfit.countDocuments(filter).exec();
+        const hasMore = totalCount > page_no * limit;
+  
         if (bank_name) {
           const filteredBankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.bankName === bank_name);
-          res.status(200).json(filteredBankProfits);
+          res.status(200).json({ filteredBankProfits, hasMore });
         } else {
-          res.status(200).json(bankProfits);
+          res.status(200).json({ bankProfits, hasMore });
         }
       }
     } catch (err) {
