@@ -5,6 +5,8 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "./style/bankprofit.css"
 import Multiselect from 'multiselect-react-dropdown';
+import { ToastContainer } from "react-toastify";
+import { showErrorToastMessage, showSuccessToastMessage } from "./toastUtils";
 
 export default function BankProfitComponent() {
   const history = useNavigate();
@@ -97,27 +99,30 @@ useEffect(() => {
           Authorization: "Bearer " + localStorage.getItem("token"),
         },
       };
-
+      
       const response = await axios.get(
         process.env.REACT_APP_API_URL+`/user/getBankProfit/?page_no=${page}`,
         config
       );
       console.log(response.data);
+      console.log(response.data.hasMore)
+
       if (response.data.bankProfits.length > 0) {
         setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
         setHasMorePages(response.data.hasMore);
+        
 
       } else {
         setHasMorePages(false);
       }
     } catch (error) {
       console.error(error);
+      showErrorToastMessage("An Error Occured While Fetching Data!")
     } finally {
       setLoading(false)
-      setIsFetching(false); // Ensure this is called regardless of success or failure
+      setIsFetching(false); 
     }
   };
- // Clean up function to clear the timeout if the effect runs again
  if (timeoutRef.current) {
   clearTimeout(timeoutRef.current);
 }
@@ -194,12 +199,13 @@ useEffect(() => {
     setShowOptions(false);
   };
   const handleEditSection = (member) => {
+    scrollToTop()
     setSelectedMember(member);
     setMonthName(member.profitMonth);
     setAmount(member.amount);
-    setBankName(member.bankName)
+    setBankName(member.bank.bankName)
     setProfitId(member._id)
-    setSelectedAccount(member.bankAccount)
+    setSelectedAccount(member.bank.accountNo)
 
     setEditSection(true);
     setShowOptions(false);
@@ -228,8 +234,8 @@ useEffect(() => {
     const data = {
       bank_account: selectedAccount,
       profit_month: monthName,
-      bank_name:bankName,
-      amount: amount
+      amount: amount,
+      head_of_account:"Bank Profit"
     };
     
     const update = async () => {
@@ -246,9 +252,11 @@ useEffect(() => {
           config
         );
         console.log(response.data);
+        showSuccessToastMessage("Bank Profit Added Successfully!")
         closeSection();
       } catch (error) {
         console.error(error);
+        showErrorToastMessage("Error Occured While Adding Profit")
       }
     };
     update();
@@ -278,9 +286,11 @@ useEffect(() => {
           data,
           config
         );
+        showSuccessToastMessage("Bank Profit Updated Successfully!" )
         console.log(response.data);
         closeSection();
       } catch (error) {
+        showErrorToastMessage("Error Updating")
         console.error(error);
       }
     };
@@ -306,8 +316,8 @@ useEffect(() => {
             config
           );
           console.log(response.data);
-          if (response.data.length > 0) {
-            setBankProfitList(response.data);
+          if (response.data.bankProfits.length > 0) {
+            setBankProfitList(response.data.bankProfits);
 
           }
           setLoading(false);
@@ -358,7 +368,7 @@ useEffect(() => {
       );
   
       // Assuming the response data contains the filtered list
-      if (response.data.length > 0) {
+      if (response.data.bankProfits.length > 0) {
         console.log('hi')
         setFilteredData(response.data.bankProfits);
         setBankProfitList([])
@@ -378,11 +388,11 @@ useEffect(() => {
     setfiltersSelected((filtersSelected) => filtersSelected - 1);
     setSelectedList(selectedList);
     filterBanks(selectedList);
-    
   };
 
 
   return (
+    <>
     <div className="member-list">
       <div className="title">
         <h2>BankProfit</h2>
@@ -423,8 +433,8 @@ useEffect(() => {
       {(filtersSelected > 0 ? filteredData : BankProfitList).map((member) => (
           <div className="member bankprofit" key={member._id}>
             <div className="member-details">
-              <p>{member.bankName}</p>
-              <p>{member.bankAccount}</p>
+              <p>{member.bank.bankName}</p>
+              <p>{member.bank.accountNo}</p>
               <p>{member.profitMonth}</p>
               <p>{member.amount === "" ? "-" : member.amount}</p>
               <img
@@ -432,10 +442,8 @@ useEffect(() => {
                 src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
                 alt="Member Icon"
               />
-            </div>
-
-            {selectedMember === member && showOptions && (
-              <div className="options income">
+                          {selectedMember === member && showOptions && (
+              <div className="options">
                 {/* <button onClick={() => handleAddNew(member)}>Edit</button>
                 {/* <div className="horizontal-divider"></div> */}
                  <button onClick={() => handleEditSection(member)}>Edit</button> 
@@ -443,6 +451,9 @@ useEffect(() => {
                 <button>Delete</button>
               </div>
             )}
+            </div>
+
+
           </div>
         ))}
         {loading && (
@@ -519,9 +530,6 @@ useEffect(() => {
       </div>
       )}
 
-
-
-
       {addNew && (
         <div className="left-section">
           <div className="left-section-content">
@@ -589,5 +597,7 @@ useEffect(() => {
         </div>
       )}
     </div>
+    <ToastContainer></ToastContainer>
+    </>
   );
 }

@@ -202,66 +202,50 @@ export default function SellerDetails() {
         setShowForm(true)
         setShowPurchaseForm(true)
         response.data.forEach(item => {
-          const headOfAccount = item.headOfAccount.headOfAccount;
-        
-          switch (headOfAccount) {
-            case "Dual Owner Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                dualOwnerFee: item.amount
+          setUpdateMemberState(prevState => ({
+                  ...prevState,
+                  dualOwnerFee: item.dualOwnerFee
+                }));
+          setUpdateMemberState(prevState => ({
+                  ...prevState,
+                  challanNumber: item.challanNo
+                }));
+         setUpdateMemberState(prevState => ({
+                  ...prevState,
+                  paidDate:convertDate( item.paidDate)
+                }));
+          setUpdateMemberState(prevState => ({
+                        ...prevState,
+                        nocFee: item.nocFee
+                      }));
+          setUpdateMemberState(prevState => ({
+                      ...prevState,
+                      masjidFund: item.masjidFund
               }));
-              break;
-            case "NOC Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                nocFee: item.amount
-              }));
-              break;
-            case "Masjid Fund":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                masjidFund: item.amount
-              }));
-              break;
-            case "Covered Area Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                coveredAreaFee: item.amount
-              }));
-              break;
-            case "Share Money":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                shareMoney: item.amount
-              }));
-              break;
-            case "Deposit For Land Cost":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                depositLandCost: item.amount
-              }));
-              break;
-            case "Deposit for Development Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                depositDevelopmentCharges: item.amount
-              }));
-              break;
-            case "Additional Development Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                additionalCharges: item.amount
-              }));
-              break;
-            case "Electricity Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                electricityCharges: item.amount
-              }));
-              break;
-            default:
-              console.log("Unknown head of account:", headOfAccount);
-          }
+          setUpdateMemberState(prevState => ({
+                      ...prevState,
+                      coveredAreaFee: item.coveredAreaFee
+                    }));
+          setUpdateMemberState(prevState => ({
+                           ...prevState,
+                            shareMoney: item.shareMoney
+                          }));         
+          setUpdateMemberState(prevState => ({
+                             ...prevState,
+                            depositLandCost: item.depositForLandCost
+                            }));
+          setUpdateMemberState(prevState => ({
+                          ...prevState,
+                             depositDevelopmentCharges: item.depositForDevelopmentCharges
+                            }));     
+          setUpdateMemberState(prevState => ({
+                        ...prevState,
+                         additionalCharges: item.additionalDevelopmentCharges
+                           }));
+          setUpdateMemberState(prevState => ({
+                         ...prevState,
+                         electricityCharges: item.electricityCharges
+                         }));
         });
         console.log(response)
         setIsLoading(false)
@@ -276,7 +260,11 @@ export default function SellerDetails() {
     e.preventDefault();
 
     const data = {
-      msNo: msNo,
+      member_no: msNo,
+      challan_no:updateMemberState.challanNumber || "",
+      paid_date:updateMemberState.date || "",
+      type:"Seller",
+      electricity_charges: updateMemberState.electricityCharges || "",
       noc_fee: updateMemberState.nocFee || "",
       masjid_fund: updateMemberState.masjidFund || "",
       dual_owner_fee: updateMemberState.dualOwnerFee || "",
@@ -284,8 +272,7 @@ export default function SellerDetails() {
       share_money: updateMemberState.shareMoney || "",
       deposit_land_cost: updateMemberState.depositLandCost || "",
       deposit_development_charges: updateMemberState.depositDevelopmentCharges || "",
-      additional_charges: updateMemberState.additionalCharges || "",
-      electricity_charges: updateMemberState.electricityCharges || "",
+      additional_charges: updateMemberState.additionalCharges || ""
     };
     console.log(data)
     
@@ -301,6 +288,7 @@ export default function SellerDetails() {
           data,
           config
         );
+        console.log(response)
         closeSection();
         showSuccessToastMessage("Added Successfully")
       } catch (error) {
@@ -315,8 +303,11 @@ export default function SellerDetails() {
     e.preventDefault();
 
     const data = {
-      msNo: msNo,
-      transferFee: updateMemberState.transferFee || "",
+      member_no: msNo,
+      transfer_fee: updateMemberState.transferFee || "",
+      challan_no:updateMemberState.challanNumber || "",
+      paid_date:updateMemberState.date || "",
+      type:"Purchaser",
       membershipFee: updateMemberState.membershipFee || "",
       admissionFee: updateMemberState.admissionFee || "",
       masjidFund: updateMemberState.masjidFund || "",
@@ -687,7 +678,7 @@ export default function SellerDetails() {
                   purchaseName: e.target.value
                 })}
               />
-              {/* <label htmlFor="challanNumber" className="required">Challan Number: </label>
+              <label htmlFor="challanNumber" className="required">Challan Number: </label>
               <input
                 type="number"
                 name="challanNumber"
@@ -708,7 +699,7 @@ export default function SellerDetails() {
                   ...updateMemberState,
                   date: e.target.value
                 })}
-              /> */}
+              />
 
               <label htmlFor="transferFee">Transfer Fee: </label>
               <input
