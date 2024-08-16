@@ -40,11 +40,13 @@ module.exports = {
         particular: particular,
       });
 
+      const update_id = bankChargesExpense._id;
+
       const type = "expense";
 
       const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no);
-      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no);
+      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
+      // await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);
 
       await bankChargesExpense.save();
       res.status(201).json({
@@ -93,6 +95,8 @@ module.exports = {
         return res.status(400).json({ message: "ID is required" });
       }
 
+      console.log(id)
+
       const bankChargesExpense = await BankChargesExpense.findById(id).exec();
       if (!bankChargesExpense) {
         return res.status(404).json({ message: "Bank Expense not found" });
@@ -119,6 +123,12 @@ module.exports = {
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,bankChargesExpense);
       }
+
+      const type = "expense";
+
+      await BankLedger.updateBankLedger(req, res, id, updateData, type);
+      // await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+
       const updatedbankChargesExpense = await BankChargesExpense.findByIdAndUpdate(
         id,
         { $set: updateData },

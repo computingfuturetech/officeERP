@@ -38,7 +38,13 @@ const generalLedgerSchema = new Schema({
     },
     balance:{
         type: Number,
+    },
+    updateId:{
+        type: String,
     }, 
+    previousBalance:{
+        type: Number,
+    },
 })
 
 const GeneralLedger = mongoose.model('GeneralLedger',generalLedgerSchema)

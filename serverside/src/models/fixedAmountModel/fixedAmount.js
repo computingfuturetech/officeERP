@@ -8,7 +8,10 @@ const fixedAmountSchema = new schema({
     provisionForTaxation:{
         type:String,
     },
-    openingBalance:{
+    bankOpeningBalance:{
+        type:Number,
+    },
+    cashOpeningBalance:{
         type:Number,
     },
 

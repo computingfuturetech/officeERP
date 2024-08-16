@@ -30,11 +30,13 @@ module.exports = {
         vehicleType: vehicle_type,
       });
 
+      const update_id = vehicleDisposalExpense._id;
+
       const type = "expense";
 
       const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
-      await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date);
-      await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null);
+      await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
+      await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
 
 
       await vehicleDisposalExpense.save();

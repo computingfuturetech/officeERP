@@ -32,17 +32,19 @@ module.exports = {
         accountNo: bank_account
       });
 
+      const update_id = auditFeeExpense._id;
+
       const type = "expense";
 
       if(check == "cash")
       {
         const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
-        await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date);
-        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null);
+        await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
+        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
       }else if(check == "bank"){
         const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-        await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no);
-        await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no);
+        await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
+        await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);
       }
 
       await auditFeeExpense.save();
@@ -118,6 +120,10 @@ module.exports = {
         { $set: updateData },
         { new: true }
       ).exec();
+
+      const type = "expense";
+
+      await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
 
       res.status(200).json({
         message: "Audit Fee  Expense updated successfully",
