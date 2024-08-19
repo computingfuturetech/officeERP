@@ -35,6 +35,12 @@ const bankLedgerSchema = new Schema({
     balance:{
         type: Number,
     }, 
+    updateId:{
+        type: String,
+    },
+    previousBalance:{
+        type: Number,
+    },
 })
 
 const BankLedger = mongoose.model('BankLedger',bankLedgerSchema)

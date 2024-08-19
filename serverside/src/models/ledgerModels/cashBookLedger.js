@@ -22,7 +22,13 @@ const cashBookSchema = new Schema({
     },  
     balance:{
         type: Number,
-    },  
+    },
+    updateId:{
+        type: String,
+    }, 
+    previousBalance:{
+        type: Number,
+    }, 
 })
 
 const CashBook = mongoose.model('CashBook',cashBookSchema)
