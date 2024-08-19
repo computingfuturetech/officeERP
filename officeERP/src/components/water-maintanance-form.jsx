@@ -106,6 +106,10 @@ export default function WaterMaintainanceForm() {
   
   return (
     <>
+     <div>
+      <div className="title">
+        <h2>Add Water Maintainance</h2>
+        </div>
       <div className="add-purchaser">
         <form action="" onSubmit={handleSubmit} className="water-maintenance-form">
           {bills.map((bill, index) => (
@@ -204,6 +208,8 @@ export default function WaterMaintainanceForm() {
           <button onClick={handleSubmit} className="blue-button"> Save Bills</button>
           </div>
         </form>
+      
+      </div>
       </div>
       <ToastContainer />
     </>

@@ -6,6 +6,8 @@ import AllMemberList from '../components/all_member_list';
 import SellerDetails from '../components/seller_details';
 import WaterMaintainanceComponent from '../components/waterMaintainanceComponent';
 import WaterMaintainanceForm from '../components/water-maintanance-form';
+import BasicLineChart from '../components/line-chart';
+import BasicBars from '../components/bar-char';
 
 export default function WaterMaintainance() {
     const dispatch = useDispatch();
@@ -21,8 +23,14 @@ export default function WaterMaintainance() {
     <Sidebar />
     <div className={`main ${isLoading ? "loading" : ""}`}>
       
-    
+    <div className="chart">
+        <div className="chart-wrapper">
+       <WaterMaintainanceForm></WaterMaintainanceForm>
+
+        </div>
+      </div>
         <div className="main-content">
+
 
            <WaterMaintainanceComponent/>
         

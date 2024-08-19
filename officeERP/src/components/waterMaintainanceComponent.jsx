@@ -9,7 +9,6 @@ import "./style/seller.css";
 import WaterMaintainanceForm from "./water-maintanance-form";
 
 export default function WaterMaintainanceComponent() {
-  const history = useNavigate();
   const [memberList, setMemberList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -343,7 +342,7 @@ export default function WaterMaintainanceComponent() {
             },
           };
           const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${searchValue.trim()}`,
+            `${process.env.REACT_APP_API_URL}/user/getWaterMaintenanceBill/?search=${searchValue.trim()}`,
             config
           );
           if (response.data.length > 0) {
@@ -375,15 +374,14 @@ export default function WaterMaintainanceComponent() {
               placeholder="Search..."
             />
           </form>
-          <Link className="blue-button" onClick={handleAddDues}>
+          {/* <Link className="blue-button" onClick={handleAddDues}>
           Add Dues
-          </Link>
+          </Link> */}
           <Link className="simple-button" onClick={handleRefresh}>
             Refresh
           </Link>
         </div>
       </div>
-      <WaterMaintainanceForm />
       <div className="top-bar">
         
         <div className="top-bar-item">
@@ -758,8 +756,7 @@ export default function WaterMaintainanceComponent() {
             </div>
             </div>
       </>
-    )}
-     <ToastContainer />      
+    )}   
     </div>
 
   );
