@@ -3,10 +3,10 @@ import "./style/memberListStyle.css";
 import { Link } from "react-router-dom";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import "./style/bankprofit.css"
 import Multiselect from 'multiselect-react-dropdown';
 import { ToastContainer } from "react-toastify";
 import { showErrorToastMessage, showSuccessToastMessage } from "./toastUtils";
+import BankDropdown from "./bankDropdown";
 
 export default function BankProfitComponent() {
   const history = useNavigate();
@@ -36,34 +36,6 @@ export default function BankProfitComponent() {
   const [filteredData,setFilteredData]=useState([])
   const [filtersSelected,setfiltersSelected]=useState(0)
   const timeoutRef = useRef(null); // Ref to keep track of the timeout
-  const allBanks=[
-    "Allied Bank(ABL)","Punjab Provincial Cooperative Bank (PPCB)","Muslim Commercial Bank (MCB)","Bank of Punjab (BOP)"
-  ]
-
-
-
-//   useEffect(() => {
-//     const fetchProfitBanks= async() =>{
-//       try {
-//         const config = {
-//           headers: {
-//             Authorization: "Bearer " + localStorage.getItem("token"),
-//           },
-//       }
-//       const response=await axios.get(
-//         process.env.REACT_APP_API_URL+`/user/getBankProfit`,
-//         config
-//       )
-//       setBankProfitList(response.data)
-//       console.log(BankProfitList)
-//     }
-//     catch(error){
-//       console.error(error);
-//     }
-//   }
-//   fetchProfitBanks()
-// }, []);
-
   useEffect(() => {
     const fetchBanks= async() =>{
       try {
@@ -77,6 +49,7 @@ export default function BankProfitComponent() {
         config
       )
       setBankList(response.data)
+      console.log(response.data)
     }
     catch(error){
       console.error(error);
@@ -86,90 +59,170 @@ export default function BankProfitComponent() {
 }, []);
 
 
+
+
+
 const [isFetching, setIsFetching] = useState(false);
+const [isPageOneFetched, setIsPageOneFetched] = useState(false); // New state to track if page 1 is fetched
+
 
 useEffect(() => {
-  
   const fetchData = async () => {
-    if (isFetching || !hasMorePages) return; // Prevent duplicate calls
+    if (isFetching || !hasMorePages) return;
+
+    // Check if page 1 is already fetched
+    if (page === 1 && isPageOneFetched) return;
+
+    setLoading(true);
     setIsFetching(true);
+    
     try {
       const config = {
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
         },
       };
-      
+      console.log("Fetching page:",page)
+      console.log(isPageOneFetched)
       const response = await axios.get(
-        process.env.REACT_APP_API_URL+`/user/getBankProfit/?page_no=${page}`,
+        `${process.env.REACT_APP_API_URL}/user/getBankProfit/?page_no=${page}`,
         config
       );
-      console.log(response.data);
-      console.log(response.data.hasMore)
 
       if (response.data.bankProfits.length > 0) {
         setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
         setHasMorePages(response.data.hasMore);
         
-
+        // Set flag indicating that page 1 has been fetched
+        if (page === 1) {
+          setIsPageOneFetched(true);
+          console.log("fetched with variable:",isPageOneFetched)
+        }
       } else {
         setHasMorePages(false);
       }
     } catch (error) {
-      console.error(error);
-      showErrorToastMessage("An Error Occured While Fetching Data!")
+      console.error("Error fetching bank profits:", error);
+      showErrorToastMessage("An Error Occurred While Fetching Data!");
     } finally {
-      setLoading(false)
-      setIsFetching(false); 
+      setLoading(false);
+      setIsFetching(false);
     }
+    
   };
- if (timeoutRef.current) {
-  clearTimeout(timeoutRef.current);
-}
 
-// Set a new timeout for debouncing
-timeoutRef.current = setTimeout(() => {
   fetchData();
-}, 500); // 500ms debounce delay
-
-// Cleanup timeout on component unmount
-return () => {
-  if (timeoutRef.current) {
-    clearTimeout(timeoutRef.current);
-  }
-};
 }, [page, hasMorePages]);
 
-// Optional: If you need to handle `hasMorePages` changes separately, you can add another useEffect
-useEffect(() => {
-  if (!hasMorePages) return;
-  // Add any logic that needs to run when hasMorePages changes
-}, [hasMorePages]);
+const handleScroll = () => {
+  if (membersRef.current) {
+    const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
+    if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  }
+};
 
-  const handleScroll = () => {
-    console.log("scrolling");
+useEffect(() => {
+  if (membersRef.current) {
+    membersRef.current.addEventListener("scroll", handleScroll);
+  }
+  return () => {
     if (membersRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
-        setPage((prevPage) => prevPage + 1);
-      }
+      membersRef.current.removeEventListener("scroll", handleScroll);
     }
   };
+}, [loading]);
 
-  function dummy(){
-    console.log('sdaf');
-  }
 
-  useEffect(() => {
-    if (membersRef.current) {
-      membersRef.current.addEventListener("scroll", handleScroll);
-    }
-    return () => {
-      if (membersRef.current) {
-        membersRef.current.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [loading]);
+
+
+
+
+
+
+
+
+
+
+// const [isFetching, setIsFetching] = useState(false);
+
+// useEffect(() => {
+  
+//   const fetchData = async () => {
+//     if (isFetching || !hasMorePages) return;
+//     setIsFetching(true);
+//     try {
+//       const config = {
+//         headers: {
+//           Authorization: "Bearer " + localStorage.getItem("token"),
+//         },
+//       };
+      
+//       const response = await axios.get(
+//         process.env.REACT_APP_API_URL+`/user/getBankProfit/?page_no=${page}`,
+//         config
+//       );
+//       console.log(response.data);
+//       console.log(response.data.hasMore)
+
+//       if (response.data.bankProfits.length > 0) {
+//         setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
+//         setHasMorePages(response.data.hasMore);
+        
+
+//       } else {
+//         setHasMorePages(false);
+//       }
+//     } catch (error) {
+//       console.error(error);
+//       showErrorToastMessage("An Error Occured While Fetching Data!")
+//     } finally {
+//       setLoading(false)
+//       setIsFetching(false); 
+//     }
+//   };
+//  if (timeoutRef.current) {
+//   clearTimeout(timeoutRef.current);
+// }
+
+// // Set a new timeout for debouncing
+// timeoutRef.current = setTimeout(() => {
+//   fetchData();
+// }, 500); // 500ms debounce delay
+
+// // Cleanup timeout on component unmount
+// return () => {
+//   if (timeoutRef.current) {
+//     clearTimeout(timeoutRef.current);
+//   }
+// };
+// }, [page, hasMorePages]);
+
+//   const handleScroll = () => {
+//     console.log("scrolling");
+//     if (membersRef.current) {
+//       const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
+//       if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
+//         setPage((prevPage) => prevPage + 1);
+//       }
+//     }
+//   };
+
+//   function dummy(){
+//     console.log('sdaf');
+//   }
+
+//   useEffect(() => {
+//     if (membersRef.current) {
+//       membersRef.current.addEventListener("scroll", handleScroll);
+//     }
+//     return () => {
+//       if (membersRef.current) {
+//         membersRef.current.removeEventListener("scroll", handleScroll);
+//       }
+//     };
+//   }, [loading]);
 
 
 
@@ -340,55 +393,67 @@ useEffect(() => {
     });
   
   };
-  const handleSelect = (selectedList) => {
-    setfiltersSelected((filtersSelected) => filtersSelected + 1);
-    setSelectedList(selectedList);
-    filterBanks(selectedList);
-    console.log(filteredData)
-    
-  };
-  const filterBanks = async (selectedBanks) => {
-    setLoading(true);
-    if(selectedBanks===""){
-      setLoading(false)
-      return
+  const handleSelect = (event) => {
+    const { checked, value } = event.target;
+    let updatedList = [...selectedList];
+
+    if (checked) {
+        updatedList = [...updatedList, value]; // Store the account number
+        setfiltersSelected((filtersSelected) => filtersSelected + 1);
     }
-    try {
-      // Construct the bank names query parameter as a comma-separated string
-      const bankNames = selectedBanks.map(bank => bank.bankName).join(',');
+
+    setSelectedList(updatedList);
+    filterBanks(updatedList);
+};
+
+const handleRemove = (event) => {
+    const { checked, value } = event.target;
+    let updatedList = [...selectedList];
+
+    if (!checked) {
+        updatedList = updatedList.filter((item) => item !== value); // Remove the account number
+        setfiltersSelected((filtersSelected) => filtersSelected - 1);
+    }
+
+    setSelectedList(updatedList);
+    filterBanks(updatedList);
+};
+
+  
+const filterBanks = async (selectedBanks) => {
+  setLoading(true);
+  if (selectedBanks.length === 0) {
+      setLoading(false);
+      return;
+  }
+
+  try {
+      const bankAccountNos = selectedBanks.join(','); // Use account numbers
       const config = {
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-        },
+          headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+          },
       };
-      // Make the API call with bank names as a query parameter
+
       const response = await axios.get(
-        process.env.REACT_APP_API_URL+`/user/getBankProfit/?bankname=${bankNames}`,
-        config
+          process.env.REACT_APP_API_URL+`/user/getBankProfit/?bank_account=${bankAccountNos}`,
+          config
       );
-  
-      // Assuming the response data contains the filtered list
+      console.log(response.data)
+
       if (response.data.bankProfits.length > 0) {
-        console.log('hi')
-        setFilteredData(response.data.bankProfits);
-        setBankProfitList([])
+          setFilteredData(response.data.bankProfits);
+          setBankProfitList([]);
       } else {
-        setFilteredData([]); // Clear the filtered data if no results
+          setFilteredData([]); // Clear the filtered data if no results
       }
-      console.log('Filtered Data:', response.data.bankProfits, selectedBanks);
-      setFilteredData(response.data.bankProfits)
-    } catch (error) {
+  } catch (error) {
       console.error('Error fetching filtered data:', error);
-    } finally {
-      setLoading(false); // Ensure loading state is updated
-    }
-  };
-  
-  const handleRemove = (selectedList) => {
-    setfiltersSelected((filtersSelected) => filtersSelected - 1);
-    setSelectedList(selectedList);
-    filterBanks(selectedList);
-  };
+  } finally {
+      setLoading(false);
+  }
+};
+
 
 
   return (
@@ -397,22 +462,11 @@ useEffect(() => {
       <div className="title">
         <h2>BankProfit</h2>
         <div className="title-buttons">
-        <Multiselect
-            options={bankList}
-            displayValue="bankName"
-            onSelect={handleSelect}
-            onRemove={handleRemove}
-            showCheckbox
-            style={{
-              chips: { background: "#1640d6",maxHeight:"11px" },
-              searchBox: { border: "1px solid #ccc", borderRadius: "4px", maxHeight:"31px"},
-            }}
-            placeholder="Filter by Bank"
-            avoidHighlightFirstOption
-            disablePreSelectedValues
-            showArrow
-            hidePlaceholder
-          />
+        <BankDropdown
+        bankList={bankList}
+        handleSelect={handleSelect}
+        handleRemove={handleRemove}
+      />
           <Link className="blue-button" onClick={handleAddNew}> Add New</Link> 
           <Link className="simple-button" onClick={handleRefresh}>
             Refresh
@@ -442,16 +496,13 @@ useEffect(() => {
                 src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
                 alt="Member Icon"
               />
-                          {selectedMember === member && showOptions && (
+              </div>
+              {selectedMember === member && showOptions && (
               <div className="options">
-                {/* <button onClick={() => handleAddNew(member)}>Edit</button>
-                {/* <div className="horizontal-divider"></div> */}
                  <button onClick={() => handleEditSection(member)}>Edit</button> 
-                <div className="horizontal-divider"></div>
-                <button>Delete</button>
               </div>
             )}
-            </div>
+            
 
 
           </div>
