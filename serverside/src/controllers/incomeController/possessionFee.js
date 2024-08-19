@@ -14,6 +14,7 @@ module.exports = {
       amount,
       head_of_account,
       paid_date,
+      type
     } = req.body;
     console.log(req.body);
     try {
@@ -21,8 +22,7 @@ module.exports = {
         !paid_date ||
         !member_no ||
         !challan_no ||
-        !amount ||
-        !head_of_account
+        !amount 
       ) {
         return res.status(400).json({ message: "All fields are required" });
       }

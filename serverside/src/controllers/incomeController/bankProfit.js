@@ -5,10 +5,12 @@ const bankLedger = require("../../models/ledgerModels/bankLedger")
 const fixedAmount = require("../../models/fixedAmountModel/fixedAmount")
 const mongoose = require('mongoose')
 const VoucherNo = require('../../middleware/generateVoucherNo')
+const GeneralLedger = require('../../middleware/createGeneralLedger');
+const BankLedger = require('../../middleware/createBankLedger');
 
 module.exports = {
   createBankProfit: async (req, res) => {
-    const { amount, bank_account, profit_month, paid_date, head_of_account } = req.body;
+    const { amount, bank_account, profit_month, paid_date, head_of_account,challan_no,cheque_no,check } = req.body;
     console.log(req.body);
     try {
       if (!amount || !bank_account || !profit_month || !head_of_account) {
@@ -19,10 +21,6 @@ module.exports = {
       if (!incomeHeadOfAccount) {
         return res.status(404).json({ message: 'Income head of account not found' });
       }
-
-      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account,"income")
-
-
 
       const bankList = await BankList.findOne({
         accountNo: bank_account
@@ -39,6 +37,14 @@ module.exports = {
         paidDate: paid_date,
         headOfAccount: incomeHeadOfAccount._id
       });
+
+      const update_id = bankProfit._id;
+
+      const type = "income";
+
+      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
+      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,profit_month, amount, paid_date,cheque_no, challan_no,update_id);
+      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no,update_id);
       
       await bankProfit.save();
       res.status(200).json({
@@ -52,7 +58,7 @@ module.exports = {
   },
   updateBankProfit: async (req, res) => {
     const id = req.query.id;
-    const { amount, bank_account, bank_name, profit_month, head_of_account, paid_date } = req.body;
+    const { amount, bank_account, profit_month, head_of_account, paid_date } = req.body;
     try {
       const bankProfit = await BankProfit.findById(id).exec();
       if (!bankProfit) {
@@ -87,6 +93,11 @@ module.exports = {
         updateData.profitMonth = profit_month;
       }
 
+      const type = "income";
+
+      await BankLedger.updateBankLedger(req, res, id, updateData, type);
+      await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+
       const updatedBankProfit = await BankProfit.findByIdAndUpdate(
         id,
         { $set: updateData },
@@ -103,7 +114,7 @@ module.exports = {
     }
   },
   getBankProfits: async (req, res) => {
-    const { id, bank_name, sort, profit_month, page_no = 1, limit = 10 } = req.query;
+    const { id, bank_account, sort, profit_month, page_no = 1, limit = 10 } = req.query;
     let sortOrder = {};
     if (sort === 'asc') {
       sortOrder = { amount: 1 };
@@ -128,27 +139,21 @@ module.exports = {
         }
         res.status(200).json(bankProfit);
       } else {
-        const bankProfits = await BankProfit.find(filter)
+        let bankProfits = await BankProfit.find(filter)
           .populate('bank', 'bankName accountNo')
           .populate('headOfAccount', 'headOfAccount')
-          .skip((page_no - 1) * limit)
-          .limit(limit)
-          .sort(sortOrder)
           .exec();
   
-        if (bankProfits.length === 0) {
-          return res.status(404).json({ message: "Bank Profits not found" });
+        if (bank_account) {
+          console.log("hello")
+          bankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.accountNo === bank_account);
         }
   
-        const totalCount = await BankProfit.countDocuments(filter).exec();
-        const hasMore = totalCount > page_no * limit;
+        const totalCount = bankProfits.length;
+        bankProfits = bankProfits.slice((page_no - 1) * limit, page_no * limit);
+        let hasMore = totalCount > page_no * limit;
   
-        if (bank_name) {
-          const filteredBankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.bankName === bank_name);
-          res.status(200).json({ filteredBankProfits, hasMore });
-        } else {
-          res.status(200).json({ bankProfits, hasMore });
-        }
+        res.status(200).json({ bankProfits, hasMore });
       }
     } catch (err) {
       res.status(500).json({ message: err.message });

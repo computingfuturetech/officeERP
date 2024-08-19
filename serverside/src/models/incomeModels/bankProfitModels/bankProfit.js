@@ -19,7 +19,12 @@ const bankProfitSchema = new Schema({
     profitMonth:{
         type: String,
     },
-
+    chequeNo:{
+        type: Number,
+    },
+    challanNo:{
+        type: Number,
+    },
 }
 )
 

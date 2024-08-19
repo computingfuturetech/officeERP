@@ -105,6 +105,12 @@ module.exports = {
             if (req.body.cheque_no) {
                 updateData.chequeNumber = req.body.cheque_no;
             }
+            if (req.body.particulor) {
+                updateData.particulor = req.body.particulor;
+            }
+            if (req.body.challan_no) {
+            updateData.challanNo = req.body.challan_no;
+            }
             if (req.body.salary_type) {
                 const foundSalaryType = await SalaryType.findOne({ salaryType: req.body.salary_type });
                 if (!foundSalaryType) {
@@ -112,6 +118,21 @@ module.exports = {
                 }
                 updateData.salaryType = foundSalaryType._id;
             }
+
+            const type = "expense";
+
+            if (req.body.check == "cash") {
+                await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+                await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+            }
+            else if (req.body.check == "bank") {
+                await BankLedger.updateBankLedger(req, res, id, updateData, type);
+                await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+            }
+            else {
+                console.log("Invalid Check")
+            }
+
             console.log("Update Data:", updateData);
             const updatedSalaries = await Salaries.findByIdAndUpdate(
                 id,

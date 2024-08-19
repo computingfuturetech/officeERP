@@ -112,6 +112,15 @@ module.exports = {
       if (req.body.year) {
         updateData.year = req.body.year;
       }
+      if(req.body.particular){
+        updateData.particular = req.body.particular;
+      }
+      if(req.body.challan_no){
+        updateData.challanNo = req.body.challan_no;
+      }
+      if(req.body.cheque_no){
+        updateData.chequeNo = req.body.cheque_no;
+      }
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,auditFeeExpense);
       }
@@ -123,7 +132,19 @@ module.exports = {
 
       const type = "expense";
 
-      await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+      if(req.body.check=="cash")
+      {
+        await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else if(req.body.check=="bank")
+      {
+        await BankLedger.updateBankLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else{
+        console.log("Invalid Check")
+      }
 
       res.status(200).json({
         message: "Audit Fee  Expense updated successfully",

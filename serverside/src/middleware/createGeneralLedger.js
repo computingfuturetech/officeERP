@@ -2,6 +2,64 @@ const CashBookLedger = require('../models/ledgerModels/cashBookLedger');
 const GeneralLedger = require('../models/ledgerModels/generalLedger');
 const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
 
+async function updateAddNextGeneralLedger(nextIds, type, difference) {
+  try {
+    if (type == 'expense') {
+      for (const id of nextIds) {
+        const temp = await GeneralLedger.findOne(
+          { _id: id }
+        ).exec();
+        temp.balance = parseInt(temp.balance) - difference;
+        temp.previousBalance = parseInt(temp.previousBalance) - difference;
+        await temp.save();
+      }
+      console.log('Expense General Ledger updated successfully');
+    }
+    else if (type == 'income') {
+      for (const id of nextIds) {
+        const temp = await GeneralLedger.findOne(
+          {_id: id }
+        ).exec();
+        temp.balance = parseInt(temp.balance) + difference;
+        temp.previousBalance = parseInt(temp.previousBalance) + difference;
+        await temp.save();
+      }
+      console.log('Income General Ledger updated successfully');
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
+async function updateSubNextGeneralLedger(nextIds, type, difference) {
+  try {
+    if (type == 'expense') {
+      for (const id of nextIds) {
+        const temp = await GeneralLedger.findOne(
+          { _id: id }
+        ).exec();
+        temp.balance = parseInt(temp.balance) + difference;
+        temp.previousBalance = parseInt(temp.previousBalance) + difference;
+        await temp.save();
+      }
+      console.log('Expense General Ledger updated successfully');
+    }
+    if (type == 'income') {
+      for (const id of nextIds) {
+        const temp = await GeneralLedger.findOne(
+          { _id: id }
+        ).exec();
+        temp.balance = parseInt(temp.balance) - difference;
+        temp.previousBalance = parseInt(temp.previousBalance) - difference;
+        await temp.save();
+      }
+      console.log('Income General Ledger updated successfully');
+    }
+  } catch (err) {
+    console.error(err);
+  }
+}
+
 module.exports = {
   createGeneralLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, cheque_no, challan_no, update_id) => {
     try {
@@ -48,28 +106,59 @@ module.exports = {
   },
   updateGeneralLedger: async (req, res, updateId, updates, type) => {
     try {
+      const updateFields = { ...updates };
+      delete updateFields.amount;
+      const generalLedger = await GeneralLedger.findOneAndUpdate({ updateId: updateId }, { $set: updateFields }, { new: true }).exec();
+      if (!generalLedger) {
+        return res.status(404).json({ message: 'General Ledger not found' });
+      }
       if (type == 'expense') {
-        const generalLedger = await GeneralLedger.findOneAndUpdate({ updateId: updateId }, { new: true }).exec();
+        if (updates.amount) {
+          if (updates.amount == generalLedger.debit) {
+            generalLedger.debit = updates.amount;
+            await generalLedger.save();
+          } else {
+            const { debit: previous_amount } = generalLedger;
+            generalLedger.debit = updates.amount;
+            generalLedger.balance = parseInt(generalLedger.previousBalance) - parseInt(updates.amount);
+            const nextGeneralLedgers = await GeneralLedger.find({ _id: { $gt: generalLedger._id } }).exec();
+            const nextIds = nextGeneralLedgers.map(gl => gl._id);
+            if (updates.amount > previous_amount) {
+              const difference = updates.amount - previous_amount;
+              await updateAddNextGeneralLedger(nextIds, "expense", difference);
+            } else if (updates.amount < previous_amount) {
+              const difference = previous_amount - updates.amount;
+              await updateSubNextGeneralLedger(nextIds, "expense", difference);
+            }
 
-        if (!generalLedger) {
-          return res.status(404).json({ message: 'General Ledger not found' });
+            await generalLedger.save();
+          }
+          console.log('General Ledger A updated successfully');
         }
+      }
+      else if(type == "income") {
+        if (updates.amount) {
+          if (updates.amount == generalLedger.credit) {
+            generalLedger.credit = updates.amount;
+            await generalLedger.save();
+          } else {
+            const { credit: previous_amount } = generalLedger;
+            generalLedger.credit = updates.amount;
+            generalLedger.balance = parseInt(generalLedger.previousBalance) + parseInt(updates.amount);
+            const nextGeneralLedgers = await GeneralLedger.find({ _id: { $gt: generalLedger._id } }).exec();
+            const nextIds = nextGeneralLedgers.map(gl => gl._id);
+            if (updates.amount > previous_amount) {
+              const difference = updates.amount - previous_amount;
+              await updateAddNextGeneralLedger(nextIds, "income", difference);
+            } else if (updates.amount < previous_amount) {
+              const difference = previous_amount - updates.amount;
+              await updateSubNextGeneralLedger(nextIds, "income", difference);
+            }
 
-        if (updates.amount == generalLedger.debit) {
-          generalLedger.debit = updates.amount;
-          await generalLedger.save();
-        } else {
-          generalLedger.debit = updates.amount;
-          generalLedger.balance = parseInt(generalLedger.previousBalance) - parseInt(updates.amount);
-          await generalLedger.save();
+            await generalLedger.save();
+          }
+          console.log('General Ledger A updated successfully');
         }
-        console.log('General Ledger updated successfully');
-
-        const nextGeneralLedgers = await GeneralLedger.find({ _id: { $gt: generalLedger._id } }).exec();
-
-        const nextIds = nextGeneralLedgers.map(gl => gl._id);
-        console.log(nextIds);
-
       }
     } catch (err) {
       console.error(err);
