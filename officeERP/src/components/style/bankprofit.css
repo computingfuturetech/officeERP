@@ -52,4 +52,14 @@
   .dropdown-check-list.visible .items {
     display: block;
   }
-  
+  .member-list {
+    & .members {
+        & .member {
+            .custom-option {
+              bottom: unset;
+              margin-right: 3.5%;
+              margin-top: 6%;
+            }
+          }
+        }
+      }

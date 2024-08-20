@@ -8,6 +8,7 @@ import { ToastContainer } from "react-toastify";
 import { showErrorToastMessage, showSuccessToastMessage } from "./toastUtils";
 import BankDropdown from "./bankDropdown";
 
+
 export default function BankProfitComponent() {
   const history = useNavigate();
 //   const [showSection, setShowSection] = useState(false);
@@ -35,7 +36,7 @@ export default function BankProfitComponent() {
   const [selectedList,setSelectedList]=useState([])
   const [filteredData,setFilteredData]=useState([])
   const [filtersSelected,setfiltersSelected]=useState(0)
-  const timeoutRef = useRef(null); // Ref to keep track of the timeout
+  const timeoutRef = useRef(0); // Ref to keep track of the timeout
   useEffect(() => {
     const fetchBanks= async() =>{
       try {
@@ -67,7 +68,12 @@ const [isPageOneFetched, setIsPageOneFetched] = useState(false); // New state to
 
 
 useEffect(() => {
+  
   const fetchData = async () => {
+
+    if (timeoutRef.current === 0) {
+      return
+    }
     if (isFetching || !hasMorePages) return;
 
     // Check if page 1 is already fetched
@@ -92,8 +98,6 @@ useEffect(() => {
       if (response.data.bankProfits.length > 0) {
         setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
         setHasMorePages(response.data.hasMore);
-        
-        // Set flag indicating that page 1 has been fetched
         if (page === 1) {
           setIsPageOneFetched(true);
           console.log("fetched with variable:",isPageOneFetched)
@@ -107,10 +111,12 @@ useEffect(() => {
     } finally {
       setLoading(false);
       setIsFetching(false);
+      timeoutRef.current++;
     }
     
   };
-
+  timeoutRef.current++;
+  
   fetchData();
 }, [page, hasMorePages]);
 
@@ -133,97 +139,6 @@ useEffect(() => {
     }
   };
 }, [loading]);
-
-
-
-
-
-
-
-
-
-
-
-
-// const [isFetching, setIsFetching] = useState(false);
-
-// useEffect(() => {
-  
-//   const fetchData = async () => {
-//     if (isFetching || !hasMorePages) return;
-//     setIsFetching(true);
-//     try {
-//       const config = {
-//         headers: {
-//           Authorization: "Bearer " + localStorage.getItem("token"),
-//         },
-//       };
-      
-//       const response = await axios.get(
-//         process.env.REACT_APP_API_URL+`/user/getBankProfit/?page_no=${page}`,
-//         config
-//       );
-//       console.log(response.data);
-//       console.log(response.data.hasMore)
-
-//       if (response.data.bankProfits.length > 0) {
-//         setBankProfitList((prevList) => [...prevList, ...response.data.bankProfits]);
-//         setHasMorePages(response.data.hasMore);
-        
-
-//       } else {
-//         setHasMorePages(false);
-//       }
-//     } catch (error) {
-//       console.error(error);
-//       showErrorToastMessage("An Error Occured While Fetching Data!")
-//     } finally {
-//       setLoading(false)
-//       setIsFetching(false); 
-//     }
-//   };
-//  if (timeoutRef.current) {
-//   clearTimeout(timeoutRef.current);
-// }
-
-// // Set a new timeout for debouncing
-// timeoutRef.current = setTimeout(() => {
-//   fetchData();
-// }, 500); // 500ms debounce delay
-
-// // Cleanup timeout on component unmount
-// return () => {
-//   if (timeoutRef.current) {
-//     clearTimeout(timeoutRef.current);
-//   }
-// };
-// }, [page, hasMorePages]);
-
-//   const handleScroll = () => {
-//     console.log("scrolling");
-//     if (membersRef.current) {
-//       const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
-//       if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
-//         setPage((prevPage) => prevPage + 1);
-//       }
-//     }
-//   };
-
-//   function dummy(){
-//     console.log('sdaf');
-//   }
-
-//   useEffect(() => {
-//     if (membersRef.current) {
-//       membersRef.current.addEventListener("scroll", handleScroll);
-//     }
-//     return () => {
-//       if (membersRef.current) {
-//         membersRef.current.removeEventListener("scroll", handleScroll);
-//       }
-//     };
-//   }, [loading]);
-
 
 
   const handleBankChange = (e) => {
@@ -498,7 +413,7 @@ const filterBanks = async (selectedBanks) => {
               />
               </div>
               {selectedMember === member && showOptions && (
-              <div className="options">
+              <div className="options custom-option">
                  <button onClick={() => handleEditSection(member)}>Edit</button> 
               </div>
             )}
