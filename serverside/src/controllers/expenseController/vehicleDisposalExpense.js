@@ -77,9 +77,17 @@ module.exports = {
       if (req.body.vehicle_type) {
         updateData.vehicleType = req.body.vehicle_type;
       }
+      if (req.body.particulor) {
+        updateData.particulor = req.body.particulor;
+      }
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, vehicleDisposalExpense);
       }
+
+      const type = "expense";
+
+      await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+      await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
 
       const updatedVehicleDisposalExpense = await VehicleDisposalExpense.findByIdAndUpdate(
         id,

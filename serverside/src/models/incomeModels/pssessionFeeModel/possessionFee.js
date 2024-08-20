@@ -21,6 +21,24 @@ const possessionFeeSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'IncomeHeadOfAccount',
     }],
+    masjidFund:{
+        type: Number,
+    },
+    possessionFee:{
+        type: Number,
+    },
+    buildingByLawCharges:{
+        type: Number,
+    },
+    constructionWater:{
+        type: Number,
+    },
+    electricityConnectionCharges:{
+        type: Number,
+    },
+    waterConnectionCharges:{
+        type: Number,
+    },
 }
 )
 

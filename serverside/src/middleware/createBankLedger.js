@@ -4,15 +4,28 @@ const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
 
 async function updateAddNextBankLedger(nextIds, type, difference) {
     try {
-        for (const id of nextIds) {
-            const temp =  await BankLedger.findOne(
-                { _id: id }
-            ).exec();
-            temp.balance = parseInt(temp.balance) - difference;
-            temp.debit = parseInt(temp.debit) + difference;
-            await temp.save();
+        if(type == 'expense'){
+            for (const id of nextIds) {
+                const temp = await BankLedger.findOne(
+                    { _id: id }
+                ).exec();
+                temp.balance = parseInt(temp.balance) - difference;
+                temp.previousBalance = parseInt(temp.previousBalance) - difference;
+                await temp.save();
+            }
+            console.log('Expense of Bank Ledgers updated successfully');
         }
-        console.log('Bank Ledgers B updated successfully');
+        else if(type == 'income'){
+            for (const id of nextIds) {
+                const temp = await BankLedger.findOne(
+                    { _id: id }
+                ).exec();
+                temp.balance = parseInt(temp.balance) + difference;
+                temp.previousBalance = parseInt(temp.previousBalance) + difference;
+                await temp.save();
+            }
+            console.log('Income of Bank Ledgers updated successfully');
+        }
     } catch (err) {
         console.error(err);
     }
@@ -20,15 +33,28 @@ async function updateAddNextBankLedger(nextIds, type, difference) {
 
 async function updateSubNextBankLedger(nextIds, type, difference) {
     try {
-        for (const id of nextIds) {
-            const temp =  await BankLedger.findOne(
-                { _id: id }
-            ).exec();
-            temp.balance = parseInt(temp.balance) + difference;
-            temp.debit = parseInt(temp.debit) - difference;
-            await temp.save();
+        if(type == 'expense'){
+            for (const id of nextIds) {
+                const temp = await BankLedger.findOne(
+                    { _id: id }
+                ).exec();
+                temp.balance = parseInt(temp.balance) + difference;
+                temp.previousBalance = parseInt(temp.previousBalance) + difference;
+                await temp.save();
+            }
+            console.log('Bank Ledgers B updated successfully');
         }
-        console.log('Bank Ledgers B updated successfully');
+        else if(type == 'income'){
+            for (const id of nextIds) {
+                const temp = await BankLedger.findOne(
+                    { _id: id }
+                ).exec();
+                temp.balance = parseInt(temp.balance) - difference;
+                temp.previousBalance = parseInt(temp.previousBalance) - difference;
+                await temp.save();
+            }
+            console.log('Bank Ledgers B updated successfully');
+        }
     } catch (err) {
         console.error(err);
     }
@@ -77,39 +103,67 @@ module.exports = {
     },
     updateBankLedger: async (req, res, updateId, updates, type) => {
         try {
-          if (type == 'expense') {
-            const bankLedger = await BankLedger.findOneAndUpdate({ updateId: updateId }, { new: true }).exec();
-      
-            if (!bankLedger) {
-              return res.status(404).json({ message: 'Bank Ledger not found' });
-            }
-      
-            if (updates.amount == bankLedger.debit) {
-              bankLedger.debit = updates.amount;
-              await bankLedger.save();
-            } else {
-              const { debit: previous_amount } = bankLedger;
-              bankLedger.debit = updates.amount;
-              bankLedger.balance = parseInt(bankLedger.previousBalance) - parseInt(updates.amount);
-              const nextBankLedgers = await BankLedger.find({ _id: { $gt: bankLedger._id } }).exec();
-              const nextIds = nextBankLedgers.map(gl => gl._id);
-              if (updates.amount > previous_amount) {
-                const difference = updates.amount - previous_amount;
-                await updateAddNextBankLedger(nextIds, "expense", difference);
-              }else if (updates.amount < previous_amount) {
-                const difference = previous_amount - updates.amount;
-                await updateSubNextBankLedger(nextIds, "expense", difference);
-              }
+            console.log(updates)
+            const updateFields = { ...updates };
+            delete updateFields.amount;
+            const bankLedger = await BankLedger.findOneAndUpdate({ updateId: updateId }, { $set: updateFields }, { new: true }).exec();
 
-              await bankLedger.save();
+            if (!bankLedger) {
+                return res.status(404).json({ message: 'Bank Ledger not found' });
             }
-            console.log('Bank Ledger A updated successfully');
-          }
+            if (type == 'expense') {
+                if(updates.amount){
+                    if (updates.amount == bankLedger.debit) {
+                        bankLedger.debit = updates.amount;
+                        await bankLedger.save();
+                    } else {
+                        const { debit: previous_amount } = bankLedger;
+                        bankLedger.debit = updates.amount;
+                        bankLedger.balance = parseInt(bankLedger.previousBalance) - parseInt(updates.amount);
+                        const nextBankLedgers = await BankLedger.find({ _id: { $gt: bankLedger._id } }).exec();
+                        const nextIds = nextBankLedgers.map(gl => gl._id);
+                        if (updates.amount > previous_amount) {
+                            const difference = updates.amount - previous_amount;
+                            await updateAddNextBankLedger(nextIds, "expense", difference);
+                        } else if (updates.amount < previous_amount) {
+                            const difference = previous_amount - updates.amount;
+                            await updateSubNextBankLedger(nextIds, "expense", difference);
+                        }
+
+                        await bankLedger.save();
+                    }
+                    console.log('Bank Ledger A updated successfully');
+                }
+            }
+            if(type == 'income'){
+                if(updates.amount){
+                    if (updates.amount == bankLedger.credit) {
+                        bankLedger.credit = updates.amount;
+                        await bankLedger.save();
+                    } else {
+                        const { credit: previous_amount } = bankLedger;
+                        bankLedger.credit = updates.amount;
+                        bankLedger.balance = parseInt(bankLedger.previousBalance) + parseInt(updates.amount);
+                        const nextBankLedgers = await BankLedger.find({ _id: { $gt: bankLedger._id } }).exec();
+                        const nextIds = nextBankLedgers.map(gl => gl._id);
+                        if (updates.amount > previous_amount) {
+                            const difference = updates.amount - previous_amount;
+                            await updateAddNextBankLedger(nextIds, "income", difference);
+                        } else if (updates.amount < previous_amount) {
+                            const difference = previous_amount - updates.amount;
+                            await updateSubNextBankLedger(nextIds, "income", difference);
+                        }
+
+                        await bankLedger.save();
+                    }
+                    console.log('Bank Ledger A updated successfully');
+                }
+            }
         } catch (err) {
-          console.error(err);
-          return res.status(500).json({ message: 'Internal server error' });
+            console.error(err);
+            return res.status(500).json({ message: 'Internal server error' });
         }
-      },
+    },
 };
 
 

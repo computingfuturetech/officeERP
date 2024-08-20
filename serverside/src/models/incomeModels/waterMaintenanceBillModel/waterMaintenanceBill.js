@@ -27,6 +27,15 @@ const waterMaintenaceBillSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'IncomeHeadOfAccount',
     },
+    accountNo:{
+        type: Number,
+    },
+    challanNo:{
+        type: Number,
+    },
+    chequeNo:{
+        type: Number,
+    },
 }
 )
 

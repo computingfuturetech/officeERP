@@ -99,9 +99,30 @@ module.exports = {
       if (req.body.bill_reference) {
         updateData.billReference = req.body.bill_reference;
       }
+      if (req.body.challan_no) {
+        updateData.challanNo = req.body.challan_no;
+      }
+      if (req.body.cheque_no) {
+        updateData.chequeNo = req.body.cheque_no;
+      }
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, OfficeUtilExpense);
       }
+
+      const type = "expense";
+
+      if (req.body.check == "cash") {
+        await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else if (req.body.check == "bank") {
+        await BankLedger.updateBankLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else {
+        console.log("Invalid Check")
+      }
+
       const updatedOfficeUtilExpense = await OfficeUtilExpense.findByIdAndUpdate(
         id,
         { $set: updateData },

@@ -81,8 +81,28 @@ module.exports = {
       if (req.body.vendor) {
         updateData.vendor = req.body.vendor;
       }
+      if (req.body.challan_no) {
+        updateData.challanNo = req.body.challan_no;
+      }
+      if (req.body.cheque_no) {
+        updateData.chequeNo = req.body.cheque_no;
+      }
       if (req.body.head_of_account) {
         await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, officeExpense);
+      }
+
+      const type = "expense";
+
+      if (req.body.check == "cash") {
+        await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else if (req.body.check == "bank") {
+        await BankLedger.updateBankLedger(req, res, id, updateData, type);
+        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
+      }
+      else {
+        console.log("Invalid Check")
       }
 
       const updatedOfficeExpense = await OfficeExpense.findByIdAndUpdate(
