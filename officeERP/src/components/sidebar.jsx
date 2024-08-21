@@ -18,23 +18,18 @@ export default function Sidebar() {
   const [showOfficeExpense, setShowOfficeExpense] = useState(false);
   const [showSiteExpense, setShowSiteExpense] = useState(false);
 
-
   const general = ["Dashboard", "Members", "Income"];
 
   useEffect(() => {
     if (!location.pathname.includes("/income")) {
       setShowIncome(false);
-    } 
-    else {
-      if (location.pathname.includes("/income/bank-profit"))
-        setShowBank(true);
-      if (location.pathname.includes("/income/seller"))
-      {
+    } else {
+      if (location.pathname.includes("/income/bank-profit")) setShowBank(true);
+      if (location.pathname.includes("/income/seller")) {
         setShowSeller(true);
         setShowGeneral(true);
       }
-      if (location.pathname.includes("/income/purchaser"))
-      {
+      if (location.pathname.includes("/income/purchaser")) {
         setShowPurchaser(true);
         setShowGeneral(true);
       }
@@ -46,16 +41,14 @@ export default function Sidebar() {
   useEffect(() => {
     if (!location.pathname.includes("/expense")) {
       setShowExpense(false);
-    } 
-    else {
+    } else {
       if (location.pathname.includes("/expense/office-expense"))
         setShowOfficeExpense(true);
       if (location.pathname.includes("/expense/site-expense"))
-        setShowSiteExpense(true)
+        setShowSiteExpense(true);
       setShowExpense(true);
     }
   }, [location]);
-
 
   const handleIncome = () => {
     setShowIncome(!showIncome);
@@ -78,15 +71,15 @@ export default function Sidebar() {
   const handleWaterMaintanance = () => {
     setShowMonthly(!showMonthly);
   };
-  const handleExpense=()=>{
+  const handleExpense = () => {
     setShowExpense(!showExpense);
-  }
-  const handleOfficeExpense=()=>{
+  };
+  const handleOfficeExpense = () => {
     setShowOfficeExpense(!showExpense);
-  }
-  const handleSiteExpense=()=>{
+  };
+  const handleSiteExpense = () => {
     setShowSiteExpense(!showExpense);
-  }
+  };
 
   return (
     <div className="sidebar">
@@ -140,33 +133,40 @@ export default function Sidebar() {
               <>
                 <div
                   onClick={handleGeneral}
+                  className={`dropdown-item ${showGeneral ? "active" : ""}`}
+                >
+                  <NavLink
+                    exact
+                    to="/income/seller"
+                    activeClassName="active"
+                    onClick={() => setIncome(false)}
+                  >
+                    Transfer Income
+                  </NavLink>
+                </div>
+              </>
+            )}
+            {showIncome && (
+              <>
+                <div
+                  onClick={handleBank}
                   className={`dropdown dropdown-item ${
-                    showGeneral ? "active" : ""
+                    showBank ? "active" : ""
                   }`}
                 >
-                  Transfer Income
+                  Bank Income
                 </div>
-                {showGeneral && (
+                {showBank && (
                   <>
                     <ul className="dropdown-menu">
                       <li>
                         <NavLink
                           exact
-                          to="/income/seller"
+                          to="/income/bank-profit"
                           activeClassName="active"
                           onClick={() => setIncome(false)}
                         >
-                          Transfer Income
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink
-                          exact
-                          to="/income/purchaser"
-                          activeClassName="active"
-                          onClick={() => handlePurchaser(false)}
-                        >
-                          Add New Purchaser 
+                          Bank Profit
                         </NavLink>
                       </li>
                     </ul>
@@ -175,81 +175,44 @@ export default function Sidebar() {
               </>
             )}
             {showIncome && (
-                  <>
-                    <div
-                      onClick={handleBank}
-                      className={`dropdown dropdown-item ${
-                        showBank ? "active" : ""
-                      }`}
-                    >
-                      Bank Income
-                    </div>
-                    {showBank && (
-                      <>
-                        <ul className="dropdown-menu">
-                          <li>
-                            <NavLink
-                              exact
-                              to="/income/bank-profit"
-                              activeClassName="active"
-                              onClick={() => setIncome(false)}
-                            >
-                              Bank Profit
-                            </NavLink>
-                          </li>
-                        </ul>
-                      </>
-                    )}
-                  </>
-                )
-              }
-              {showIncome && (
-                <>
-                  <div
-                    onClick={() => {
-                      handleWaterMaintanance();
-                      setShowIncome(false); 
-                    }}
-                    className={`dropdown dropdown-item ${showMonthly ? "active" : ""}`}
+              <>
+                <div
+                  onClick={() => {
+                    handleWaterMaintanance();
+                    setShowIncome(false);
+                  }}
+                  className={`dropdown-item ${showMonthly ? "active" : ""}`}
+                >
+                  <NavLink
+                    exact
+                    to="/income/water-maintainance"
+                    activeClassName="active"
                   >
-                    <NavLink
-                      exact
-                      to="/income/water-maintainance"
-                      activeClassName="active"
-                      style={{ textDecoration: 'none', color: 'inherit' }} // Ensuring it looks like a dropdown item
-                    >
-                      Water/Maintainance
-                    </NavLink>
-                  </div>
-                </>
-              )}
-              {showIncome && (
-                <>
-                  <div
-                    onClick={() => {
-                      handlePossessionIncome();
-                      setShowIncome(false); 
-                    }}
-                    className={`dropdown dropdown-item ${postPurchase ? "active" : ""}`}
+                    Water/Maintainance
+                  </NavLink>
+                </div>
+              </>
+            )}
+            {showIncome && (
+              <>
+                <div
+                  onClick={() => {
+                    handlePossessionIncome();
+                    setShowIncome(false);
+                  }}
+                  className={`dropdown-item ${postPurchase ? "active" : ""}`}
+                >
+                  <NavLink
+                    exact
+                    to="/income/possession"
+                    activeClassName="active"
                   >
-                    <NavLink
-                      exact
-                      to="/income/possession"
-                      activeClassName="active"
-                      style={{ textDecoration: 'none', color: 'inherit' }} // Ensuring it looks like a dropdown item
-                    >
-                      Possession
-                    </NavLink>
-                  </div>
-                </>
-              )}
-
+                    Possession
+                  </NavLink>
+                </div>
+              </>
+            )}
           </li>
-
-
-
-
-
 
           <li>
             <div onClick={handleExpense} className="dropdown">
@@ -265,37 +228,31 @@ export default function Sidebar() {
             </div>
             {showExpense && (
               <>
-              <ul className="dropdown-menu">
-                <li>
-                  <NavLink
-                    exact
-                    to="/expense/office-expense"
-                    activeClassName="active"
-                    onClick={() => setShowExpense(false)}
-                  >
-                    Office Expense
-                  </NavLink>
-                </li>
-                <li>
-                  <NavLink
-                    exact
-                    to="/expense/site-expense"
-                    activeClassName="active"
-                    onClick={() => setShowExpense(false)}
-                  >
-                    Site Expense
-                  </NavLink>
-                </li>
-              </ul>
-            </>
+                <ul className="dropdown-item">
+                  <li>
+                    <NavLink
+                      exact
+                      to="/expense/office-expense"
+                      activeClassName="active"
+                      onClick={() => setShowExpense(false)}
+                    >
+                      Office Expense
+                    </NavLink>
+                  </li>
+                  <li>
+                    <NavLink
+                      exact
+                      to="/expense/site-expense"
+                      activeClassName="active"
+                      onClick={() => setShowExpense(false)}
+                    >
+                      Site Expense
+                    </NavLink>
+                  </li>
+                </ul>
+              </>
             )}
           </li>
-
-
-
-
-
-
 
           <li>
             <NavLink to="/dummy3" activeClassName="active">
