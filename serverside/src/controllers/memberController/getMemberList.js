@@ -10,13 +10,22 @@ module.exports = {
         if (/^\d+$/.test(search)) {
           filter = {
             $or: [
-              { msNo: Number(search) },
+              { msNo: Number(search)},
 
               { area: Number(search) }
             ]
           };
+          const numericResult = await MemberList.findOne(filter);
+
+          if (!numericResult) {
+            filter = {
+              $or: [
+                { $expr: { $eq: [{ $toString: "$msNo" }, `${search}`] } }
+              ]
+            };
+          }
         } else {
-          const stringFields = ["cnicNo","block", "purchaseName", "guardianName"];
+          const stringFields = ["msNo", "cnicNo", "block", "purchaseName", "guardianName"];
           filter = {
             $or: stringFields.map(field => ({ [field]: { $regex: search, $options: 'i' } }))
           };
