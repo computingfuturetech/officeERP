@@ -10,6 +10,7 @@ import "./style/seller.css";
 export default function SellerDetails() {
   const history = useNavigate();
   const [memberList, setMemberList] = useState([]);
+  const [selectedMember, setSelectedMember] = useState(null);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const membersRef = useRef(null);
@@ -24,7 +25,7 @@ export default function SellerDetails() {
   const [editTransferFee, setEditTransferFee] = useState(false);
   const [isLoading,setIsLoading]=useState(false)
   const [ShowButton,setShowButton]=useState(true)
-
+  const [showOptions, setShowOptions] = useState(false);
 
 
   const [addDues, setAddDues] = useState(false);
@@ -35,6 +36,7 @@ export default function SellerDetails() {
   const [purchaseOptions,setPurchaseOptions]=useState(false)
   const [showForm,setShowForm]=useState(false)
   const [showPurchaseForm,setShowPurchaseForm]=useState(false)
+  const [memberFound,setMemberFound]=useState(false)
 
   const handleAddDues = () => {
     setAddDues(true);
@@ -95,9 +97,11 @@ export default function SellerDetails() {
 
   const closeSection = () => {
     setAddDues(false);
+    setShowOptions(false)
     setMsNo("");
     setPurchaseName("");
     setChallanNumber("");
+    setPurchaseOptions(false)
     setDate("");
     setPlotNo("");
     setShowButton(true)
@@ -137,9 +141,11 @@ export default function SellerDetails() {
     setDate("");
     setPlotNo("");
     setShowButton(true)
+    setPurchaseOptions(false)
     setBlock("");
     setIsLoading(false)
     setTypeOption(true)
+    setSellerForm(false)
     setShowForm(false)
     setShowPurchaseForm(false)
     setPurchaseForm(false)
@@ -149,9 +155,17 @@ export default function SellerDetails() {
     closeSection()
 
   }
+
+ 
+  const handleShowOptions=(member)=>{
+    setSelectedMember(member);
+    console.log(member)
+    setShowOptions(!showOptions);
+  }
   const getMemberData=(e)=>{
     e.preventDefault();
     setIsLoading(true)
+    setMemberFound(true)
     setShowButton(false)
     console.log(msNo)
     const fetchMemeber = async () => {
@@ -177,13 +191,15 @@ export default function SellerDetails() {
         setCnicNo(response.data.cnicNo)
         console.log(response)
       } catch (error) {
-        showErrorToastMessage("Error Try Again!")
+        setMemberFound(false)
+        showErrorToastMessage("Member Not Found!")
         clearData()
         console.error(error);
       }
     };
     fetchMemeber();
 
+    
     const fetchMemeberData = async () => {
       try {
         const config = {
@@ -250,6 +266,7 @@ export default function SellerDetails() {
         console.log(response)
         setIsLoading(false)
       } catch (error) {
+      clearData()
         console.error(error);
       }
     };
@@ -391,35 +408,53 @@ export default function SellerDetails() {
         </div>
       </div>
       <div className="top-bar">
-        <div className="top-bar-item">
-          <h4>Membership No</h4>
-          <h4>Name</h4>
-          <h4>Amount</h4>
-          <h4>Date</h4>
-        </div>
-      </div>
+  <div className="top-bar-item">
+    <h4>Membership No</h4>
+    <h4>Name</h4>
+    <h4>Total Amount</h4>
+    <h4>Date</h4>
+    <h4></h4>
+  </div>
+</div>
 
-      <div className={`members  ${loading ? "loading" : ""}`} ref={membersRef}>
-        {memberList.map((member) => (
+    <div className={`members ${loading ? "loading" : ""}`} ref={membersRef}>
+      {memberList.map((member) => {
+        const totalAmount = (member.transferFee || 0) +
+                            (member.membershipFee || 0) +
+                            (member.admissionFee || 0) +
+                            (member.masjidFund || 0) +
+                            (member.nocFee || 0) +
+                            (member.dualOwnerFee || 0) +
+                            (member.coveredAreaFee || 0) +
+                            (member.shareMoney || 0) +
+                            (member.depositForLandCost || 0) +
+                            (member.electricityCharges || 0) +
+                            (member.additionalCharges || 0) +
+                            (member.depositForDevelopmentCharges || 0);
+
+        return (
           <div className="member" key={member.id}>
             <div className="member-details">
               <p>{member.memberNo.msNo === "" ? "-" : member.memberNo.msNo}</p>
               <p>{member.memberNo.purchaseName === "" ? "-" : member.memberNo.purchaseName}</p>
-              <p>{member.amount === "" ? "-" : member.amount}</p>
+              <p>{totalAmount}</p>
               <p>{member.paidDate === "" ? "-" : convertDate(member.paidDate)}</p>
-            
-             
+              <img
+                onClick={() => handleShowOptions(member)}
+                src="data:image/svg+xml,%3Csvg id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 122.88 83.78' style='enable-background:new 0 0 122.88 83.78' xml:space='preserve'%3E%3Cg%3E%3Cpath d='M95.73,10.81c10.53,7.09,19.6,17.37,26.48,29.86l0.67,1.22l-0.67,1.21c-6.88,12.49-15.96,22.77-26.48,29.86 C85.46,79.88,73.8,83.78,61.44,83.78c-12.36,0-24.02-3.9-34.28-10.81C16.62,65.87,7.55,55.59,0.67,43.1L0,41.89l0.67-1.22 c6.88-12.49,15.95-22.77,26.48-29.86C37.42,3.9,49.08,0,61.44,0C73.8,0,85.45,3.9,95.73,10.81L95.73,10.81z M60.79,22.17l4.08,0.39 c-1.45,2.18-2.31,4.82-2.31,7.67c0,7.48,5.86,13.54,13.1,13.54c2.32,0,4.5-0.62,6.39-1.72c0.03,0.47,0.05,0.94,0.05,1.42 c0,11.77-9.54,21.31-21.31,21.31c-11.77,0-21.31-9.54-21.31-21.31C39.48,31.71,49.02,22.17,60.79,22.17L60.79,22.17L60.79,22.17z M109,41.89c-5.5-9.66-12.61-17.6-20.79-23.11c-8.05-5.42-17.15-8.48-26.77-8.48c-9.61,0-18.71,3.06-26.76,8.48 c-8.18,5.51-15.29,13.45-20.8,23.11c5.5,9.66,12.62,17.6,20.8,23.1c8.05,5.42,17.15,8.48,26.76,8.48c9.62,0,18.71-3.06,26.77-8.48 C96.39,59.49,103.5,51.55,109,41.89L109,41.89z'/%3E%3C/g%3E%3C/svg%3E"
+                alt="Details Icon"
+              />
             </div>
+          </div>
+        );
+      })}
+      {loading && (
+        <div className="loading-indicator">
+          <div className="spinner"></div>
+        </div>
+      )}
+    </div>
 
-          
-          </div>
-        ))}
-        {loading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
-          </div>
-        )}
-      </div>
       {addDues && (
         <>
         <div className="left-section">
@@ -519,6 +554,7 @@ export default function SellerDetails() {
                 type="date"
                 name="date"
                 id="date"
+                value={convertDate(updateMemberState.paidDate)}
                 required
                 onChange={(e) => setUpdateMemberState({
                   ...updateMemberState,
@@ -619,7 +655,7 @@ export default function SellerDetails() {
                 type="number"
                 name="electricityCharges"
                 id="electricityCharges"
-                value={updateMemberState.electricityCharges || ""}
+                value={updateMemberState.electricityCharges}
                 onChange={(e) => setUpdateMemberState({
                   ...updateMemberState,
                   electricityCharges: e.target.value
@@ -767,6 +803,74 @@ export default function SellerDetails() {
             </div>
       </>
     )}
+    {showOptions && (
+        <div className="left-section">
+        <div className="left-section-content">
+          <div onClick={closeSection} className="close-button"></div>
+          <h3>Member Fees Details</h3>
+          <div className="horizontal-divider"></div>
+          <div className="details">
+            <div className="details-item">
+              <h4>Membership No:</h4>
+              <p>{selectedMember?.memberNo.msNo || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Name:</h4>
+              <p>{selectedMember?.memberNo.purchaseName || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Transfer Fee:</h4>
+              <p>{selectedMember?.transferFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Membership Fee:</h4>
+              <p>{selectedMember?.membershipFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Admission Fee:</h4>
+              <p>{selectedMember?.admissionFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Masjid Fund:</h4>
+              <p>{selectedMember?.masjidFund || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>NOC Fee:</h4>
+              <p>{selectedMember?.nocFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Dual Owner Fee:</h4>
+              <p>{selectedMember?.dualOwnerFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Covered Area Fee:</h4>
+              <p>{selectedMember?.coveredAreaFee || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Share Money:</h4>
+              <p>{selectedMember?.shareMoney || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Deposit for Land Cost:</h4>
+              <p>{selectedMember?.depositForLandCost || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Electricity Charges:</h4>
+              <p>{selectedMember?.electricityCharges || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Additional Development Charges:</h4>
+              <p>{selectedMember?.additionalCharges || "-"}</p>
+            </div>
+            <div className="details-item">
+              <h4>Deposit for Development Charges:</h4>
+              <p>{selectedMember?.depositForDevelopmentCharges || "-"}</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      )}
      <ToastContainer />      
     </div>
 

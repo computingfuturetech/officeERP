@@ -4,3 +4,24 @@
         height:43px
     }
 }
+
+
+
+/* .member-list {
+    & .top-bar {
+        & .top-bar-item {
+            :nth-child(2) {
+                width: 10%;
+            }
+        }
+    }
+    & .members {
+        & .member {
+            & .member-details {
+                :nth-child(2) {
+                    width: 20%;
+                }
+            }
+        }
+    }
+} */
