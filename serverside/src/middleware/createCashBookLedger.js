@@ -106,6 +106,7 @@ module.exports = {
   },
   updateCashLedger: async (req, res, updateId, updates, type) => {
     try {
+      console.log(updates);
       const updateFields = { ...updates };
       delete updateFields.amount;
       if (type == 'expense') {
@@ -143,6 +144,48 @@ module.exports = {
       return res.status(500).json({ message: 'Internal server error' });
     }
   },
+  updateSellerPurchaserCashLedger: async (req, res, updateId, updates, type, nameHeadOfAccount) => {
+    const updateFields = { ...updates };
+    delete updateFields.amount;
+    try {
+        const cashLedger = await CashBookLedger.findOneAndUpdate(
+            { updateId: updateId, headOfAccount: nameHeadOfAccount },
+            { $set: updateFields },
+            { new: true }
+        ).exec();
+        if (!cashLedger) {
+            return res.status(404).json({ message: 'Bank Ledger not found' });
+        }
+        console.log(cashLedger)
+        if (type == 'income') {
+            if (updates.amount) {
+                if (updates.amount == cashLedger.credit) {
+                    cashLedger.credit = updates.amount;
+                    await cashLedger.save();
+                } else {
+                    const { credit: previous_amount } = cashLedger;
+                    cashLedger.credit = updates.amount;
+                    cashLedger.balance = parseInt(cashLedger.previousBalance) + parseInt(updates.amount);
+                    const nextCashLedgers = await CashBookLedger.find({ _id: { $gt: cashLedger._id } }).exec();
+                    const nextIds = nextCashLedgers.map(gl => gl._id);
+                    if (updates.amount > previous_amount) {
+                        const difference = updates.amount - previous_amount;
+                        await updateAddNextCashLedger(nextIds, "income", difference);
+                    } else if (updates.amount < previous_amount) {
+                        const difference = previous_amount - updates.amount;
+                        await updateSubNextCashLedger(nextIds, "income", difference);
+                    }
+
+                    await cashLedger.save();
+                }
+                console.log('Bank Ledger A updated successfully');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
 };
 
 

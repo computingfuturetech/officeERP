@@ -11,6 +11,7 @@ const possessionFee = require('../../controllers/incomeController/possessionFee'
 const sellerPurchaserIncome = require('../../controllers/incomeController/sellerPurchaseIncome')
 const incomeHeadOfAccount = require('../../controllers/incomeHeadOfAccount/incomeHeadOfAccount')
 const getAllIncome = require('../../controllers/incomeController/getAllIncome')
+const typeOfHeadOfAccount = require('../../controllers/incomeHeadOfAccount/typeOfHeadOfAccount')
 
 router.post("/createBankProfit",authenticateJWT,checkRole(['admin','employee']),bankProfit.createBankProfit);
 router.get("/getBankProfit/",authenticateJWT,checkRole(['admin','employee']),bankProfit.getBankProfits);
@@ -30,6 +31,7 @@ router.get("/getWaterMaintenanceBill/",authenticateJWT,checkRole(['admin','emplo
 router.post("/updateWaterMaintenanceBill",authenticateJWT,checkRole(['admin','employee']),waterMaintenanceBill.updateWaterMaintenanceBill);
 
 router.post("/createIncomeHeadOfAccount",authenticateJWT,checkRole(['admin','employee']),incomeHeadOfAccount.createHeadOfAccount);
+router.post("/createType",authenticateJWT,checkRole(['admin','employee']),typeOfHeadOfAccount.createTypeOfHeadOfAccount);
 router.get("/getIncomeHeadOfAccount",authenticateJWT,checkRole(['admin','employee']),incomeHeadOfAccount.listOfHeadOfAccount);
 router.post("/updateIncomeHeadOfAccount",authenticateJWT,checkRole(['admin','employee']),incomeHeadOfAccount.updateHeadOfAccount);
 
