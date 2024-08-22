@@ -14,35 +14,28 @@ export default function PurchaserComponent() {
   const membersRef = useRef(null);
   const [addDues, setAddDues] = useState(false);
   const [updateMemberState, setUpdateMemberState] = useState([]);
-  const [sellerList,setSellerList]=useState([]);
-
-
-
+  const [sellerList, setSellerList] = useState([]);
 
   useEffect(() => {
-    const fetchBanks= async() =>{
+    const fetchBanks = async () => {
       try {
         const config = {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
           },
+        };
+        const response = await axios.get(
+          `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome`,
+          config
+        );
+        setSellerList(response.data);
+        console.log(response.data);
+      } catch (error) {
+        console.error(error);
       }
-      const response=await axios.get(
-        `http://192.168.0.189:3001/user/getSellerPurchaseIncome`,
-        config
-      )
-      setSellerList(response.data)
-      console.log(response.data)
-    }
-    catch(error){
-      console.error(error);
-    }
-  }
-  fetchBanks()
-}, []);
-
-
-
+    };
+    fetchBanks();
+  }, []);
 
   const handleScroll = () => {
     if (membersRef.current) {
@@ -137,7 +130,7 @@ export default function PurchaserComponent() {
 
   const closeSection = () => {
     setAddDues(false);
-  }
+  };
 
   const updateMember = (e) => {
     e.preventDefault();
@@ -157,7 +150,7 @@ export default function PurchaserComponent() {
       additional_charges: updateMemberState.additionalCharges,
       electricity_charges: updateMemberState.electricityCharges,
     };
-    
+
     const update = async () => {
       try {
         const config = {
@@ -178,14 +171,12 @@ export default function PurchaserComponent() {
     update();
   };
 
-  
-
   return (
     <div className="member-list">
       <div className="title">
         <h2>Add New Purchaser</h2>
         <div className="title-buttons">
-          <Link className="blue-button" onClick={()=> setAddDues(true)}>
+          <Link className="blue-button" onClick={() => setAddDues(true)}>
             Existing Member
           </Link>
         </div>
@@ -197,7 +188,9 @@ export default function PurchaserComponent() {
           <div className="purchaser-input">
             <div className="purchaser-input-wrapper">
               <div className="input">
-                <label htmlFor="purchaser-id" className="required">Purchaser Id:</label>
+                <label htmlFor="purchaser-id" className="required">
+                  Purchaser Id:
+                </label>
                 <input
                   type="text"
                   name="purchaser-id"
@@ -214,7 +207,9 @@ export default function PurchaserComponent() {
                 />
               </div>
               <div className="input">
-                <label htmlFor="purchaser-name" className="required">Purchaser Name:</label>
+                <label htmlFor="purchaser-name" className="required">
+                  Purchaser Name:
+                </label>
                 <input
                   type="text"
                   name="purchaser-name"
@@ -231,7 +226,9 @@ export default function PurchaserComponent() {
                 />
               </div>
               <div className="input">
-                <label htmlFor="purchaser-cnic" className="required">CNIC No:</label>
+                <label htmlFor="purchaser-cnic" className="required">
+                  CNIC No:
+                </label>
                 <input
                   type="text"
                   name="purchaser-cnic"
@@ -355,50 +352,66 @@ export default function PurchaserComponent() {
             <h3>Add Member Dues</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
-              <label htmlFor="msNo" className="required">Membership No: </label>
+              <label htmlFor="msNo" className="required">
+                Membership No:{" "}
+              </label>
               <input
                 type="text"
                 name="msNo"
                 id="msNo"
                 required
-                onChange={(e) => setUpdateMemberState(
-                  {...updateMemberState,
-                  msNo: e.target.value}
-                )}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    msNo: e.target.value,
+                  })
+                }
               />
-              <label htmlFor="purchaseName" className="required">Name: </label>
+              <label htmlFor="purchaseName" className="required">
+                Name:{" "}
+              </label>
               <input
                 type="text"
                 name="purchaseName"
                 id="purchaseName"
                 className="read-only"
                 readOnly
-                onChange={(e) =>setUpdateMemberState({
-                  ...updateMemberState,
-                  purchaseName: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    purchaseName: e.target.value,
+                  })
+                }
               />
-              <label htmlFor="challanNumber" className="required">Challan Number: </label>
+              <label htmlFor="challanNumber" className="required">
+                Challan Number:{" "}
+              </label>
               <input
                 type="number"
                 name="challanNumber"
                 id="challanNumber"
                 required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  challanNumber: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    challanNumber: e.target.value,
+                  })
+                }
               />
-              <label htmlFor="date" className="required">Date: </label>
+              <label htmlFor="date" className="required">
+                Date:{" "}
+              </label>
               <input
                 type="date"
                 name="date"
                 id="date"
                 required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  date: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    date: e.target.value,
+                  })
+                }
               />
 
               <label htmlFor="nocFee">NOC Fee: </label>
@@ -406,90 +419,112 @@ export default function PurchaserComponent() {
                 type="number"
                 name="nocFee"
                 id="nocFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  nocFee: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    nocFee: e.target.value,
+                  })
+                }
               />
               <label htmlFor="masjidFund">Masjid Fund: </label>
               <input
                 type="number"
                 name="masjidFund"
                 id="masjidFund"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  masjidFund: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    masjidFund: e.target.value,
+                  })
+                }
               />
               <label htmlFor="dualOwnerFee">Dual Owner Fee: </label>
               <input
                 type="number"
                 name="dualOwnerFee"
                 id="dualOwnerFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  dualOwnerFee: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    dualOwnerFee: e.target.value,
+                  })
+                }
               />
               <label htmlFor="coveredAreaFee">Covered Area Fee: </label>
               <input
                 type="number"
                 name="coveredAreaFee"
                 id="coveredAreaFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  coveredAreaFee: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    coveredAreaFee: e.target.value,
+                  })
+                }
               />
               <label htmlFor="shareMoney">Share Money: </label>
               <input
                 type="number"
                 name="shareMoney"
                 id="shareMoney"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  shareMoney: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    shareMoney: e.target.value,
+                  })
+                }
               />
               <label htmlFor="depositLandCost">Deposit For Land Cost: </label>
               <input
                 type="number"
                 name="depositLandCost"
                 id="depositLandCost"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  depositLandCost: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    depositLandCost: e.target.value,
+                  })
+                }
               />
-              <label htmlFor="depositDevelopmentCharges">Deposit for Development Charges: </label>
+              <label htmlFor="depositDevelopmentCharges">
+                Deposit for Development Charges:{" "}
+              </label>
               <input
                 type="number"
                 name="depositDevelopmentCharges"
                 id="depositDevelopmentCharges"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  depositDevelopmentCharges: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    depositDevelopmentCharges: e.target.value,
+                  })
+                }
               />
-              <label htmlFor="additionalCharges">Additional Development Charges: </label>
+              <label htmlFor="additionalCharges">
+                Additional Development Charges:{" "}
+              </label>
               <input
                 type="number"
                 name="additionalCharges"
                 id="additionalCharges"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  additionalCharges: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    additionalCharges: e.target.value,
+                  })
+                }
               />
               <label htmlFor="electricityCharges">Electricity Charges: </label>
               <input
                 type="number"
                 name="electricityCharges"
                 id="electricityCharges"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  electricityCharges: e.target.value
-                })}
+                onChange={(e) =>
+                  setUpdateMemberState({
+                    ...updateMemberState,
+                    electricityCharges: e.target.value,
+                  })
+                }
               />
               <button
                 type="submit"

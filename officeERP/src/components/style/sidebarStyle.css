@@ -34,13 +34,12 @@
             list-style: none;
             padding: 0;
 
-            .dropdown-item{
+            .dropdown-item {
                 margin-left: 25px;
             }
 
             .dropdown {
                 cursor: pointer;
-                color: #333;
                 padding: 0 10px;
                 color: #000;
                 font-size: 14px;
@@ -60,8 +59,13 @@
                         fill: #000;
                     }
                 }
-                .dropdown-item{
+
+                .dropdown-item {
                     font-size: 12px;
+
+                    a {
+                        color: #000 !important;
+                    }
                 }
             }
 
@@ -70,9 +74,10 @@
                 list-style-type: none;
                 padding: 0;
                 padding-left: 50px;
+
                 /* margin-top: 10px; */
-                li{
-                    a{
+                li {
+                    a {
                         font-size: 12px;
                     }
                 }
@@ -142,14 +147,14 @@
                     }
                 }
 
-                .logout{
-                   color: red;
+                .logout {
+                    color: red;
 
-                   svg{
-                          g{
+                    svg {
+                        g {
                             fill: red;
-                          }
-                   }
+                        }
+                    }
                 }
 
             }
