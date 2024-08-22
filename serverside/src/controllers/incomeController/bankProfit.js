@@ -35,7 +35,9 @@ module.exports = {
         bank: bankList._id,
         profitMonth: profit_month,
         paidDate: paid_date,
-        headOfAccount: incomeHeadOfAccount._id
+        headOfAccount: incomeHeadOfAccount._id,
+        chequeNo: cheque_no,
+        challanNo: challan_no
       });
 
       const update_id = bankProfit._id;

@@ -11,33 +11,30 @@ const possessionFeeSchema = new Schema({
         ref: 'MemberList',
         required: true
     },
-    amount:{
-        type: Number,
-    },
     challanNo:{
         type: Number,
     },
-    headOfAccount: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'IncomeHeadOfAccount',
-    }],
-    masjidFund:{
+    address:{
+        type:String,
+    },
+    type:{
+        type: String,
+    },
+    paymentDetail: {
+        type: Map,  
+        of: Number, 
+    },
+    particular:{
+        type: String,
+    },
+    chequeNo:{
         type: Number,
     },
-    possessionFee:{
+    bankAccount:{
         type: Number,
     },
-    buildingByLawCharges:{
-        type: Number,
-    },
-    constructionWater:{
-        type: Number,
-    },
-    electricityConnectionCharges:{
-        type: Number,
-    },
-    waterConnectionCharges:{
-        type: Number,
+    check:{
+        type: String,
     },
 }
 )

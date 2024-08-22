@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Schema=mongoose.Schema
 const Member=require('../../memberModels/memberList')
 const HeadOfAccount=require('../../headOfAccountModel/headOfAccount')
+const checkRole = require('../../../middleware/checkRole')
 
 const sellerPurchaseIncomeSchema = new Schema({
     paidDate:{
@@ -24,7 +25,19 @@ const sellerPurchaseIncomeSchema = new Schema({
     paymentDetail: {
         type: Map,  
         of: Number, 
-    }
+    },
+    particular:{
+        type: String,
+    },
+    chequeNo:{
+        type: Number,
+    },
+    bankAccount:{
+        type: Number,
+    },
+    check:{
+        type: String,
+    },
 }
 )
 
