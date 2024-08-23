@@ -98,6 +98,7 @@
 
             input[type="search"] {
                 padding: 4px 4px 4px 30px;
+                width: 200px;
                 display: block;
                 border: 1px solid #ccc;
                 border-radius: 5px;

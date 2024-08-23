@@ -21,7 +21,6 @@ export default function SellerDetails() {
   const [block, setBlock] = useState("");
   const [cnicNo, setCnicNo] = useState("");
   const [address, setAddress] = useState("");
-  const [editTransferFee, setEditTransferFee] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [ShowButton, setShowButton] = useState(true);
   const [showOptions, setShowOptions] = useState(false);
@@ -34,13 +33,14 @@ export default function SellerDetails() {
   const [purchaseOptions, setPurchaseOptions] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [showPurchaseForm, setShowPurchaseForm] = useState(false);
-  const [memberFound, setMemberFound] = useState(false);
   const [addPurchaser, setAddPurchaser] = useState(false);
   const [purchaseData, setPurchaseData] = useState([]);
   const [memberType, setMemberType] = useState("");
   const [paymentType, setPaymentType] = useState("");
   const [backAccount, setBankAccount] = useState([]);
   const [showSection, setShowSection] = useState(false);
+  const [editSection, setEditSection] = useState(false);
+  const [filter, setFilter] = useState("");
 
   const [formData, setFormData] = useState([]);
 
@@ -55,7 +55,6 @@ export default function SellerDetails() {
         `${process.env.REACT_APP_API_URL}/user/bankList`,
         config
       );
-      console.log("Bank Account", response.data);
       setBankAccount(response.data);
     } catch (error) {
       console.error(error);
@@ -105,8 +104,7 @@ export default function SellerDetails() {
       });
     } catch (error) {
       showErrorToastMessage("Error Adding Purchaser");
-
-      console.log(error);
+      console.error(error);
     } finally {
       closeSection();
       setUpdateMemberState([]);
@@ -139,20 +137,9 @@ export default function SellerDetails() {
     });
   };
 
-  useEffect(() => {
-    const setData = async () => {
-      const newState = { ...updateMemberState };
-
-      formData.forEach((item) => {
-        newState[item._id] = 0;
-      });
-      setUpdateMemberState(newState);
-    };
-    setData();
-  }, [formData]);
-
   const handleAddDues = () => {
     setAddDues(true);
+    setShowOptions(false);
   };
 
   useEffect(() => {
@@ -166,14 +153,13 @@ export default function SellerDetails() {
         };
 
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome/?type=Seller`,
+          `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome/`,
           config
         );
         // if (response.data.length > 0) {
         //   setMemberList((prevList) => [...prevList, ...response.data]);
         // }
         setMemberList(response.data);
-        console.log(response.data);
         setLoading(false);
       } catch (error) {
         console.error(error);
@@ -209,26 +195,31 @@ export default function SellerDetails() {
   };
 
   const closeSection = () => {
-    setAddDues(false);
-    setShowOptions(false);
-    setMsNo("");
-    setPurchaseName("");
-    setChallanNumber("");
-    setPurchaseOptions(false);
-    setDate("");
-    setPlotNo("");
-    setShowButton(true);
-    setBlock("");
-    setCnicNo("");
-    setAddress("");
-    setIsLoading(false);
-    setTypeOption(true);
-    setShowForm(false);
-    setSellerForm(false);
-    setPurchaseForm(false);
-    setShowPurchaseForm(false);
-    setAddPurchaser(false);
-    setShowSection(false);
+    if (addDues) setAddDues(false);
+    if (showOptions) setShowOptions(false);
+    if (showSection) setShowSection(false);
+    if (editSection) setEditSection(false);
+    if (addPurchaser) setAddPurchaser(false);
+    if (sellerForm) setSellerForm(false);
+    if (showPurchaseForm) setShowPurchaseForm(false);
+    if (showForm) setShowForm(false);
+    if (purchaseOptions) setPurchaseOptions(false);
+    if (msNo) setMsNo("");
+    if (purchaseName) setPurchaseName("");
+    if (challanNumber) setChallanNumber("");
+    if (date) setDate("");
+    if (plotNo) setPlotNo("");
+    if (block) setBlock("");
+    if (cnicNo) setCnicNo("");
+    if (address) setAddress("");
+    if (isLoading) setIsLoading(false);
+    if (!typeOption) setTypeOption(true);
+    if (updateMemberState) setUpdateMemberState([]);
+    if (!ShowButton) setShowButton(true);
+    if (purchaserForm) setPurchaseForm(false);
+    if (formData) setFormData([]);
+    if (backAccount) setBankAccount([]);
+    if (paymentType) setPaymentType("");
   };
   const handleMsNumberChange = (e) => {
     setMsNo(e.target.value);
@@ -247,30 +238,8 @@ export default function SellerDetails() {
     setTypeOption(false);
   };
 
-  const clearData = () => {
-    setMsNo("");
-    setPurchaseName("");
-    setChallanNumber("");
-    setDate("");
-    setPlotNo("");
-    setShowButton(true);
-    setPurchaseOptions(false);
-    setBlock("");
-    setIsLoading(false);
-    setTypeOption(true);
-    setSellerForm(false);
-    setShowForm(false);
-    setShowPurchaseForm(false);
-    setPurchaseForm(false);
-    setSellerForm(false);
-    setCnicNo("");
-    setAddress("");
-    closeSection();
-  };
-
   const handleShowOptions = (member) => {
     setSelectedMember(member);
-    console.log(member);
     setShowOptions(!showOptions);
   };
 
@@ -281,21 +250,26 @@ export default function SellerDetails() {
   };
 
   const handleEditSection = (member) => {
+    setUpdateMemberState(member);
+    setEditSection(true);
     setSelectedMember(member);
-    setAddDues(true);
     setShowOptions(false);
   };
 
   const getMemberData = (e) => {
     setIsLoading(true);
-    setMemberFound(true);
     setShowButton(false);
-    console.log(msNo);
     const fetchMemeber = async () => {
       try {
         const data = {
           ms_no: msNo,
         };
+        if (msNo === "") {
+          showErrorToastMessage("Please Enter Membership No");
+          setShowButton(true);
+          setIsLoading(false);
+          return;
+        }
         const config = {
           headers: {
             Authorization: "Bearer " + localStorage.getItem("token"),
@@ -305,7 +279,6 @@ export default function SellerDetails() {
           `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${msNo}`,
           config
         );
-        console.log(response.data);
         setPurchaseName(response.data[0].purchaseName);
         setUpdateMemberState({
           ...updateMemberState,
@@ -314,15 +287,12 @@ export default function SellerDetails() {
 
         setCnicNo(response.data.cnicNo);
         setIsLoading(false);
-        console.log(response);
-      } catch (error) {
-        setMemberFound(false);
-        setIsLoading(false);
-        showErrorToastMessage("Member Not Found!");
-        clearData();
-        console.error(error);
-      } finally {
         setShowForm(true);
+      } catch (error) {
+        setIsLoading(false);
+        setShowButton(true);
+        showErrorToastMessage("Member Not Found!");
+        console.error(error);
       }
     };
     fetchMemeber();
@@ -343,12 +313,10 @@ export default function SellerDetails() {
         config
       );
       setFormData(response.data);
-      console.log(response);
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoading(false);
-      console.log(formData);
     }
   };
 
@@ -371,12 +339,12 @@ export default function SellerDetails() {
       type: memberType,
       bank_account,
       paymentType,
+      particular,
       cheque_no,
       payment: {
         ...payment,
       },
     };
-    console.log(data);
 
     const update = async () => {
       try {
@@ -390,7 +358,55 @@ export default function SellerDetails() {
           data,
           config
         );
-        console.log(response);
+        closeSection();
+        showSuccessToastMessage("Added Successfully");
+      } catch (error) {
+        console.error(error);
+      } finally {
+        setUpdateMemberState([]);
+        setFormData([]);
+        setBankAccount([]);
+        setMsNo("");
+      }
+    };
+    update();
+  };
+  const editMember = (e) => {
+    e.preventDefault();
+
+    console.log(updateMemberState);
+    const {
+      challanNo,
+      date,
+      bank_account,
+      cheque_no,
+      particular,
+      paymentType = "Cash",
+
+      memberNo,
+
+      ...paymentDetails
+    } = updateMemberState;
+    const data = {
+      particular,
+      challanNo,
+      memberNo,
+      ...paymentDetails,
+    };
+
+    const update = async () => {
+      try {
+        const config = {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        };
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_URL}/user/updateSellerPurchaseIncome?id=${updateMemberState._id}`,
+          data,
+          config
+        );
+        console.log(response.data);
         closeSection();
         showSuccessToastMessage("Added Successfully");
       } catch (error) {
@@ -406,7 +422,6 @@ export default function SellerDetails() {
   };
 
   const handleSearch = (e) => {
-    debugger;
     e.preventDefault();
     try {
       const searchValue = e.target[0].value;
@@ -418,19 +433,16 @@ export default function SellerDetails() {
               Authorization: "Bearer " + localStorage.getItem("token"),
             },
           };
+
           const response = await axios.get(
-            `${
-              process.env.REACT_APP_API_URL
-            }/user/getIncomeHeadOfAccount/?id=${searchValue.trim()}`,
+            `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome?search=${searchValue}`,
             config
           );
-          console.log(response.data);
-          if (response.data.length > 0) {
-            setMemberList(response.data);
-          }
+          setMemberList(response.data);
           setLoading(false);
         } catch (error) {
           console.error(error);
+          setMemberList([]);
           setLoading(false);
         }
       };
@@ -440,6 +452,48 @@ export default function SellerDetails() {
       setLoading(false);
     }
   };
+  const handleFilter = (e) => {
+    try {
+      closeSection();
+      const search = async () => {
+        setLoading(true);
+        try {
+          const config = {
+            headers: {
+              Authorization: "Bearer " + localStorage.getItem("token"),
+            },
+          };
+
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome?type=${filter}`,
+            config
+          );
+          setMemberList(response.data);
+          setLoading(false);
+        } catch (error) {
+          console.error(error);
+          setMemberList([]);
+          setLoading(false);
+        }
+      };
+      search();
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    handleFilter();
+  }, [filter]);
+
+  const calculateTotalPayment = (paymentDetail) => {
+    return Object.values(paymentDetail).reduce(
+      (total, amount) => total + amount,
+      0
+    );
+  };
+
   return (
     <div className="member-list">
       <div className="title">
@@ -451,9 +505,18 @@ export default function SellerDetails() {
               name="search-members"
               id="search-members"
               type="search"
-              placeholder="Search..."
+              placeholder="Search by Membership No"
             />
           </form>
+          <select
+            className="filter-button"
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
+            <option value="">All</option>
+            <option value="Seller">Seller</option>
+            <option value="Purchaser">Purchaser</option>
+          </select>
           <Link className="blue-button" onClick={handleAddDues}>
             Add Dues
           </Link>
@@ -476,69 +539,250 @@ export default function SellerDetails() {
       </div>
 
       <div className={`members ${loading ? "loading" : ""}`} ref={membersRef}>
-        {memberList.map((member) => {
-          const totalAmount =
-            (member.transferFee || 0) +
-            (member.membershipFee || 0) +
-            (member.admissionFee || 0) +
-            (member.masjidFund || 0) +
-            (member.nocFee || 0) +
-            (member.dualOwnerFee || 0) +
-            (member.coveredAreaFee || 0) +
-            (member.shareMoney || 0) +
-            (member.depositForLandCost || 0) +
-            (member.electricityCharges || 0) +
-            (member.additionalCharges || 0) +
-            (member.depositForDevelopmentCharges || 0);
+        {memberList.length > 0 ? (
+          memberList.map((member) => {
+            const totalAmount = calculateTotalPayment(member.paymentDetail);
 
-          return (
-            <div className="member" key={member.id}>
-              <div className="member-details">
-                <p>
-                  {member.memberNo.msNo === "" ? "-" : member.memberNo.msNo}
-                </p>
-                <p>
-                  {member.memberNo.purchaseName === ""
-                    ? "-"
-                    : member.memberNo.purchaseName}
-                </p>
-                <p>{totalAmount}</p>
-                <p>
-                  {member.paidDate === "" ? "-" : convertDate(member.paidDate)}
-                </p>
-                {/* <img
-                  onClick={() => handleShowOptions(member)}
-                  src="data:image/svg+xml,%3Csvg id='Layer_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 122.88 83.78' style='enable-background:new 0 0 122.88 83.78' xml:space='preserve'%3E%3Cg%3E%3Cpath d='M95.73,10.81c10.53,7.09,19.6,17.37,26.48,29.86l0.67,1.22l-0.67,1.21c-6.88,12.49-15.96,22.77-26.48,29.86 C85.46,79.88,73.8,83.78,61.44,83.78c-12.36,0-24.02-3.9-34.28-10.81C16.62,65.87,7.55,55.59,0.67,43.1L0,41.89l0.67-1.22 c6.88-12.49,15.95-22.77,26.48-29.86C37.42,3.9,49.08,0,61.44,0C73.8,0,85.45,3.9,95.73,10.81L95.73,10.81z M60.79,22.17l4.08,0.39 c-1.45,2.18-2.31,4.82-2.31,7.67c0,7.48,5.86,13.54,13.1,13.54c2.32,0,4.5-0.62,6.39-1.72c0.03,0.47,0.05,0.94,0.05,1.42 c0,11.77-9.54,21.31-21.31,21.31c-11.77,0-21.31-9.54-21.31-21.31C39.48,31.71,49.02,22.17,60.79,22.17L60.79,22.17L60.79,22.17z M109,41.89c-5.5-9.66-12.61-17.6-20.79-23.11c-8.05-5.42-17.15-8.48-26.77-8.48c-9.61,0-18.71,3.06-26.76,8.48 c-8.18,5.51-15.29,13.45-20.8,23.11c5.5,9.66,12.62,17.6,20.8,23.1c8.05,5.42,17.15,8.48,26.76,8.48c9.62,0,18.71-3.06,26.77-8.48 C96.39,59.49,103.5,51.55,109,41.89L109,41.89z'/%3E%3C/g%3E%3C/svg%3E"
-                  alt="Details Icon"
-                /> */}
-                <img
-                  onClick={() => handleShowOptions(member)}
-                  src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
-                  alt="Member Icon"
-                />
-              </div>
-              {selectedMember === member && showOptions && (
-                <div className="options">
-                  <button onClick={() => handleShowSection(member)}>
-                    Show
-                  </button>
-                  <div className="horizontal-divider"></div>
-                  <button onClick={() => handleEditSection(member)}>
-                    Edit
-                  </button>
-                  <div className="horizontal-divider"></div>
-                  <button>Delete</button>
+            return (
+              <div className="member" key={member.id}>
+                <div className="member-details">
+                  <p>
+                    {member.memberNo.msNo === "" ? "-" : member.memberNo.msNo}
+                  </p>
+                  <p>
+                    {member.memberNo.purchaseName === ""
+                      ? "-"
+                      : member.memberNo.purchaseName}
+                  </p>
+                  <p>{totalAmount}</p>
+                  <p>
+                    {member.paidDate === ""
+                      ? "-"
+                      : convertDate(member.paidDate)}
+                  </p>
+
+                  <img
+                    onClick={() => handleShowOptions(member)}
+                    src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
+                    alt="Member Icon"
+                  />
                 </div>
-              )}
-            </div>
-          );
-        })}
+                {selectedMember === member && showOptions && (
+                  <div className="options custom-option">
+                    <button onClick={() => handleShowSection(member)}>
+                      Show
+                    </button>
+                    <div className="horizontal-divider"></div>
+                    <button onClick={() => handleEditSection(member)}>
+                      Edit
+                    </button>
+                    {/* <div className="horizontal-divider"></div>
+                  <button>Delete</button> */}
+                  </div>
+                )}
+              </div>
+            );
+          })
+        ) : (
+          <p style={{ textAlign: "center" }}>No Data Found</p>
+        )}
         {loading && (
           <div className="loading-indicator">
             <div className="spinner"></div>
           </div>
         )}
       </div>
+      {editSection &&
+        (console.log(updateMemberState),
+        (
+          <div className="left-section">
+            <div className="left-section-content">
+              <div onClick={closeSection} className="close-button"></div>
+              <h3>Add New Purchaser</h3>
+              <div className="horizontal-divider"></div>
+              <form onSubmit={editMember}>
+                <label htmlFor="msNo" className="required">
+                  Membership No:{" "}
+                </label>
+                <input
+                  type="text"
+                  name="msNo"
+                  id="msNo"
+                  required
+                  readOnly
+                  value={updateMemberState.memberNo.msNo}
+                />
+
+                <>
+                  <label htmlFor="purchaseName" className="required">
+                    Name:{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="purchaseName"
+                    id="purchaseName"
+                    required
+                    readOnly
+                    value={updateMemberState.memberNo.purchaseName}
+                  />
+                  <label htmlFor="challanNumber" className="required">
+                    Challan Number:{" "}
+                  </label>
+                  <input
+                    type="number"
+                    name="challanNumber"
+                    id="challanNumber"
+                    value={updateMemberState.challanNo}
+                    required
+                    onChange={(e) =>
+                      setUpdateMemberState({
+                        ...updateMemberState,
+                        challan_no: e.target.value,
+                      })
+                    }
+                  />
+                  <label htmlFor="particular" className="required">
+                    Particular:{" "}
+                  </label>
+                  <input
+                    type="text"
+                    name="particular"
+                    id="particular"
+                    value={updateMemberState.particular}
+                    required
+                    onChange={(e) =>
+                      setUpdateMemberState({
+                        ...updateMemberState,
+                        particular: e.target.value,
+                      })
+                    }
+                  />
+                  <label htmlFor="paymentType" className="required">
+                    Payment Type:{" "}
+                  </label>
+                  <select
+                    name="paymentType"
+                    id="paymentType"
+                    value={updateMemberState.check}
+                    onChange={(e) => {
+                      setUpdateMemberState({
+                        ...updateMemberState,
+                        paymentType: e.target.value,
+                      });
+                      setPaymentType(e.target.value);
+                    }}
+                  >
+                    <option value={updateMemberState.check}>
+                      {updateMemberState.check}
+                    </option>
+                  </select>
+
+                  {updateMemberState.check === "Bank" && (
+                    <>
+                      <label htmlFor="bankName" className="required">
+                        Bank Account:{" "}
+                      </label>
+
+                      {Object.keys(updateMemberState.check).length > 0 ? (
+                        <select
+                          name="bankName"
+                          id="bankName"
+                          value={updateMemberState.bankAccount}
+                          readOnly
+                        >
+                          <option value={updateMemberState.bankAccount}>
+                            {updateMemberState.bankAccount}
+                          </option>
+                        </select>
+                      ) : (
+                        <p>Loading...</p>
+                      )}
+                      <label htmlFor="chequeNumber" className="required">
+                        Cheque/IBFT Number:{" "}
+                      </label>
+                      <input
+                        type="text"
+                        name="chequeNumber"
+                        id="chequeNumber"
+                        value={updateMemberState.chequeNo}
+                        required
+                        onChange={(e) =>
+                          setUpdateMemberState({
+                            ...updateMemberState,
+                            cheque_no: e.target.value,
+                          })
+                        }
+                      />
+                    </>
+                  )}
+
+                  <label htmlFor="date" className="required">
+                    Date:{" "}
+                  </label>
+                  <input
+                    type="date"
+                    name="date"
+                    id="date"
+                    value={convertDate(updateMemberState.paidDate)}
+                    required
+                    onChange={(e) =>
+                      setUpdateMemberState({
+                        ...updateMemberState,
+                        date: e.target.value,
+                      })
+                    }
+                  />
+                  {Object.keys(updateMemberState.paymentDetail).length > 0 ? (
+                    <>
+                      {Object.entries(updateMemberState.paymentDetail).map(
+                        ([headOfAccount, amount]) => (
+                          <>
+                            <label htmlFor={headOfAccount}>
+                              {headOfAccount}
+                            </label>
+                            <input
+                              type="number"
+                              id={headOfAccount}
+                              value={amount}
+                              onChange={(e) => {
+                                const inputValue = e.target.value;
+                                setUpdateMemberState((prevState) => ({
+                                  ...prevState,
+                                  paymentDetail: {
+                                    ...prevState.paymentDetail,
+                                    [headOfAccount]:
+                                      inputValue === ""
+                                        ? 0
+                                        : parseInt(inputValue, 10),
+                                  },
+                                }));
+                              }}
+                            />
+                          </>
+                        )
+                      )}
+                      <button
+                        type="submit"
+                        className="blue-button"
+                        onClick={editMember}
+                      >
+                        Save
+                      </button>
+                    </>
+                  ) : (
+                    <p>Loading...</p>
+                  )}
+                </>
+
+                {isLoading && (
+                  <div className="loading-indicator">
+                    <div className="spinner"></div>
+                  </div>
+                )}
+              </form>
+            </div>
+          </div>
+        ))}
       {addPurchaser && (
         <div className="left-section">
           <div className="left-section-content">
@@ -833,7 +1077,7 @@ export default function SellerDetails() {
                               <select
                                 name="bankName"
                                 id="bankName"
-                                value={updateMemberState.bank_account}
+                                value={updateMemberState.bankAccount}
                                 onChange={(e) => {
                                   setUpdateMemberState({
                                     ...updateMemberState,
@@ -841,12 +1085,12 @@ export default function SellerDetails() {
                                   });
                                 }}
                               >
-                                <option value="select" hidden>
-                                  Select Bank
+                                <option value="" hidden>
+                                  Select Bank Account
                                 </option>
                                 {backAccount.map((item) => (
                                   <option value={item.accountNo}>
-                                    {item.bankName} - {item.accountNo.slice(-4)}
+                                    {item.bankName} - {item.accountNo}
                                   </option>
                                 ))}
                               </select>
@@ -854,7 +1098,7 @@ export default function SellerDetails() {
                               <p>Loading...</p>
                             )}
                             <label htmlFor="chequeNumber" className="required">
-                              Cheque Number:{" "}
+                              Cheque/IBFT Number:{" "}
                             </label>
                             <input
                               type="text"
@@ -939,77 +1183,65 @@ export default function SellerDetails() {
         </>
       )}
 
-      {showSection && (
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Member Fees Details</h3>
-            <div className="horizontal-divider"></div>
-            <div className="details">
-              <div className="details-item">
-                <h4>Membership No:</h4>
-                <p>{selectedMember?.memberNo.msNo || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Name:</h4>
-                <p>{selectedMember?.memberNo.purchaseName || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Paid Date:</h4>
-                <p>{convertDate(selectedMember?.paidDate) || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Transfer Fee:</h4>
-                <p>{selectedMember?.transferFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Membership Fee:</h4>
-                <p>{selectedMember?.membershipFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Admission Fee:</h4>
-                <p>{selectedMember?.admissionFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Masjid Fund:</h4>
-                <p>{selectedMember?.masjidFund || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>NOC Fee:</h4>
-                <p>{selectedMember?.nocFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Dual Owner Fee:</h4>
-                <p>{selectedMember?.dualOwnerFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Covered Area Fee:</h4>
-                <p>{selectedMember?.coveredAreaFee || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Share Money:</h4>
-                <p>{selectedMember?.shareMoney || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Deposit for Land Cost:</h4>
-                <p>{selectedMember?.depositForLandCost || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Electricity Charges:</h4>
-                <p>{selectedMember?.electricityCharges || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Additional Development Charges:</h4>
-                <p>{selectedMember?.additionalCharges || "-"}</p>
-              </div>
-              <div className="details-item">
-                <h4>Deposit for Development Charges:</h4>
-                <p>{selectedMember?.depositForDevelopmentCharges || "-"}</p>
+      {showSection &&
+        (console.log(selectedMember),
+        (
+          <div className="left-section">
+            <div className="left-section-content">
+              <div onClick={closeSection} className="close-button"></div>
+              <h3>Member Fees Details</h3>
+              <div className="horizontal-divider"></div>
+              <div className="details">
+                <div className="details-item">
+                  <h4>Membership No:</h4>
+                  <p>{selectedMember?.memberNo.msNo || "-"}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Name:</h4>
+                  <p>{selectedMember?.memberNo.purchaseName || "-"}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Paid Date:</h4>
+                  <p>{convertDate(selectedMember?.paidDate) || "-"}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Challan Number:</h4>
+                  <p>{selectedMember?.challanNo || "-"}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Particular:</h4>
+                  <p>{selectedMember?.particular || "-"}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Payment Type:</h4>
+                  <p>{selectedMember?.check || "-"}</p>
+                </div>
+                {selectedMember?.check === "Bank" && (
+                  <>
+                    <div className="details-item">
+                      <h4>Bank Account:</h4>
+                      <p>{selectedMember?.bankAccount || "-"}</p>
+                    </div>
+                    <div className="details-item">
+                      <h4>Cheque/IBFT Number:</h4>
+                      <p>{selectedMember?.chequeNo || "-"}</p>
+                    </div>
+                  </>
+                )}
+                {/* Dynamic Payment Details */}
+                {selectedMember?.paymentDetail &&
+                  Object.entries(selectedMember.paymentDetail).map(
+                    ([feeType, amount]) => (
+                      <div className="details-item" key={feeType}>
+                        <h4>{feeType}:</h4>
+                        <p>{amount || "0"}</p>
+                      </div>
+                    )
+                  )}
               </div>
             </div>
           </div>
-        </div>
-      )}
+        ))}
       <ToastContainer />
     </div>
   );
