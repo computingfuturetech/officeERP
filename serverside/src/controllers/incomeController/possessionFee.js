@@ -9,11 +9,9 @@ const BankLedger = require('../../middleware/createBankLedger');
 const IncomeType = require('../../models/incomeModels/incomeHeadOfAccount/typeOfHeadOfAccount');
 const MemberList = require("../../models/memberModels/memberList");
 
-
 async function transformPaymentDetails(record) {
   if (record.paymentDetail instanceof Map) {
     const transformedPaymentDetail = new Map();
-
     for (let [iid, amount] of record.paymentDetail) {
       try {
         const headOfAccountResult = await IncomeHeadOfAccount.findOne({ _id: iid }).exec();
@@ -29,31 +27,23 @@ async function transformPaymentDetails(record) {
   } else {
     console.log("Payment details are not a Map or invalid");
   }
-
   return record;
 }
 
 mongoose.model('Member', Member.schema);
-
 module.exports = {
   createPossessionFee: async (req, res) => {
     const {
       member_no, challan_no, paid_date, type, payment, cheque_no, bank_account, particular, paymentType
     } = req.body;
     try {
-      console.log(req.body)
       if (!paid_date || !member_no || !challan_no || !type) {
         return res.status(400).json({ message: "All required fields must be provided" });
       }
-      console.log("hello")
       const member = await MemberList.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${member_no}`] } });
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
-      console.log("hello")
-
-      console.log(member);
-
       let incomeType = await IncomeType.find({ type: type }).exec();
       for (let i = 0; i < incomeType.length; i++) {
         let headOfAccounts = await IncomeHeadOfAccount.find({ type: incomeType[i]._id }).exec();
@@ -64,7 +54,6 @@ module.exports = {
           }
         }
       }
-
       const createPossessionFee = new PossessionFee({
         paidDate: paid_date,
         memberNo: member._id,
@@ -77,21 +66,14 @@ module.exports = {
         bankAccount: bank_account,
         chequeNo: cheque_no,
       });
-
-      console.log(createPossessionFee);
-
       const type_of_entry = "income";
       const check = paymentType;
-
       const paymentEntries = Object.entries(payment);
-
       if (paymentEntries.length > 0) {
-        console.log("Found")
         for (const [id, amount] of paymentEntries) {
           const headOfAccountResult = await IncomeHeadOfAccount.findOne({ _id: id }).exec();
           let name = headOfAccountResult.headOfAccount;
           if (check === 'Cash') {
-
             const voucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
             await CashBookLedger.createCashBookLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, createPossessionFee._id);
             await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createPossessionFee._id);
@@ -110,13 +92,11 @@ module.exports = {
         message: "Possession Fee Income created successfully",
         data: createPossessionFee
       });
-
     } catch (err) {
       console.error("Error creating possession fee income:", err);
       res.status(500).json({ message: "Internal server error" });
     }
   },
-
   updatePossessionFee: async (req, res) => {
     const id = req.query.id;
     try {
@@ -127,9 +107,7 @@ module.exports = {
       if (!possessionFeeIncome) {
         return res.status(404).json({ message: "Possession Fee not found" });
       }
-
       let updateData = {};
-
       if (req.body.paid_date) {
         updateData.paidDate = req.body.paid_date;
       }
@@ -149,11 +127,8 @@ module.exports = {
         }
         updateData.memberNo = member._id;
       }
-
       updateData = req.body;
-
       const type = 'income';
-
       if (updateData.paymentDetail && typeof updateData.paymentDetail === 'object') {
         for (const [name, amount] of Object.entries(updateData.paymentDetail)) {
           let payment_type = req.body.check;
@@ -161,21 +136,16 @@ module.exports = {
             ...updateData,
             amount: amount
           }
-          console.log("Hello")
           if (payment_type == "Cash") {
-            console.log("Cash")
             await CashBookLedger.updateSellerPurchaserCashLedger(req, res, id, updateData, type, name);
             await GeneralLedger.updateSellerPurchaserPossessionGeneralLedger(req, res, id, updateData, type, name);
-            console.log("Cash Ledger updated successfully");
           }
           else if (payment_type == 'Bank') {
-            console.log("Bank")
             await BankLedger.updateSellerPurchaserBankLedger(req, res, id, updateData, type, name);
             await GeneralLedger.updateSellerPurchaserPossessionGeneralLedger(req, res, id, updateData, type, name);
           }
         }
       }
-
       if (req.body.paymentDetail) {
         const paymentDetail = req.body.paymentDetail;
         const transformedPaymentDetail = {};
@@ -193,7 +163,6 @@ module.exports = {
         }
         updateData.paymentDetail = transformedPaymentDetail;
       }
-
       const updatedPossesssioFee = await PossessionFee.findByIdAndUpdate(
         id,
         { $set: updateData },
@@ -204,15 +173,12 @@ module.exports = {
         message: "Possession Fee updated successfully",
         data: updatedPossesssioFee,
       });
-
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
   },
-
   getPossessionFeeIncome: async (req, res) => {
     const { member_no, type, sort, id, search } = req.query;
-
     try {
       let sortOrder = {};
       if (sort === 'asc') {
@@ -220,28 +186,23 @@ module.exports = {
       } else if (sort === 'desc') {
         sortOrder = { amount: -1 };
       }
-
       let filter = {};
       if (type) {
         filter.type = type;
       }
       if (search) {
         let member = await MemberList.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${search}`] } });
-
         if (member) {
           filter.memberNo = member._id;
         } else {
           return res.status(200).json([]);
         }
       }
-
       let possessionFeeIncome;
-
       if (id) {
         possessionFeeIncome = await PossessionFee.findById(id)
           .populate('memberNo', 'msNo purchaseName')
           .exec();
-
         if (possessionFeeIncome) {
           possessionFeeIncome = await transformPaymentDetails(possessionFeeIncome);
         }
@@ -250,7 +211,6 @@ module.exports = {
           .populate('memberNo', 'msNo purchaseName')
           .sort(sortOrder)
           .exec();
-
         if (possessionFeeIncome.length > 0) {
           possessionFeeIncome = await Promise.all(
             possessionFeeIncome.map(async (record) => {
@@ -259,11 +219,9 @@ module.exports = {
           );
         }
       }
-
       if (!possessionFeeIncome || (Array.isArray(possessionFeeIncome) && possessionFeeIncome.length === 0)) {
         return res.status(404).json({ message: 'Possession Fee not found' });
       }
-
       if (member_no) {
         const filteredpossessionFeeIncome = possessionFeeIncome.filter(
           (item) => item.memberNo.msNo === member_no

@@ -65,7 +65,7 @@ async function updateSubNextBankLedger(nextIds, type, difference) {
 module.exports = {
     createBankLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, cheque_no, challan_no, update_id) => {
         try {
-            
+            console.log("Hello");
             let balance;
             let latestBalance = await BankLedger.findOne({ balance: { $exists: true } })
                 .sort({
@@ -98,8 +98,6 @@ module.exports = {
                 previousBalance: balance
             });
 
-            console.log(bankLedger);
-
             await bankLedger.save();
             console.log("Bank Ledger created successfully");
         } catch (err) {
@@ -108,7 +106,6 @@ module.exports = {
     },
     updateBankLedger: async (req, res, updateId, updates, type) => {
         try {
-            console.log(updates)
             const updateFields = { ...updates };
             delete updateFields.amount;
             const bankLedger = await BankLedger.findOneAndUpdate({ updateId: updateId }, { $set: updateFields }, { new: true }).exec();
@@ -182,7 +179,6 @@ module.exports = {
             if (!bankLedger) {
                 return res.status(404).json({ message: 'Bank Ledger not found' });
             }
-            console.log(bankLedger)
             if (type == 'income') {
                 if (updates.amount) {
                     if (updates.amount == bankLedger.credit) {

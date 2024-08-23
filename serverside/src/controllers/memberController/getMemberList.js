@@ -2,7 +2,7 @@ const MemberList = require("../../models/memberModels/memberList");
 
 module.exports = {
   getMemberList: async (req, res) => {
-    const { search, page_no } = req.query;
+    const { search, page_no,member_no } = req.query;
     const pageSize = 10;
     try {
       let filter = {};
@@ -30,6 +30,13 @@ module.exports = {
             $or: stringFields.map(field => ({ [field]: { $regex: search, $options: 'i' } }))
           };
         }
+      }
+      if(member_no){
+        const member = await MemberList.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${member_no}`] } });
+        if (!member) {
+          return res.status(404).json([]);
+        }
+        return res.status(200).json([member]);
       }
 
       let memberListQuery = MemberList.find(filter);
@@ -78,7 +85,8 @@ module.exports = {
       });
 
       res.status(200).json(processedMemberList);
-    } catch (err) {
+    }
+     catch (err) {
       res.status(500).json({ message: err.message });
     }
   },

@@ -9,12 +9,9 @@ const BankLedger = require('../../middleware/createBankLedger');
 const IncomeType = require('../../models/incomeModels/incomeHeadOfAccount/typeOfHeadOfAccount');
 const MemberList = require("../../models/memberModels/memberList");
 
-
-
 async function transformPaymentDetails(record) {
   if (record.paymentDetail instanceof Map) {
     const transformedPaymentDetail = new Map();
-
     for (let [iid, amount] of record.paymentDetail) {
       try {
         const headOfAccountResult = await IncomeHeadOfAccount.findOne({ _id: iid }).exec();
@@ -30,7 +27,6 @@ async function transformPaymentDetails(record) {
   } else {
     console.log("Payment details are not a Map or invalid");
   }
-
   return record;
 }
 
@@ -39,7 +35,6 @@ module.exports = {
     const {
       member_no, challan_no, paid_date, type, payment, cheque_no, bank_account, particular, paymentType
     } = req.body;
-    console.log(req.body);
     try {
       if (!paid_date || !member_no || !challan_no || !type) {
         return res.status(400).json({ message: "All required fields must be provided" });
@@ -48,7 +43,6 @@ module.exports = {
       if (!member) {
         return res.status(404).json({ message: "Member not found" });
       }
-
       let incomeType = await IncomeType.find({ type: type }).exec();
       for (let i = 0; i < incomeType.length; i++) {
         let headOfAccounts = await IncomeHeadOfAccount.find({ type: incomeType[i]._id }).exec();
@@ -59,7 +53,6 @@ module.exports = {
           }
         }
       }
-
       const createSellerPurchaser = new SellerPurchaseIncome({
         paidDate: paid_date,
         memberNo: member._id,
@@ -74,16 +67,12 @@ module.exports = {
       });
       const type_of_entry = "income";
       const check = paymentType;
-
       const paymentEntries = Object.entries(payment);
-
       if (paymentEntries.length > 0) {
-        console.log("Found")
         for (const [id, amount] of paymentEntries) {
           const headOfAccountResult = await IncomeHeadOfAccount.findOne({ _id: id }).exec();
           let name = headOfAccountResult.headOfAccount;
           if (check === 'Cash') {
-
             const voucherNo = await VoucherNo.generateCashVoucherNo(req, res, type_of_entry);
             await CashBookLedger.createCashBookLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, createSellerPurchaser._id);
             await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id);
@@ -102,7 +91,6 @@ module.exports = {
         message: "Seller Purchase Income created successfully",
         data: createSellerPurchaser
       });
-
     } catch (err) {
       console.error("Error creating seller purchase income:", err);
       res.status(500).json({ message: "Internal server error" });
@@ -111,7 +99,6 @@ module.exports = {
 
   getSellerPurchaseIncome: async (req, res) => {
     const { member_no, type, sort, id, search } = req.query;
-
     try {
       let sortOrder = {};
       if (sort === 'asc') {
@@ -119,28 +106,23 @@ module.exports = {
       } else if (sort === 'desc') {
         sortOrder = { amount: -1 };
       }
-
       let filter = {};
       if (type) {
         filter.type = type;
       }
       if (search) {
         let member = await MemberList.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${search}`] } });
-
         if (member) {
           filter.memberNo = member._id;
         } else {
           return res.status(200).json([]);
         }
       }
-
       let sellerPurchaseIncome;
-
       if (id) {
         sellerPurchaseIncome = await SellerPurchaseIncome.findById(id)
           .populate('memberNo', 'msNo purchaseName')
           .exec();
-
         if (sellerPurchaseIncome) {
           sellerPurchaseIncome = await transformPaymentDetails(sellerPurchaseIncome);
         }
@@ -149,7 +131,6 @@ module.exports = {
           .populate('memberNo', 'msNo purchaseName')
           .sort(sortOrder)
           .exec();
-
         if (sellerPurchaseIncome.length > 0) {
           sellerPurchaseIncome = await Promise.all(
             sellerPurchaseIncome.map(async (record) => {
@@ -158,11 +139,9 @@ module.exports = {
           );
         }
       }
-
       if (!sellerPurchaseIncome || (Array.isArray(sellerPurchaseIncome) && sellerPurchaseIncome.length === 0)) {
         return res.status(404).json({ message: 'Seller Purchase Income not found' });
       }
-
       if (member_no) {
         const filteredSellerPurchaseIncome = sellerPurchaseIncome.filter(
           (item) => item.memberNo.msNo === member_no
@@ -186,9 +165,7 @@ module.exports = {
       if (!sellerPurchaseIncome) {
         return res.status(404).json({ message: "Seller PurchaseIncome not found" });
       }
-
       let updateData = {};
-
       if (req.body.paid_date) {
         updateData.paidDate = req.body.paid_date;
       }
@@ -208,11 +185,8 @@ module.exports = {
         }
         updateData.memberNo = member._id;
       }
-
       updateData = req.body;
-
       const type = 'income';
-
       if (updateData.paymentDetail && typeof updateData.paymentDetail === 'object') {
         for (const [name, amount] of Object.entries(updateData.paymentDetail)) {
           let payment_type = req.body.check;
@@ -220,19 +194,16 @@ module.exports = {
             ...updateData,
             amount: amount
           }
-          console.log("Hello")
           if (payment_type == "Cash") {
-            console.log("Cash")
             await CashBookLedger.updateSellerPurchaserCashLedger(req, res, id, updateData, type, name);
-            console.log("Cash Ledger updated successfully");
+            await GeneralLedger.updateSellerPurchaserPossessionGeneralLedger(req, res, id, updateData, type, name);
           }
           else if (payment_type == 'Bank') {
-            console.log("Bank")
             await BankLedger.updateSellerPurchaserBankLedger(req, res, id, updateData, type, name);
+            await GeneralLedger.updateSellerPurchaserPossessionGeneralLedger(req, res, id, updateData, type, name);
           }
         }
       }
-
       if (req.body.paymentDetail) {
         const paymentDetail = req.body.paymentDetail;
         const transformedPaymentDetail = {};
@@ -250,18 +221,15 @@ module.exports = {
         }
         updateData.paymentDetail = transformedPaymentDetail;
       }
-
       const updatedSellerPurchaser = await SellerPurchaseIncome.findByIdAndUpdate(
         id,
         { $set: updateData },
         { new: true }
       ).exec();
-
       res.status(200).json({
         message: "Seller Purchaser updated successfully",
         data: updatedSellerPurchaser,
       });
-
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
