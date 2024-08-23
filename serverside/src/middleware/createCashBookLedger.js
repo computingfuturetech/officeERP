@@ -147,6 +147,7 @@ module.exports = {
   updateSellerPurchaserCashLedger: async (req, res, updateId, updates, type, nameHeadOfAccount) => {
     const updateFields = { ...updates };
     delete updateFields.amount;
+    delete updateFields._id;
     try {
         const cashLedger = await CashBookLedger.findOneAndUpdate(
             { updateId: updateId, headOfAccount: nameHeadOfAccount },
@@ -154,7 +155,7 @@ module.exports = {
             { new: true }
         ).exec();
         if (!cashLedger) {
-            return res.status(404).json({ message: 'Bank Ledger not found' });
+            return res.status(404).json({ message: 'Cash Ledger not found' });
         }
         console.log(cashLedger)
         if (type == 'income') {
@@ -178,7 +179,7 @@ module.exports = {
 
                     await cashLedger.save();
                 }
-                console.log('Bank Ledger A updated successfully');
+                console.log('Cash Ledger updated successfully');
             }
         }
     } catch (err) {

@@ -18,8 +18,7 @@ router.get("/getBankProfit/",authenticateJWT,checkRole(['admin','employee']),ban
 router.post("/updateBankProfit",authenticateJWT,checkRole(['admin','employee']),bankProfit.updateBankProfit);
 
 router.post("/createPossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.createPossessionFee);
-router.get("/getPossessionHeadOfAccount",authenticateJWT,checkRole(['admin','employee']),possessionFee.getHeadOfAccountPossessionFee);
-router.get("/getPossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.getPossessionFee);
+router.get("/getPossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.getPossessionFeeIncome);
 router.post("/updatePossessionFee",authenticateJWT,checkRole(['admin','employee']),possessionFee.updatePossessionFee);
 
 router.post("/createSellerPurchaseIncome",authenticateJWT,checkRole(['admin','employee']),sellerPurchaserIncome.createSellerPurchaseIncome);

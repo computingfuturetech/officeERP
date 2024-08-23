@@ -165,6 +165,48 @@ module.exports = {
       return res.status(500).json({ message: 'Internal server error' });
     }
   },
+  updateSellerPurchaserPossessionGeneralLedger: async (req, res, updateId, updates, type, nameHeadOfAccount) => {
+    const updateFields = { ...updates };
+    delete updateFields.amount;
+    delete updateFields._id;
+    try {
+        const generalLedger = await GeneralLedger.findOneAndUpdate(
+            { updateId: updateId, headOfAccount: nameHeadOfAccount },
+            { $set: updateFields },
+            { new: true }
+        ).exec();
+        if (!generalLedger) {
+            return res.status(404).json({ message: 'General Ledger not found' });
+        }
+        if (type == 'income') {
+            if (updates.amount) {
+                if (updates.amount == generalLedger.credit) {
+                  generalLedger.credit = updates.amount;
+                    await generalLedger.save();
+                } else {
+                    const { credit: previous_amount } = generalLedger;
+                    generalLedger.credit = updates.amount;
+                    generalLedger.balance = parseInt(generalLedger.previousBalance) + parseInt(updates.amount);
+                    const nextGeneralLedgers = await GeneralLedger.find({ _id: { $gt: generalLedger._id } }).exec();
+                    const nextIds = nextGeneralLedgers.map(gl => gl._id);
+                    if (updates.amount > previous_amount) {
+                        const difference = updates.amount - previous_amount;
+                        await updateAddNextGeneralLedger(nextIds, "income", difference);
+                    } else if (updates.amount < previous_amount) {
+                        const difference = previous_amount - updates.amount;
+                        await updateSubNextGeneralLedger(nextIds, "income", difference);
+                    }
+
+                    await generalLedger.save();
+                }
+                console.log('General Ledger updated successfully');
+            }
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+}
 };
 
 

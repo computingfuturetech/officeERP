@@ -36,6 +36,9 @@ const waterMaintenaceBillSchema = new Schema({
     chequeNo:{
         type: Number,
     },
+    check:{
+        type: String,
+    },
 }
 )
 

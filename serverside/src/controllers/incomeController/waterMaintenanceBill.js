@@ -53,6 +53,7 @@ module.exports = {
           challanNo: challan_no,
           chequeNo: cheque_no,
           accountNo: bank_account,
+          check: check
         });
 
         const update_id = waterMaintenanceBill._id;
