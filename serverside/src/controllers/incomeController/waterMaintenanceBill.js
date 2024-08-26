@@ -10,38 +10,33 @@ const mongoose = require("mongoose");
 module.exports = {
   createWaterMaintenanceBill: async (req, res) => {
     const {
-      member_no, reference_no, billing_month, amount, paid_date, plot_no,
-      head_of_account, cheque_no, challan_no, bank_account, check
+      member_no, reference_no, billing_month, amount, paid_date, plot_no,challan_no
     } = req.body;
-
+    const head_of_account = "Water/Maintenance Bill";
     try {
-      if (!paid_date || !member_no || !reference_no || !billing_month || !amount || !plot_no || !head_of_account) {
+      if (!paid_date || !member_no || !reference_no || !billing_month || !amount || !plot_no) {
         return res.status(400).json({ message: "All fields are required" });
       }
-
       const members = member_no.split(',').map((member) => member.trim());
       const references = reference_no.split(',').map((reference) => parseInt(reference.trim()));
       const paidDates = paid_date.split(',').map((date) => new Date(date.trim()));
       const billingMonths = billing_month.split(',').map((month) => month.trim());
       const amounts = amount.split(',').map((amt) => parseFloat(amt.trim()));
       const plotNos = plot_no.split(',').map((plot) => plot.trim());
-
+      const challanNos = challan_no.split(',').map((challan) => challan.trim());
       const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
       if (!incomeHeadOfAccount) {
         return res.status(404).json({ message: "Income head of account not found" });
       }
-
-      if (members.length !== references.length || members.length !== paidDates.length || members.length !== billingMonths.length || members.length !== amounts.length || members.length !== plotNos.length) {
+      if (members.length !== references.length || members.length !== paidDates.length || members.length !== billingMonths.length || members.length !== amounts.length || members.length !== plotNos.length || members.length !== challanNos.length) {
         return res.status(400).json({ message: "Invalid input: members, references, paid dates, billing months, amounts, and plot nos must have the same length" });
       }
-
       const promises = members.map(async (member, index) => {
         const memberDoc = await Member.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${member}`] } });
         if (!memberDoc) {
           console.log(`Member not found for msNo: ${member}`);
           throw new Error(`Member not found for msNo: ${member}`);
         }
-
         const waterMaintenanceBill = new WaterMaintenancBill({
           paidDate: paidDates[index],
           memberNo: memberDoc._id,
@@ -50,31 +45,16 @@ module.exports = {
           amount: amounts[index],
           plotNo: plotNos[index],
           incomeHeadOfAccount: incomeHeadOfAccount._id,
-          challanNo: challan_no,
-          chequeNo: cheque_no,
-          accountNo: bank_account,
-          check: check
+          challanNo: challanNos[index],
         });
-
         const update_id = waterMaintenanceBill._id;
-
         const type = "income";
-
-        if (check === "cash") {
-          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res, type);
-          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], update_id);
-          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], null, null, update_id);
-        } else if (check === "bank") {
-          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type);
-          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], cheque_no, challan_no, update_id);
-          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], cheque_no, challan_no, update_id);
-        }
-
+        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res, type);
+        await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], update_id);
+        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], null, challanNos[index], update_id);   
         return waterMaintenanceBill.save();
       });
-
       const createdWaterMaintenanceBills = await Promise.all(promises);
-
       res.status(201).json({
         message: "Water Maintenance Bills created successfully",
         data: createdWaterMaintenanceBills,
@@ -86,19 +66,25 @@ module.exports = {
   },
   getWaterMaintenanceBill: async (req, res) => {
     try {
-      const { plotNo, sort, id, member_no } = req.query;
-      const filter = {};
+      const { plotNo, sort, id, member_no,search } = req.query;
+      let filter = {};
       if (plotNo) {
         filter.plotNo = plotNo;
       }
-
       let sortOrder = {};
       if (sort === 'asc') {
         sortOrder = { amount: 1 };
       } else if (sort === 'desc') {
         sortOrder = { amount: -1 };
       }
-
+      if (search) {
+        let member = await MemberList.findOne({ $expr: { $eq: [{ $toString: "$msNo" }, `${search}`] } });
+        if (member) {
+          filter.memberNo = member._id;
+        } else {
+          return res.status(200).json([]);
+        }
+      }
       let waterMaintenanceBill;
       if (id) {
         waterMaintenanceBill = await WaterMaintenancBill.findById(id)
@@ -112,7 +98,6 @@ module.exports = {
           .sort(sortOrder)
           .exec();
       }
-
       if (waterMaintenanceBill.length === 0) {
         res.status(404).json({ message: 'Water Maintenance Bill not found' });
       } else if (member_no) {
@@ -121,7 +106,6 @@ module.exports = {
       } else {
         res.status(200).json(waterMaintenanceBill);
       }
-
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -162,32 +146,9 @@ module.exports = {
       if (req.body.challan_no) {
         updateData.challanNo = req.body.challan_no;
       }
-      if (req.body.cheque_no) {
-        updateData.chequeNo = req.body.cheque_no;
-      }
-      if (req.body.head_of_account) {
-        const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: req.body.head_of_account }).exec();
-        if (!incomeHeadOfAccount) {
-          return res.status(404).json({ message: "Income head of account not found" });
-        }
-        updateData.incomeHeadOfAccount = incomeHeadOfAccount._id;
-      }
-      console.log("Update Data:", updateData);
-
       const type = "income";
-
-      if (req.body.check == "cash") {
-        await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
-        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else if (req.body.check == "bank") {
-        await BankLedger.updateBankLedger(req, res, id, updateData, type);
-        await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else {
-        console.log("Invalid Check")
-      }
-
+      await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
+      await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       const updatedWaterMaintenanceBill = await WaterMaintenancBill.findByIdAndUpdate(
         id,
         { $set: updateData },

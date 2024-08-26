@@ -10,18 +10,16 @@ const BankLedger = require('../../middleware/createBankLedger');
 
 module.exports = {
   createBankProfit: async (req, res) => {
-    const { amount, bank_account, profit_month, paid_date, head_of_account,challan_no,cheque_no,check } = req.body;
-    console.log(req.body);
+    const { amount, bank_account, profit_month, paid_date, challan_no, cheque_no } = req.body;
     try {
-      if (!amount || !bank_account || !profit_month || !head_of_account) {
+      if (!amount || !bank_account || !profit_month) {
         return res.status(400).json({ message: "All fields are required" });
       }
-
+      const head_of_account = "Bank Profit";
       const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
       if (!incomeHeadOfAccount) {
         return res.status(404).json({ message: 'Income head of account not found' });
       }
-
       const bankList = await BankList.findOne({
         accountNo: bank_account
       });
@@ -39,20 +37,15 @@ module.exports = {
         chequeNo: cheque_no,
         challanNo: challan_no
       });
-
       const update_id = bankProfit._id;
-
       const type = "income";
-
-      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,profit_month, amount, paid_date,cheque_no, challan_no,update_id);
-      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no,update_id);
-      
+      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type)
+      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id);
+      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id);
       await bankProfit.save();
       res.status(200).json({
         message: "Bank profit created successfully",
         data: bankProfit,
-
       });
     } catch (err) {
       res.status(500).json({ message: err });
@@ -60,15 +53,14 @@ module.exports = {
   },
   updateBankProfit: async (req, res) => {
     const id = req.query.id;
-    const { amount, bank_account, profit_month, head_of_account, paid_date } = req.body;
+    const { amount, bank_account, profit_month, paid_date } = req.body;
     try {
       const bankProfit = await BankProfit.findById(id).exec();
       if (!bankProfit) {
         return res.status(404).json({ message: "Bank Profit not found" });
       }
-
+      const head_of_account = "Bank Profit";
       const updateData = {};
-
       if (head_of_account) {
         const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
         if (!incomeHeadOfAccount) {
@@ -76,7 +68,6 @@ module.exports = {
         }
         updateData.headOfAccount = incomeHeadOfAccount._id;
       }
-
       if (bank_account) {
         const bankList = await BankList.findOne({ accountNo: bank_account });
         if (!bankList) {
@@ -84,7 +75,6 @@ module.exports = {
         }
         updateData.bank = bankList._id;
       }
-
       if (amount) {
         updateData.amount = amount;
       }
@@ -94,18 +84,14 @@ module.exports = {
       if (profit_month) {
         updateData.profitMonth = profit_month;
       }
-
       const type = "income";
-
       await BankLedger.updateBankLedger(req, res, id, updateData, type);
       await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-
       const updatedBankProfit = await BankProfit.findByIdAndUpdate(
         id,
         { $set: updateData },
         { new: true }
       ).exec();
-
       res.status(200).json({
         message: "Bank Profit updated successfully",
         data: updatedBankProfit,
@@ -123,14 +109,12 @@ module.exports = {
     } else if (sort === 'desc') {
       sortOrder = { amount: -1 };
     }
-  
     try {
       let filter = {};
-  
+
       if (profit_month) {
         filter.profitMonth = profit_month;
       }
-  
       if (id) {
         const bankProfit = await BankProfit.findById(id)
           .populate('bank', 'bankName accountNo')
@@ -145,16 +129,13 @@ module.exports = {
           .populate('bank', 'bankName accountNo')
           .populate('headOfAccount', 'headOfAccount')
           .exec();
-  
+
         if (bank_account) {
-          console.log("hello")
           bankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.accountNo === bank_account);
         }
-  
         const totalCount = bankProfits.length;
         bankProfits = bankProfits.slice((page_no - 1) * limit, page_no * limit);
         let hasMore = totalCount > page_no * limit;
-  
         res.status(200).json({ bankProfits, hasMore });
       }
     } catch (err) {

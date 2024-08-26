@@ -6,7 +6,6 @@ async function updateAddNextCashLedger(nextIds, type, difference) {
   try {
     if (type == 'expense') {
       for (const id of nextIds) {
-        console.log(id);
         const temp = await CashBookLedger.findOne(
           { _id: id }
         ).exec();
@@ -18,7 +17,6 @@ async function updateAddNextCashLedger(nextIds, type, difference) {
     }
     else if (type == 'income'){
       for (const id of nextIds) {
-        console.log(id);
         const temp = await CashBookLedger.findOne(
           { _id: id }
         ).exec();
@@ -37,7 +35,6 @@ async function updateSubNextCashLedger(nextIds, type, difference) {
   try {
     if (type == 'expense') {
       for (const id of nextIds) {
-        console.log(id);
         const temp = await CashBookLedger.findOne(
           { _id: id }
         ).exec();
@@ -49,7 +46,6 @@ async function updateSubNextCashLedger(nextIds, type, difference) {
     }
     else if (type == 'income'){
       for (const id of nextIds) {
-        console.log(id);
         const temp = await CashBookLedger.findOne(
           { _id: id }
         ).exec();
@@ -106,7 +102,6 @@ module.exports = {
   },
   updateCashLedger: async (req, res, updateId, updates, type) => {
     try {
-      console.log(updates);
       const updateFields = { ...updates };
       delete updateFields.amount;
       if (type == 'expense') {
@@ -157,7 +152,6 @@ module.exports = {
         if (!cashLedger) {
             return res.status(404).json({ message: 'Cash Ledger not found' });
         }
-        console.log(cashLedger)
         if (type == 'income') {
             if (updates.amount) {
                 if (updates.amount == cashLedger.credit) {
