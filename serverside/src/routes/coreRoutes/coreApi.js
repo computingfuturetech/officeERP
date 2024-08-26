@@ -33,7 +33,6 @@ router.post('/newPasswordSet', newPasswordSet.newPasswordSet);
 router.post('/addNewBank',authenticateJWT,checkRole(['admin']), createBank.createBank);
 router.get('/bankList',authenticateJWT,checkRole(['admin','employee']), bankList.bankList);
 
-router.post('/createGeneralLedger',authenticateJWT,checkRole(['admin','employee']), createGeneralLedger.createGeneralLedger);
 router.post('/createPayableVoucher',authenticateJWT,checkRole(['admin','employee']), createPayableVoucher.createPayableVoucher);
 router.get('/', threeTierchallanController.renderTemplate);
 

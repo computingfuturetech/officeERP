@@ -19,6 +19,7 @@ const vehicleDisposal = require('../../controllers/expenseController/vehicleDisp
 const createHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createMainHeadOfAccount')
 const createSubHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/createSubHeadOfAccount')
 const listofHeadOfAccount = require('../../controllers/expenseHeadOfAccountController/listOfHeadOfAccount')
+const expense = require('../../controllers/expenseController/expense')
 
 
 router.post("/createOfficeUtilExpense",authenticateJWT,checkRole(['admin','employee']),officeUtilExpense.createOfficeUtilExpense);
@@ -67,5 +68,7 @@ router.post('/updateMainExpenseHeadOfAccount', authenticateJWT,checkRole(['admin
 router.post('/createSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.createHeadOfAccount);
 router.post('/updateSubExpenseHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), createSubHeadOfAccount.updateHeadOfAccount);
 router.get('/listOfHeadOfAccount', authenticateJWT,checkRole(['admin','employee']), listofHeadOfAccount.listOfHeadOfAccount);
+
+router.post("/createExpenseRecord",authenticateJWT,checkRole(['admin','employee']),expense.createExpenseRecord);
 
 module.exports = router

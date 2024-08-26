@@ -35,6 +35,9 @@ const officeUtilExpenseSchema = new Schema({
     accountNo:{
         type: Number,
     },
+    check:{
+        type: String,
+    },
 }
 )
 

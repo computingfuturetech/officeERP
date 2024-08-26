@@ -38,6 +38,9 @@ const salariesSchema = new Schema({
     challanNo:{
         type: Number,
     },
+    check:{
+        type: String,
+    },
     
 });
 

@@ -46,18 +46,21 @@ module.exports = {
         amount: amount,
         billReference: bill_reference,
         advTax: adv_tax,
+        challanNo: challan_no,
+        ...(check === 'Bank' ? { chequeNo: cheque_no, bankAccount: bank_account } : {}),
+        check: check
       });
 
       const update_id = officeUtilExpense._id;
 
       const type = "expense";
 
-      if(check == "cash")
+      if(check == "Cash")
         {
           const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
           await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,billing_month, amount, paid_date,update_id);
           await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billing_month, amount, paid_date, null, null,update_id);
-        }else if(check == "bank"){
+        }else if(check == "Bank"){
           const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
           await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,billing_month, amount, paid_date,cheque_no, challan_no,update_id);
           await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, billing_month, amount, paid_date, cheque_no, challan_no,update_id);
@@ -65,7 +68,7 @@ module.exports = {
 
       await officeUtilExpense.save();
       res.status(201).json({
-        message: "OfficeUtil Expense created successfully",
+        message: "OfficeUtility Expense created successfully",
         data: officeUtilExpense,
       });
     } catch (err) {
@@ -81,7 +84,7 @@ module.exports = {
       }
       const officeUtilExpense = await OfficeUtilExpense.findById(id).exec();
       if (!officeUtilExpense) {
-        return res.status(404).json({ message: "Office Util Expense not found" });
+        return res.status(404).json({ message: "Office Utility Expense not found" });
       }
       const updateData = {};
       if (req.body.paid_date) {
@@ -111,11 +114,11 @@ module.exports = {
 
       const type = "expense";
 
-      if (req.body.check == "cash") {
+      if (req.body.check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       }
-      else if (req.body.check == "bank") {
+      else if (req.body.check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       }

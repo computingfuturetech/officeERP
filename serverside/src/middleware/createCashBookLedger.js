@@ -1,6 +1,8 @@
 const CashBookLedger = require('../models/ledgerModels/cashBookLedger');
 const GeneralLedger = require('../models/ledgerModels/generalLedger');
 const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
+const CheckMainAndSubHeadOfAccount = require('../middleware/checkMainAndSubHeadOfAccount');
+const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 
 async function updateAddNextCashLedger(nextIds, type, difference) {
   try {
@@ -65,6 +67,7 @@ async function updateSubNextCashLedger(nextIds, type, difference) {
 module.exports = {
   createCashBookLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, update_id) => {
     try {
+      console.log(type)
       let balance;
       let latestBalance = await CashBookLedger.findOne({ balance: { $exists: true } })
         .sort({
@@ -83,6 +86,14 @@ module.exports = {
 
       const newBalance = type === 'income' ? parseInt(balance) + parseInt(amount) : parseInt(balance) - parseInt(amount);
 
+      let main_head_id;
+      let sub_head_id;
+      if (type == 'expense') {
+          ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+      }
+
+      let incomeHOF = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+
       const cashLedger = new CashBookLedger({
         date: date,
         voucherNo: voucherNo,
@@ -90,6 +101,11 @@ module.exports = {
         headOfAccount: head_of_account,
         particular: particular,
         ...(type === 'expense' ? { debit: amount } : { credit: amount }),
+        ...(type == 'expense' ? {
+          ...(main_head_id ? { mainHeadOfAccount: main_head_id } : { subHeadOfAccount: sub_head_id })
+        } : {
+          incomeHeadOfAccount: incomeHOF._id
+        }),
         balance: newBalance,
         updateId: update_id,
         previousBalance: balance
@@ -104,13 +120,11 @@ module.exports = {
     try {
       const updateFields = { ...updates };
       delete updateFields.amount;
+      const cashLedger = await CashBookLedger.findOneAndUpdate({ updateId: updateId }, { $set: updateFields },{ new: true }).exec();
+      if (!cashLedger) {
+        return res.status(404).json({ message: 'Cash Ledger not found' });
+      }
       if (type == 'expense') {
-        const cashLedger = await CashBookLedger.findOneAndUpdate({ updateId: updateId }, { $set: updateFields },{ new: true }).exec();
-
-        if (!cashLedger) {
-          return res.status(404).json({ message: 'Cash Ledger not found' });
-        }
-
         if(updates.amount){
           if (updates.amount == cashLedger.debit) {
             cashLedger.debit = updates.amount;
@@ -132,6 +146,30 @@ module.exports = {
             await cashLedger.save();
           }
           console.log('Cash Ledger A updated successfully');
+        }
+      }
+      else if (type == 'income') {
+        if (updates.amount) {
+          if (updates.amount == cashLedger.credit) {
+            cashLedger.credit = updates.amount;
+            await cashLedger.save();
+          } else {
+            const { credit: previous_amount } = cashLedger;
+            cashLedger.credit = updates.amount;
+            cashLedger.balance = parseInt(cashLedger.previousBalance) + parseInt(updates.amount);
+            const nextCashLedgers = await CashBookLedger.find({ _id: { $gt: cashLedger._id } }).exec();
+            const nextIds = nextCashLedgers.map(gl => gl._id);
+            if (updates.amount > previous_amount) {
+              const difference = updates.amount - previous_amount;
+              await updateAddNextCashLedger(nextIds, "income", difference);
+            } else if (updates.amount < previous_amount) {
+              const difference = previous_amount - updates.amount;
+              await updateSubNextCashLedger(nextIds, "income", difference);
+            }
+
+            await cashLedger.save();
+          }
+          console.log('Cash Ledger updated successfully');
         }
       }
     } catch (err) {
