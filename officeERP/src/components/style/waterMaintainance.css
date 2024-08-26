@@ -1,26 +1,50 @@
+.water-maintainance {
+  width: 100%;
+}
+
 .water-maintenance-form {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  margin-top: 30px;
+  width: 100%;
+
+  .action-buttons {
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    margin-top: 30px;
-  
-    .action-buttons{
-        display: flex;
-        justify-content: center;
-        width: 100%;
-        
-    }
-  
+    justify-content: center;
+    width: 100%;
+
+  }
+
   .purchaser-input-wrapper {
-    display: flex; 
+    display: flex;
     justify-content: start;
+    width: 100%;
+
+    .block-label {
+      display: block;
+      width: 100%;
+
+      label {
+        display: block;
+        padding: 5px;
+      }
+
+      input,
+      select {
+        display: block;
+        width: 90%;
+        padding: 5px;
+      }
+
+      select {
+        width: 95%;
+      }
+    }
   }
-  
-  .input {
-    flex: 1 1 calc(33.33% - 1rem); 
-    max-width: 200px;
-  }
-  
+
+
+
   .blue-button {
     margin-top: 1.5rem;
     align-self: center;
@@ -28,17 +52,19 @@
     max-width: 200px;
     text-align: center;
   }
-  .small-input{
+
+  .small-input {
     width: 105px;
   }
-  label{
+
+  label {
     margin-top: 0px;
     margin-right: 5px;
   }
 }
 
-.title{
-  h2{
+.title {
+  h2 {
     text-align: center;
   }
 }

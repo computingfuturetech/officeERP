@@ -134,6 +134,7 @@ input[type="text"],
 input[type="email"],
 input[type="number"],
 input[type="date"],
+input[type="month"],
 select {
   padding: 5px;
   border: 1px solid #ccc;
@@ -155,9 +156,9 @@ input[type=number] {
 }
 
 
-input[type="date"] {
+/* input[type="date"] {
   min-height: 25px;
-}
+} */
 
 label {
   font-family: 'Nunito', sans-serif;

@@ -18,7 +18,6 @@ export default function BankProfitComponent() {
   const [page, setPage] = useState(1);
   const [editSection, setEditSection] = useState(false);
   const membersRef = useRef(null);
-  const [profitBank, setProfitBank] = useState("");
   const [monthName, setMonthName] = useState("");
   const [amount, setAmount] = useState("");
   const [addNew, setAddNew] = useState(false);
@@ -27,6 +26,11 @@ export default function BankProfitComponent() {
   const [selectedAccount, setSelectedAccount] = useState("");
   const [bankName, setBankName] = useState("");
   const [profit_id, setProfitId] = useState("");
+  const [challanNo, setChallanNo] = useState("");
+  const [chequeNo, setChequeNo] = useState("");
+  const [showSection, setShowSection] = useState(false);
+  const [entryDate, setEntryDate] = useState("");
+
   const [hasMorePages, setHasMorePages] = useState(true);
   const months = [
     "January",
@@ -70,54 +74,53 @@ export default function BankProfitComponent() {
   const [isFetching, setIsFetching] = useState(false);
   const [isPageOneFetched, setIsPageOneFetched] = useState(false); // New state to track if page 1 is fetched
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (timeoutRef.current === 0) {
-        return;
-      }
-      if (isFetching || !hasMorePages) return;
+  const fetchData = async () => {
+    if (timeoutRef.current === 0) {
+      return;
+    }
+    if (isFetching || !hasMorePages) return;
 
-      // Check if page 1 is already fetched
-      if (page === 1 && isPageOneFetched) return;
+    // Check if page 1 is already fetched
+    if (page === 1 && isPageOneFetched) return;
 
-      setLoading(true);
-      setIsFetching(true);
+    setLoading(true);
+    setIsFetching(true);
 
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        console.log("Fetching page:", page);
-        console.log(isPageOneFetched);
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getBankProfit/?page_no=${page}`,
-          config
-        );
+    try {
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/user/getBankProfit/?page_no=${page}`,
+        config
+      );
 
-        if (response.data.bankProfits.length > 0) {
-          setBankProfitList((prevList) => [
-            ...prevList,
-            ...response.data.bankProfits,
-          ]);
-          setHasMorePages(response.data.hasMore);
-          if (page === 1) {
-            setIsPageOneFetched(true);
-            console.log("fetched with variable:", isPageOneFetched);
-          }
-        } else {
-          setHasMorePages(false);
+      console.log(response.data);
+      if (response.data.bankProfits.length > 0) {
+        setBankProfitList((prevList) => [
+          ...prevList,
+          ...response.data.bankProfits,
+        ]);
+        setHasMorePages(response.data.hasMore);
+        if (page === 1) {
+          setIsPageOneFetched(true);
+          console.log("fetched with variable:", isPageOneFetched);
         }
-      } catch (error) {
-        console.error("Error fetching bank profits:", error);
-        showErrorToastMessage("An Error Occurred While Fetching Data!");
-      } finally {
-        setLoading(false);
-        setIsFetching(false);
-        timeoutRef.current++;
+      } else {
+        setHasMorePages(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching bank profits:", error);
+      showErrorToastMessage("An Error Occurred While Fetching Data!");
+    } finally {
+      setLoading(false);
+      setIsFetching(false);
+      timeoutRef.current++;
+    }
+  };
+  useEffect(() => {
     timeoutRef.current++;
 
     fetchData();
@@ -177,8 +180,26 @@ export default function BankProfitComponent() {
     setBankName(member.bank.bankName);
     setProfitId(member._id);
     setSelectedAccount(member.bank.accountNo);
+    setChallanNo(member.challanNo);
+    setChequeNo(member.chequeNo);
 
     setEditSection(true);
+    setShowOptions(false);
+  };
+  const handleShowSection = (member) => {
+    scrollToTop();
+    setSelectedMember(member);
+    setMonthName(member.profitMonth);
+    setAmount(member.amount);
+    setBankName(member.bank.bankName);
+    setProfitId(member._id);
+    setSelectedAccount(member.bank.accountNo);
+    setChallanNo(member.challanNo);
+    setChequeNo(member.chequeNo);
+    setShowSection(true);
+
+    setEditSection(false);
+
     setShowOptions(false);
   };
 
@@ -194,6 +215,9 @@ export default function BankProfitComponent() {
     setBankName("");
     setSelectedAccount("");
     setEditSection(false);
+    setChallanNo("");
+    setChequeNo("");
+    setShowSection(false);
   };
 
   const handleRefresh = () => {
@@ -206,7 +230,9 @@ export default function BankProfitComponent() {
       bank_account: selectedAccount,
       profit_month: monthName,
       amount: amount,
-      head_of_account: "Bank Profit",
+      challan_no: challanNo,
+      cheque_no: chequeNo,
+      paid_date: entryDate,
     };
 
     const update = async () => {
@@ -223,6 +249,7 @@ export default function BankProfitComponent() {
           config
         );
         console.log(response.data);
+        fetchData();
         showSuccessToastMessage("Bank Profit Added Successfully!");
         closeSection();
       } catch (error) {
@@ -242,6 +269,8 @@ export default function BankProfitComponent() {
       profit_month: monthName,
       bank_name: bankName,
       amount: amount,
+      challan_no: challanNo,
+      cheque_no: chequeNo,
     };
 
     const update = async () => {
@@ -259,6 +288,7 @@ export default function BankProfitComponent() {
           config
         );
         showSuccessToastMessage("Bank Profit Updated Successfully!");
+        fetchData();
         console.log(response.data);
         closeSection();
       } catch (error) {
@@ -267,42 +297,6 @@ export default function BankProfitComponent() {
       }
     };
     update();
-  };
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    try {
-      const searchValue = e.target[0].value;
-      console.log(searchValue);
-      const search = async () => {
-        setLoading(true);
-        console.log(searchValue);
-        try {
-          const config = {
-            headers: {
-              Authorization: "Bearer " + localStorage.getItem("token"),
-            },
-          };
-          const response = await axios.get(
-            process.env.REACT_APP_API_URL +
-              `/user/getBankProfit/?bankname=${searchValue.trim()}`,
-            config
-          );
-          console.log(response.data);
-          if (response.data.bankProfits.length > 0) {
-            setBankProfitList(response.data.bankProfits);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error(error);
-          setLoading(false);
-        }
-      };
-      search();
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
   };
 
   const scrollToTop = () => {
@@ -422,6 +416,10 @@ export default function BankProfitComponent() {
                 </div>
                 {selectedMember === member && showOptions && (
                   <div className="options custom-option">
+                    <button onClick={() => handleShowSection(member)}>
+                      Show
+                    </button>
+                    <div className="horizontal-divider"></div>
                     <button onClick={() => handleEditSection(member)}>
                       Edit
                     </button>
@@ -437,36 +435,61 @@ export default function BankProfitComponent() {
           )}
         </div>
 
+        {showSection && (
+          <div className="left-section">
+            <div className="left-section-content">
+              <div onClick={closeSection} className="close-button"></div>
+              <h3>Bank Profit</h3>
+              <div className="horizontal-divider"></div>
+              <div className="details">
+                <div className="details-item">
+                  <h4>Bank Name:</h4>
+                  <p>{bankName}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Account Number:</h4>
+                  <p>{selectedAccount}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Challan No:</h4>
+                  <p>{challanNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Cheque No:</h4>
+                  <p>{chequeNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Month:</h4>
+                  <p>{monthName}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Amount:</h4>
+                  <p>{amount}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {editSection && (
           <div className="left-section">
             <div className="left-section-content">
               <div onClick={closeSection} className="close-button"></div>
-              <h3>Add Bank Profit</h3>
+              <h3>Edit Bank Profit</h3>
               <div className="horizontal-divider"></div>
               <form onSubmit={updateBankProfit}>
                 <label htmlFor="msNo">Bank Name: </label>
-                {/* <input
-              type="text"
-              // readOnly
-              className="read-only"
-              name="msNo"
-              id="msNo"
-              value={msNo}
-              onChange={(e) => setMsNo(e.target.value)}
-            /> */}
                 <select
                   name="bank-name"
                   id="bank-name"
                   onChange={handleBankChange}
+                  readOnly
+                  className="read-only"
+                  value={bankName}
                 >
                   <option value="select" hidden>
                     {bankName}
                   </option>
-                  {bankList.map((bank) => (
-                    <option value={bank._id} key={bank._id}>
-                      {bank.bankName} - {bank.branchCode}
-                    </option>
-                  ))}
                 </select>
                 <label htmlFor="purchaseName">Account Number: </label>
                 <select
@@ -478,17 +501,35 @@ export default function BankProfitComponent() {
                   <option value={selectedAccount} hidden>
                     {selectedAccount}
                   </option>
-                  {/* {bankList
-                .filter((bank) => bank._id === selectedBank)
-                .map((bank) => (
-                  <option value={bank.accountNo} key={bank.accountNo}>{bank.accountNo}</option>
-                ))} */}
                 </select>
+                <label htmlFor="challanNo">Challan No: </label>
+                <input
+                  type="text"
+                  name="challanNo"
+                  id="challanNo"
+                  readOnly
+                  className="read-only"
+                  value={challanNo}
+                  onChange={(e) => setChallanNo(e.target.value)}
+                />
+                <label htmlFor="chequeNo">Cheque No: </label>
+                <input
+                  type="text"
+                  name="chequeNo"
+                  id="chequeNo"
+                  value={chequeNo}
+                  readOnly
+                  className="read-only"
+                  onChange={(e) => setChequeNo(e.target.value)}
+                />
+
                 <label htmlFor="monthName">Month: </label>
                 <select
                   name="monthName"
                   id="monthName"
                   value={monthName}
+                  readOnly
+                  className="read-only"
                   onChange={(e) => setMonthName(e.target.value)}
                 >
                   {months.map((month, index) => (
@@ -565,8 +606,23 @@ export default function BankProfitComponent() {
                       </option>
                     ))}
                 </select>
-
-                <label htmlFor="monthName">Month: </label>
+                <label htmlFor="challanNo">Challan No: </label>
+                <input
+                  type="text"
+                  name="challanNo"
+                  id="challanNo"
+                  value={challanNo}
+                  onChange={(e) => setChallanNo(e.target.value)}
+                />
+                <label htmlFor="chequeNo">Cheque No: </label>
+                <input
+                  type="text"
+                  name="chequeNo"
+                  id="chequeNo"
+                  value={chequeNo}
+                  onChange={(e) => setChequeNo(e.target.value)}
+                />
+                <label htmlFor="monthName">Profit Month: </label>
                 <select
                   name="monthName"
                   id="monthName"
@@ -595,7 +651,10 @@ export default function BankProfitComponent() {
                 <button
                   type="submit"
                   className="blue-button"
-                  onClick={createNewBankProfit}
+                  onClick={() => {
+                    setEntryDate(new Date().toISOString());
+                    createNewBankProfit();
+                  }}
                 >
                   Save
                 </button>
