@@ -1,66 +1,100 @@
 import React, { useEffect, useState, useRef } from "react";
 import "./style/memberListStyle.css";
 import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { ToastContainer } from "react-toastify";
 import { showErrorToastMessage, showSuccessToastMessage } from "./toastUtils";
 import "./style/seller.css";
-import WaterMaintainanceForm from "./water-maintanance-form";
 
 export default function WaterMaintainanceComponent() {
-  const [memberList, setMemberList] = useState([]);
+  const [BankProfitList, setBankProfitList] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMember, setSelectedMember] = useState(null);
+  const [showOptions, setShowOptions] = useState(false);
   const [page, setPage] = useState(1);
+  const [editSection, setEditSection] = useState(false);
   const membersRef = useRef(null);
-  const [msNo, setMsNo] = useState("");
-  const [purchaseName, setPurchaseName] = useState("");
-  const [isLoading,setIsLoading]=useState(false)
-  const [ShowButton,setShowButton]=useState(true)
+  const [monthName, setMonthName] = useState("");
+  const [amount, setAmount] = useState("");
+  const [profit_id, setProfitId] = useState("");
+  const [challanNo, setChallanNo] = useState("");
+  const [showSection, setShowSection] = useState(false);
+  const [memberNo, setMemberNo] = useState("");
+  const [memberName, setMemberName] = useState("");
+  const [plotNo, setPlotNo] = useState("");
+  const [referenceNo, setReferenceNo] = useState("");
+  const [billingMonth, setBillingMonth] = useState("");
+  const [paidDate, setPaidDate] = useState("");
 
+  const [hasMorePages, setHasMorePages] = useState(true);
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+  const timeoutRef = useRef(0); // Ref to keep track of the timeout
 
+  const [isFetching, setIsFetching] = useState(false);
+  const [isPageOneFetched, setIsPageOneFetched] = useState(false); // New state to track if page 1 is fetched
 
-  const [addDues, setAddDues] = useState(false);
-  const [updateMemberState, setUpdateMemberState] = useState([]);
-  const [typeOption,setTypeOption]=useState(true)
-  const [sellerForm,setSellerForm]=useState(false)
-  const [purchaserForm,setPurchaseForm]=useState(false)
-  const [purchaseOptions,setPurchaseOptions]=useState(false)
-  const [showForm,setShowForm]=useState(false)
-  const [showPurchaseForm,setShowPurchaseForm]=useState(false)
+  const fetchData = async () => {
+    if (timeoutRef.current === 0) {
+      return;
+    }
+    if (isFetching || !hasMorePages) return;
 
-  const handleAddDues = () => {
-    setAddDues(true);
-    };
+    // Check if page 1 is already fetched
+    if (page === 1 && isPageOneFetched) return;
 
-  useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
+    setLoading(true);
+    setIsFetching(true);
 
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getWaterMaintenanceBill`,
-          config
-        );
-        // if (response.data.length > 0) {
-        //   setMemberList((prevList) => [...prevList, ...response.data]);
-        // }
-        setMemberList(response.data)
-        console.log(response.data)
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
+    try {
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/user/getWaterMaintenanceBill/?page_no=${page}`,
+        config
+      );
+
+      console.log(response.data);
+      if (response.data.length > 0) {
+        setBankProfitList((prevList) => [...prevList, ...response.data]);
+        setHasMorePages(response.data.hasMore);
+        if (page === 1) {
+          setIsPageOneFetched(true);
+          console.log("fetched with variable:", isPageOneFetched);
+        }
+      } else {
+        setHasMorePages(false);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching bank profits:", error);
+      showErrorToastMessage("An Error Occurred While Fetching Data!");
+    } finally {
+      setLoading(false);
+      setIsFetching(false);
+      timeoutRef.current++;
+    }
+  };
+  useEffect(() => {
+    timeoutRef.current++;
 
     fetchData();
-  }, [page]);
+  }, [page, hasMorePages]);
+
   const handleScroll = () => {
     if (membersRef.current) {
       const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
@@ -81,198 +115,72 @@ export default function WaterMaintainanceComponent() {
     };
   }, [loading]);
 
-  const convertDate=(e)=>{
-    const dateValue = new Date(e).toISOString().split('T')[0];
-    return dateValue;
-  }
+  const handleEditSection = (member) => {
+    scrollToTop();
+    setSelectedMember(member);
+    setMemberNo(member.memberNo.msNo);
+    setMemberName(member.memberNo.purchaseName);
+    setPlotNo(member.plotNo);
+    setReferenceNo(member.referenceNo);
+    setBillingMonth(member.billingMonth);
+    setProfitId(member._id);
+    setMonthName(member.profitMonth);
+    setAmount(member.amount);
+    setPaidDate(
+      member.paidDate
+        ? new Date(member.paidDate).toISOString().split("T")[0]
+        : ""
+    );
+    setChallanNo(member.challanNo);
+    setEditSection(true);
+    setShowOptions(false);
+  };
+  const handleShowSection = (member) => {
+    console.log(member);
+    scrollToTop();
+    setSelectedMember(member);
+    setMonthName(member.profitMonth);
+    setAmount(member.amount);
+    setProfitId(member._id);
+    setChallanNo(member.challanNo);
+    setShowSection(true);
+
+    setEditSection(false);
+
+    setShowOptions(false);
+  };
+
+  const handleShowOptions = (member) => {
+    setSelectedMember(member);
+    setShowOptions(!showOptions);
+  };
 
   const closeSection = () => {
-    setAddDues(false);
-    setMsNo("");
-    setPurchaseName("");
-    setChallanNumber("");
-    setDate("");
-    setPlotNo("");
-    setShowButton(true)
-    setBlock("");
-    setCnicNo("");
-    setAddress("");
-    setIsLoading(false)
-    setTypeOption(true)
-    setShowForm(false)
-    setSellerForm(false)
-    setPurchaseForm(false)
-    setShowPurchaseForm(false)
+    setMonthName("");
+    setAmount("");
+    setEditSection(false);
+    setChallanNo("");
+    setShowSection(false);
   };
-  const handleMsNumberChange=(e)=>{
-    setMsNo(e.target.value)
-  }
-  const handleExistingPurchaserClick=()=>{
-    setPurchaseForm(true)
-    setPurchaseOptions(false)
-  }
+
   const handleRefresh = () => {
     window.location.reload();
   };
-  const handleSellerClick=()=>{
-    setTypeOption(false)
-    setSellerForm(true)
-  }
-  const handlePurchaserClick=()=>{
-    setPurchaseOptions(true)
-    setTypeOption(false)
-  }
 
-  const clearData=()=>{
-    setMsNo("");
-    setPurchaseName("");
-    setChallanNumber("");
-    setDate("");
-    setPlotNo("");
-    closeSection()
-
-  }
-  const getMemberData=(e)=>{
+  const updateBankProfit = (e) => {
     e.preventDefault();
-    setIsLoading(true)
-    setShowButton(false)
-    console.log(msNo)
-    const fetchMemeber = async () => {
-      try {
-        const data={
-          ms_no:msNo
-        }
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${msNo}`,
-          config
-        );
-        setPurchaseName(response.data[0].purchaseName)
-        setUpdateMemberState({
-          ...updateMemberState,
-          purchaseName:response.data[0].purchaseName
-        })
-
-        setCnicNo(response.data.cnicNo)
-        console.log(response)
-      } catch (error) {
-        showErrorToastMessage("Error Try Again!")
-        clearData()
-        console.error(error);
-      }
-    };
-    fetchMemeber();
-
-    const fetchMemeberData = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome?member_no=${msNo}`,
-          config
-        );
-        setUpdateMemberState({
-          ...updateMemberState,
-          dualOwnerFee: e.target.value
-        })
-        setShowForm(true)
-        setShowPurchaseForm(true)
-        response.data.forEach(item => {
-          const headOfAccount = item.headOfAccount.headOfAccount;
-        
-          switch (headOfAccount) {
-            case "Dual Owner Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                dualOwnerFee: item.amount
-              }));
-              break;
-            case "NOC Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                nocFee: item.amount
-              }));
-              break;
-            case "Masjid Fund":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                masjidFund: item.amount
-              }));
-              break;
-            case "Covered Area Fee":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                coveredAreaFee: item.amount
-              }));
-              break;
-            case "Share Money":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                shareMoney: item.amount
-              }));
-              break;
-            case "Deposit For Land Cost":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                depositLandCost: item.amount
-              }));
-              break;
-            case "Deposit for Development Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                depositDevelopmentCharges: item.amount
-              }));
-              break;
-            case "Additional Development Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                additionalCharges: item.amount
-              }));
-              break;
-            case "Electricity Charges":
-              setUpdateMemberState(prevState => ({
-                ...prevState,
-                electricityCharges: item.amount
-              }));
-              break;
-            default:
-              console.log("Unknown head of account:", headOfAccount);
-          }
-        });
-        console.log(response)
-        setIsLoading(false)
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    fetchMemeberData();
-  }
-
-  const updateMember = (e) => {
-    e.preventDefault();
-
     const data = {
-      msNo: msNo,
-      noc_fee: updateMemberState.nocFee || "",
-      masjid_fund: updateMemberState.masjidFund || "",
-      dual_owner_fee: updateMemberState.dualOwnerFee || "",
-      covered_area_fee: updateMemberState.coveredAreaFee || "",
-      share_money: updateMemberState.shareMoney || "",
-      deposit_land_cost: updateMemberState.depositLandCost || "",
-      deposit_development_charges: updateMemberState.depositDevelopmentCharges || "",
-      additional_charges: updateMemberState.additionalCharges || "",
-      electricity_charges: updateMemberState.electricityCharges || "",
+      member_no: memberNo,
+      plot_no: plotNo,
+      reference_no: referenceNo,
+      billing_month: billingMonth,
+      paid_date: paidDate,
+      amount: amount,
+      challan_no: challanNo,
     };
-    console.log(data)
-    
+
     const update = async () => {
+      console.log(data);
       try {
         const config = {
           headers: {
@@ -280,484 +188,252 @@ export default function WaterMaintainanceComponent() {
           },
         };
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/user/createSellerPurchaseIncome`,
+          process.env.REACT_APP_API_URL +
+            `/user/updateWaterMaintenanceBill?id=${profit_id}`,
           data,
           config
         );
+        showSuccessToastMessage("Bank Profit Updated Successfully!");
+        fetchData();
+        console.log(response.data);
         closeSection();
-        showSuccessToastMessage("Added Successfully")
       } catch (error) {
+        showErrorToastMessage("Error Updating");
         console.error(error);
       }
     };
     update();
   };
 
-
-  const updatePurchaserMember = (e) => {
-    e.preventDefault();
-
-    const data = {
-      msNo: msNo,
-      transferFee: updateMemberState.transferFee || "",
-      membershipFee: updateMemberState.membershipFee || "",
-      admissionFee: updateMemberState.admissionFee || "",
-      masjidFund: updateMemberState.masjidFund || "",
-      preferenceFee: updateMemberState.preferenceFee || "",
-    };
-
-    console.log(data)
-    
-    const update = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/user/createSellerPurchaseIncome`,
-          data,
-          config
-        );
-        closeSection();
-        showSuccessToastMessage("Added Successfully")
-      } catch (error) {
-        console.error(error);
-      }
-    };
-    update();
+  const scrollToTop = () => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
   };
 
-  const handleSearch = (e) => {
-    e.preventDefault();
-    try {
-      const searchValue = e.target[0].value;
-      const search = async () => {
-        setLoading(true);
-        try {
-          const config = {
-            headers: {
-              Authorization: "Bearer " + localStorage.getItem("token"),
-            },
-          };
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_URL}/user/getWaterMaintenanceBill/?search=${searchValue.trim()}`,
-            config
-          );
-          if (response.data.length > 0) {
-            setMemberList(response.data);
-          }
-          setLoading(false);
-        } catch (error) {
-          console.error(error);
-          setLoading(false);
-        }
-      };
-      search();
-    } catch (error) {
-      console.error(error);
-      setLoading(false);
-    }
+  const formatDate = (dateString) => {
+    const options = { year: "numeric", month: "long", day: "numeric" };
+    return new Date(dateString).toLocaleDateString(undefined, options);
   };
   return (
-    <div className="member-list">
-      <div className="title">
-        <h2>Water Maintainance</h2>
-        <div className="title-buttons">
-          <form className="nosubmit" onSubmit={handleSearch}>
-            <input
-              className="nosubmit"
-              name="search-members"
-              id="search-members"
-              type="search"
-              placeholder="Search..."
-            />
-          </form>
-          {/* <Link className="blue-button" onClick={handleAddDues}>
-          Add Dues
-          </Link> */}
-          <Link className="simple-button" onClick={handleRefresh}>
-            Refresh
-          </Link>
+    <>
+      <div className="member-list">
+        <div className="title">
+          <h2>Water Maintenance Bills</h2>
+          <div className="title-buttons">
+            <Link className="simple-button" onClick={handleRefresh}>
+              Refresh
+            </Link>
+          </div>
         </div>
-      </div>
-      <div className="top-bar">
-        
-        <div className="top-bar-item">
-          <h4>Membership No</h4>
-          <h4>Name</h4>
-          <h4>Amount</h4>
-          <h4>Date</h4>
-        </div>
-      </div>
-
-      <div className={`members  ${loading ? "loading" : ""}`} ref={membersRef}>
-        {memberList.map((member) => (
-            <div className="member" key={member._id}>
-            <div className="member-details">
-                <p>{member.memberNo.msNo === "" ? "-" : member.memberNo.msNo}</p>
-                <p>{member.memberNo.purchaseName === "" ? "-" : member.memberNo.purchaseName}</p>
-                <p>{member.amount === "" ? "-" : member.amount}</p>
-                <p>{member.paidDate === "" ? "-" : convertDate(member.paidDate)}</p>
-            </div>
-            </div>
-        ))}
-                {loading && (
-                <div className="loading-indicator">
-                    <div className="spinner"></div>
-                </div>
-                )}
+        <div className="top-bar">
+          <div className="top-bar-item">
+            <h4>Member No</h4>
+            <h4>Member Name</h4>
+            <h4>Billing Month</h4>
+            <h4>Amount</h4>
+            <h4></h4>
+          </div>
         </div>
 
-      {addDues && (
-        <>
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Add Member Dues</h3>
-            <div className="horizontal-divider"></div>
-        {typeOption && (
-          
-         <>
-        
-            <div className="action-buttons">
-        <button className="blue-button" onClick={() => handleSellerClick("Seller")}>
-          Seller
-        </button>
-        <button
-          className="blue-button"
-          onClick={() => handlePurchaserClick("Purchaser")}
+        <div
+          className={`members  ${loading ? "loading" : ""}`}
+          ref={membersRef}
         >
-          Purchaser
-        </button>
-      </div> 
-          
-          
-        </>
-      )}
-       {purchaseOptions && (
-          
-          <>
-         
-             <div className="action-buttons">
-              <Link to="/income/purchaser">
-         <button className="blue-button">
-           New Purchaser
-         </button>
-         </Link>
-         <br></br>
-         <button
-           className="blue-button"
-           onClick={() => handleExistingPurchaserClick("Purchaser")}
-         >
-           Existing Purchaser
-         </button>
-       </div> 
-           
-           
-         </>
-       )}
-      {sellerForm && (
-            <>
-            <form onSubmit={updateMember}>
-              <label htmlFor="msNo" className="required">Membership No: </label>
-              <input
-                type="text"
-                name="msNo"
-                id="msNo"
-                required
-                onChange={handleMsNumberChange}
-              />
-              {ShowButton && (
-              <button
-                type="submit"
-                className="blue-button"
-                onClick={getMemberData}
-              >
-                Find
-              </button>
+          {BankProfitList.map((member) => (
+            <div className="member bankprofit" key={member._id}>
+              <div className="member-details">
+                <p>{member.memberNo.msNo}</p>
+                <p>{member.memberNo.purchaseName}</p>
+                <p>{member.billingMonth}</p>
+                <p>{member.amount}</p>
+                <img
+                  onClick={() => handleShowOptions(member)}
+                  src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
+                  alt="Member Icon"
+                />
+              </div>
+              {selectedMember === member && showOptions && (
+                <div className="options custom-option">
+                  <button onClick={() => handleShowSection(member)}>
+                    Show
+                  </button>
+                  <div className="horizontal-divider"></div>
+                  <button onClick={() => handleEditSection(member)}>
+                    Edit
+                  </button>
+                </div>
               )}
-              {showForm && (
-                <>
-              <label htmlFor="purchaseName" className="required">Name: </label>
-              <input
-                type="text"
-                name="purchaseName"
-                id="purchaseName"
-                required
-                value={purchaseName}
-                onChange={(e) =>setUpdateMemberState({
-                  ...updateMemberState,
-                  purchaseName: e.target.value
-                })}
-              />
-              <label htmlFor="challanNumber" className="required">Challan Number: </label>
-              <input
-                type="number"
-                name="challanNumber"
-                id="challanNumber"
-                value={updateMemberState.challanNumber}
-                required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  challanNumber: e.target.value
-                })}
-              />
-              <label htmlFor="date" className="required">Date: </label>
-              <input
-                type="date"
-                name="date"
-                id="date"
-                required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  date: e.target.value
-                })}
-              />
+            </div>
+          ))}
+          {loading && (
+            <div className="loading-indicator">
+              <div className="spinner"></div>
+            </div>
+          )}
+        </div>
 
-              <label htmlFor="nocFee">NOC Fee: </label>
-              <input
-                type="number"
-                name="nocFee"
-                value={updateMemberState.nocFee}
-                id="nocFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  nocFee: e.target.value
-                })}
-              />
-              <label htmlFor="masjidFund">Masjid Fund: </label>
-              <input
-                type="number"
-                value={updateMemberState.masjidFund}
-                name="masjidFund"
-                id="masjidFund"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  masjidFund: e.target.value
-                })}
-              />
-               <label htmlFor="dualOwnerFee">Dual Owner Fee: </label>
-              <input
-                type="number"
-                name="dualOwnerFee"
-                value={updateMemberState.dualOwnerFee}
-                id="dualOwnerFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  dualOwnerFee: e.target.value
-                })}
-              />
-              <label htmlFor="coveredAreaFee">Covered Area Fee: </label>
-              <input
-                type="number"
-                name="coveredAreaFee"
-                id="coveredAreaFee"
-                value={updateMemberState.coveredAreaFee}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  coveredAreaFee: e.target.value
-                })}
-              />
-              <label htmlFor="shareMoney">Share Money: </label>
-              <input
-                type="number"
-                name="shareMoney"
-                value={updateMemberState.shareMoney}
-                id="shareMoney"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  shareMoney: e.target.value
-                })}
-              />
-              <label htmlFor="depositLandCost">Deposit For Land Cost: </label>
-              <input
-                type="number"
-                name="depositLandCost"
-                value={updateMemberState.depositLandCost}
-                id="depositLandCost"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  depositLandCost: e.target.value
-                })}
-              />
-              <label htmlFor="depositDevelopmentCharges">Deposit for Development Charges: </label>
-              <input
-                type="number"
-                name="depositDevelopmentCharges"
-                id="depositDevelopmentCharges"
-                value={updateMemberState.depositDevelopmentCharges}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  depositDevelopmentCharges: e.target.value
-                })}
-              />
-              <label htmlFor="additionalCharges">Additional Development Charges: </label>
-              <input
-                type="number"
-                name="additionalCharges"
-                id="additionalCharges"
-                value={updateMemberState.additionalCharges}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  additionalCharges: e.target.value
-                })}
-              />
-              <label htmlFor="electricityCharges">Electricity Charges: </label>
-              <input
-                type="number"
-                name="electricityCharges"
-                id="electricityCharges"
-                value={updateMemberState.electricityCharges || ""}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  electricityCharges: e.target.value
-                })}
-              />
-               <button
-                type="submit"
-                className="blue-button"
-                onClick={updateMember}
-              >
-                Save
-              </button>
-              </>
-            )}
-             
-              {isLoading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
+        {showSection && (
+          <div className="left-section">
+            <div className="left-section-content">
+              <div onClick={closeSection} className="close-button"></div>
+              <h3>Bank Profit</h3>
+              <div className="horizontal-divider"></div>
+              <div className="details">
+                <div className="details-item">
+                  <h4>Member No:</h4>
+                  <p>{selectedMember.memberNo.msNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Member Name</h4>
+                  <p>{selectedMember.memberNo.purchaseName}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Plot No:</h4>
+                  <p>{selectedMember.plotNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Challan No:</h4>
+                  <p>{selectedMember.challanNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Reference No:</h4>
+                  <p>{selectedMember.referenceNo}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Billing Month:</h4>
+                  <p>{selectedMember.billingMonth}</p>
+                </div>
+
+                <div className="details-item">
+                  <h4>Paid Date:</h4>
+                  <p>{formatDate(selectedMember.paidDate)}</p>
+                </div>
+                <div className="details-item">
+                  <h4>Amount:</h4>
+                  <p>{amount}</p>
+                </div>
+              </div>
+            </div>
           </div>
         )}
-            </form>
-            </>
-            )}
 
-      {purchaserForm && (
-            <>
-            <form onSubmit={updateMember}>
-              <label htmlFor="msNo" className="required">Membership No: </label>
-              <input
-                type="text"
-                name="msNo"
-                id="msNo"
-                required
-                onChange={handleMsNumberChange}
-              />
-              {ShowButton && (
-              <button
-                type="submit"
-                className="blue-button"
-                onClick={getMemberData}
-              >
-                Find
-              </button>
-              )}
-              {showPurchaseForm && (
-                <>
-              <label htmlFor="purchaseName" className="required">Name: </label>
-              <input
-                type="text"
-                name="purchaseName"
-                id="purchaseName"
-                required
-                value={purchaseName}
-                onChange={(e) =>setUpdateMemberState({
-                  ...updateMemberState,
-                  purchaseName: e.target.value
-                })}
-              />
-              {/* <label htmlFor="challanNumber" className="required">Challan Number: </label>
-              <input
-                type="number"
-                name="challanNumber"
-                id="challanNumber"
-                required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  challanNumber: e.target.value
-                })}
-              />
-              <label htmlFor="date" className="required">Date: </label>
-              <input
-                type="date"
-                name="date"
-                id="date"
-                required
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  date: e.target.value
-                })}
-              /> */}
-
-              <label htmlFor="transferFee">Transfer Fee: </label>
-              <input
-                type="number"
-                name="transferFee"
-                value={updateMemberState.transferFee}
-                id="transferFee"
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  transferFee: e.target.value
-                })}
-              />
-              <label htmlFor="masjidFund">Masjid Fund: </label>
-              <input
-                type="number"
-                name="masjidFund"
-                id="masjidFund"
-                value={updateMemberState.masjidFund}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  masjidFund: e.target.value
-                })}
-              />
-              <label htmlFor="membershipFee">Membership Fee: </label>
-              <input
-                type="number"
-                name="membershipFee"
-                id="membershipFee"
-                value={updateMemberState.membershipFee}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  membershipFee: e.target.value
-                })}
-              />
-               <label htmlFor="membershipFee">Preference Fee: </label>
-              <input
-                type="number"
-                name="preferenceFee"
-                id="preferenceFee"
-                value={updateMemberState.preferenceFee}
-                onChange={(e) => setUpdateMemberState({
-                  ...updateMemberState,
-                  preferenceFee: e.target.value
-                })}
-              />
-              <button
-                type="submit"
-                className="blue-button"
-                onClick={updatePurchaserMember}
-              >
-                Save
-              </button>
-              </>
-            )}
-              
-              {isLoading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
+        {editSection && (
+          <div className="left-section">
+            <div className="left-section-content">
+              <div onClick={closeSection} className="close-button"></div>
+              <h3>Edit Bill</h3>
+              <div className="horizontal-divider"></div>
+              <form onSubmit={updateBankProfit}>
+                <label htmlFor="msNo">Member No: </label>
+                <input
+                  type="text"
+                  name="msNo"
+                  id="msNo"
+                  value={memberNo}
+                  readOnly
+                  className="read-only"
+                  onChange={(e) => {
+                    setMemberNo(e.target.value);
+                  }}
+                />
+                <label htmlFor="memberName">Member Name: </label>
+                <input
+                  type="text"
+                  name="memberName"
+                  readOnly
+                  className="read-only"
+                  id="memberName"
+                  value={memberName}
+                  onChange={(e) => {
+                    setMemberName(e.target.value);
+                  }}
+                />
+                <label htmlFor="challanNo">Challan No: </label>
+                <input
+                  type="text"
+                  name="challanNo"
+                  id="challanNo"
+                  value={challanNo}
+                  onChange={(e) => {
+                    setChallanNo(e.target.value);
+                  }}
+                />
+                <label htmlFor="plotNo">Plot No: </label>
+                <input
+                  type="text"
+                  name="plotNo"
+                  id="plotNo"
+                  readOnly
+                  className="read-only"
+                  value={plotNo}
+                  onChange={(e) => {
+                    setPlotNo(e.target.value);
+                  }}
+                />
+                <label htmlFor="referenceNo">Reference No: </label>
+                <input
+                  type="text"
+                  name="referenceNo"
+                  id="referenceNo"
+                  readOnly
+                  className="read-only"
+                  value={referenceNo}
+                  onChange={(e) => {
+                    setReferenceNo(e.target.value);
+                  }}
+                />
+                <label htmlFor="billingMonth">Billing Month: </label>
+                <select
+                  name="billingMonth"
+                  id="billingMonth"
+                  readOnly
+                  className="read-only"
+                  value={billingMonth}
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                >
+                  <option value={billingMonth}>{billingMonth}</option>
+                </select>
+                {/* <input
+                  type="month"
+                  name="billingMonth"
+                  id={`billingMonth`}
+                  required
+                  onChange={(e) => setBillingMonth(e.target.value)}
+                  value={billingMonth}
+                /> */}
+                <label htmlFor="paidDate">Paid Date: </label>
+                <input
+                  type="date"
+                  name="paidDate"
+                  id={`paidDate`}
+                  required
+                  readOnly
+                  className="read-only"
+                  onChange={(e) => setPaidDate(e.target.value)}
+                  value={paidDate}
+                />
+                <label htmlFor="amount">Amount: </label>
+                <input
+                  type="text"
+                  name="amount"
+                  id="amount"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+                <button
+                  type="submit"
+                  className="blue-button"
+                  onClick={updateBankProfit}
+                >
+                  Save
+                </button>
+              </form>
+            </div>
           </div>
         )}
-            </form>
-            </>
-            )}
-            </div>
-            </div>
-      </>
-    )}   
-    </div>
-
+      </div>
+    </>
   );
 }

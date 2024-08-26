@@ -150,28 +150,17 @@ export default function Sidebar() {
               <>
                 <div
                   onClick={handleBank}
-                  className={`dropdown dropdown-item ${
-                    showBank ? "active" : ""
-                  }`}
+                  className={`dropdown-item ${showBank ? "active" : ""}`}
                 >
-                  Bank Income
+                  <NavLink
+                    exact
+                    to="/income/bank-profit"
+                    activeClassName="active"
+                    onClick={() => setIncome(false)}
+                  >
+                    Bank Profit
+                  </NavLink>
                 </div>
-                {showBank && (
-                  <>
-                    <ul className="dropdown-menu">
-                      <li>
-                        <NavLink
-                          exact
-                          to="/income/bank-profit"
-                          activeClassName="active"
-                          onClick={() => setIncome(false)}
-                        >
-                          Bank Profit
-                        </NavLink>
-                      </li>
-                    </ul>
-                  </>
-                )}
               </>
             )}
             {showIncome && (

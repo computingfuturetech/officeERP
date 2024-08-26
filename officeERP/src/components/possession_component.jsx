@@ -63,13 +63,14 @@ export default function PossessionComponent() {
           },
         };
         const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/user/updateSellerPurchaseIncome?id=${updateMemberState._id}`,
+          `${process.env.REACT_APP_API_URL}/user/updatePossessionFee?id=${updateMemberState._id}`,
           data,
           config
         );
         console.log(response.data);
         closeSection();
         showSuccessToastMessage("Added Successfully");
+        fetchMemberList();
       } catch (error) {
         console.error(error);
       } finally {
@@ -137,7 +138,7 @@ export default function PossessionComponent() {
           },
         };
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${msNo}`,
+          `${process.env.REACT_APP_API_URL}/user/getMemberList/?member_no=${msNo}`,
           config
         );
         setPurchaseName(response.data[0].purchaseName);
@@ -285,6 +286,7 @@ export default function PossessionComponent() {
         );
         closeSection();
         showSuccessToastMessage("Added Successfully");
+        fetchMemberList();
       } catch (error) {
         console.error(error);
       } finally {
@@ -293,6 +295,12 @@ export default function PossessionComponent() {
       }
     };
     update();
+  };
+  const calculateTotalPayment = (paymentDetail) => {
+    return Object.values(paymentDetail).reduce(
+      (total, amount) => total + amount,
+      0
+    );
   };
   return (
     <div className="member-list">
@@ -320,32 +328,44 @@ export default function PossessionComponent() {
         </div>
       </div>
       <div className={`members ${loading ? "loading" : ""}`} ref={membersRef}>
-        {memberList.map((member) => (
-          <div className="member" key={member.id}>
-            <div className="member-details">
-              <p>{member.memberNo.msNo || "-"}</p>
-              <p>{member.memberNo.purchaseName || "-"}</p>
-              <p>{member.amount || "-"}</p>
-              <p>
-                {member.paidDate
-                  ? new Date(member.paidDate).toISOString().split("T")[0]
-                  : "-"}
-              </p>
-              <img
-                onClick={() => handleShowOptions(member)}
-                src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
-                alt="Member Icon"
-              />
-            </div>
-            {selectedMember === member && showOptions && (
-              <div className="options income">
-                <button onClick={() => handleShowSection(member)}>Show</button>
-                <div className="horizontal-divider"></div>
-                <button onClick={() => handleEditSection(member)}>Edit</button>
+        {memberList.length > 0 ? (
+          memberList.map((member) => {
+            const totalAmount = calculateTotalPayment(member.paymentDetail);
+
+            return (
+              <div className="member" key={member.id}>
+                <div className="member-details">
+                  <p>{member.memberNo.msNo || "-"}</p>
+                  <p>{member.memberNo.purchaseName || "-"}</p>
+                  <p>{totalAmount || "-"}</p>
+                  <p>
+                    {member.paidDate
+                      ? new Date(member.paidDate).toISOString().split("T")[0]
+                      : "-"}
+                  </p>
+                  <img
+                    onClick={() => handleShowOptions(member)}
+                    src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
+                    alt="Member Icon"
+                  />
+                </div>
+                {selectedMember === member && showOptions && (
+                  <div className="options income">
+                    <button onClick={() => handleShowSection(member)}>
+                      Show
+                    </button>
+                    <div className="horizontal-divider"></div>
+                    <button onClick={() => handleEditSection(member)}>
+                      Edit
+                    </button>
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-        ))}
+            );
+          })
+        ) : (
+          <p style={{ textAlign: "center" }}>No Data Found</p>
+        )}
         {loading && (
           <div className="loading-indicator">
             <div className="spinner"></div>
@@ -811,124 +831,6 @@ export default function PossessionComponent() {
             </div>
           </div>
         ))}
-
-      {/* {editSection && (
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Edit Possession Income</h3>
-            <div className="horizontal-divider"></div>
-            <form onSubmit={handleEditSubmit}>
-              <label htmlFor="msNo">Membership No:</label>
-              <input
-                type="text"
-                id="msNo"
-                name="msNo"
-                value={formData.msNo}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="purchaseName">Name:</label>
-              <input
-                type="text"
-                id="purchaseName"
-                name="purchaseName"
-                disabled
-                value={formData.purchaseName}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="challanNumber">Challan Number:</label>
-              <input
-                type="text"
-                id="challanNumber"
-                name="challanNumber"
-                value={formData.challanNumber}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="date">Date:</label>
-              <input
-                type="date"
-                id="date"
-                name="date"
-                value={formData.date}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="possessionFee">Possession Fee:</label>
-              <input
-                type="text"
-                id="possessionFee"
-                name="possessionFee"
-                value={formData.possessionFee}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="electricityConnectionCharges">
-                Electricity Connection Charges:
-              </label>
-              <input
-                type="text"
-                id="electricityConnectionCharges"
-                name="electricityConnectionCharges"
-                value={formData.electricityConnectionCharges}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="waterConnectionCharges">
-                Water Connection Charges:
-              </label>
-              <input
-                type="text"
-                id="waterConnectionCharges"
-                name="waterConnectionCharges"
-                value={formData.waterConnectionCharges}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="masjidFund">Masjid Fund:</label>
-              <input
-                type="text"
-                id="masjidFund"
-                name="masjidFund"
-                value={formData.masjidFund}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="constructionWater">
-                Construction Water (Water for 6 months):
-              </label>
-              <input
-                type="text"
-                id="constructionWater"
-                name="constructionWater"
-                value={formData.constructionWater}
-                onChange={handleChange}
-              />
-
-              <label htmlFor="buildingBylawsCharges">
-                Building Bylaws Charges:
-              </label>
-              <input
-                type="text"
-                id="buildingBylawsCharges"
-                name="buildingBylawsCharges"
-                value={formData.buildingBylawsCharges}
-                onChange={handleChange}
-              />
-
-              <button
-                type="submit"
-                className="blue-button"
-                disabled={isLoading}
-              >
-                {isLoading ? "Processing..." : "Edit"}
-              </button>
-            </form>
-          </div>
-        </div>
-      )} */}
       <ToastContainer />
     </div>
   );

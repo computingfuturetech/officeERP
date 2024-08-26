@@ -142,31 +142,30 @@ export default function SellerDetails() {
     setShowOptions(false);
   };
 
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const config = {
+        headers: {
+          Authorization: "Bearer " + localStorage.getItem("token"),
+        },
+      };
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome/`,
+        config
+      );
+      // if (response.data.length > 0) {
+      //   setMemberList((prevList) => [...prevList, ...response.data]);
+      // }
+      setMemberList(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error(error);
+      setLoading(false);
+    }
+  };
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getSellerPurchaseIncome/`,
-          config
-        );
-        // if (response.data.length > 0) {
-        //   setMemberList((prevList) => [...prevList, ...response.data]);
-        // }
-        setMemberList(response.data);
-        setLoading(false);
-      } catch (error) {
-        console.error(error);
-        setLoading(false);
-      }
-    };
-
     fetchData();
   }, [page]);
   const handleScroll = () => {
@@ -276,9 +275,10 @@ export default function SellerDetails() {
           },
         };
         const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getMemberList/?search=${msNo}`,
+          `${process.env.REACT_APP_API_URL}/user/getMemberList/?member_no=${msNo}`,
           config
         );
+        console.log(response.data);
         setPurchaseName(response.data[0].purchaseName);
         setUpdateMemberState({
           ...updateMemberState,
@@ -360,6 +360,7 @@ export default function SellerDetails() {
         );
         closeSection();
         showSuccessToastMessage("Added Successfully");
+        fetchData();
       } catch (error) {
         console.error(error);
       } finally {
@@ -409,6 +410,7 @@ export default function SellerDetails() {
         console.log(response.data);
         closeSection();
         showSuccessToastMessage("Added Successfully");
+        fetchData();
       } catch (error) {
         console.error(error);
       } finally {
@@ -608,8 +610,9 @@ export default function SellerDetails() {
                   type="text"
                   name="msNo"
                   id="msNo"
-                  required
                   readOnly
+                  className="read-only"
+                  required
                   value={updateMemberState.memberNo.msNo}
                 />
 
@@ -623,6 +626,7 @@ export default function SellerDetails() {
                     id="purchaseName"
                     required
                     readOnly
+                    className="read-only"
                     value={updateMemberState.memberNo.purchaseName}
                   />
                   <label htmlFor="challanNumber" className="required">
@@ -632,6 +636,8 @@ export default function SellerDetails() {
                     type="number"
                     name="challanNumber"
                     id="challanNumber"
+                    readOnly
+                    className="read-only"
                     value={updateMemberState.challanNo}
                     required
                     onChange={(e) =>
@@ -649,6 +655,8 @@ export default function SellerDetails() {
                     name="particular"
                     id="particular"
                     value={updateMemberState.particular}
+                    readOnly
+                    className="read-only"
                     required
                     onChange={(e) =>
                       setUpdateMemberState({
@@ -725,6 +733,8 @@ export default function SellerDetails() {
                     id="date"
                     value={convertDate(updateMemberState.paidDate)}
                     required
+                    readOnly
+                    className="read-only"
                     onChange={(e) =>
                       setUpdateMemberState({
                         ...updateMemberState,
