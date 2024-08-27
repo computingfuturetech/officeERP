@@ -199,3 +199,13 @@ label.required::before {
   line-height: 1.5714285714285714;
   transition: background-color 0.3s;
 }
+
+textarea {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-family: 'Nunito', sans-serif;
+  font-size: 14px;
+  resize: none;
+  min-height: 100px;
+}
