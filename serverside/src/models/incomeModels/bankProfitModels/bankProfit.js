@@ -25,6 +25,9 @@ const bankProfitSchema = new Schema({
     challanNo:{
         type: Number,
     },
+},
+{
+    timestamps: true 
 }
 )
 

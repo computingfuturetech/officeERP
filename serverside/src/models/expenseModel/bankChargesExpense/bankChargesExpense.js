@@ -23,12 +23,15 @@ const bankChargesExpenseSchema = new Schema({
     particular:{
         type: String,
     },
-    chequeNo:{
+    chequeNumber:{
         type: Number,
     },
     challanNo:{
         type: Number,
     },
+},
+{
+    timestamps: true 
 }
 )
 

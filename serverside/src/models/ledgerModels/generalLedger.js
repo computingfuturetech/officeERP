@@ -57,6 +57,9 @@ const generalLedgerSchema = new Schema({
     previousBalance:{
         type: Number,
     },
+},
+{
+    timestamps: true 
 })
 
 const GeneralLedger = mongoose.model('GeneralLedger',generalLedgerSchema)

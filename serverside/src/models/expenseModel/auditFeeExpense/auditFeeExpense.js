@@ -22,12 +22,22 @@ const auditFeeExpenseSchema = new Schema({
     particular:{
         type: String,
     },
-    chequeNo:{
+    chequeNumber:{
         type: Number,
     },
-    accountNo:{
+    challanNo:{
         type: Number,
     },
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
+    },
+    check:{
+        type: String,
+    },
+},
+{
+    timestamps: true 
 }
 )
 

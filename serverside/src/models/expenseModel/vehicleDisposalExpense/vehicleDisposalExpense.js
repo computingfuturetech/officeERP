@@ -28,6 +28,9 @@ const vehicleDisposalExpenseSchema = new Schema({
     particular:{
         type: String,
     },
+},
+{
+    timestamps: true 
 }
 )
 

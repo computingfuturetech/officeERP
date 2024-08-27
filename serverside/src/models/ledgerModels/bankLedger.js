@@ -53,6 +53,9 @@ const bankLedgerSchema = new Schema({
     previousBalance:{
         type: Number,
     },
+},
+{
+    timestamps: true 
 })
 
 const BankLedger = mongoose.model('BankLedger',bankLedgerSchema)

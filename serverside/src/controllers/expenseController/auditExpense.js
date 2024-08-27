@@ -7,6 +7,7 @@ const VoucherNo = require('../../middleware/generateVoucherNo')
 const CashBookLedger = require('../../middleware/createCashBookLedger')
 const GeneralLedger = require('../../middleware/createGeneralLedger');
 const BankLedger = require('../../middleware/createBankLedger');
+const CheckBank = require('../../middleware/checkBank');
 
 module.exports = {
   createAuditFeeExpense: async (req, res) => {
@@ -20,6 +21,9 @@ module.exports = {
       if (req.body.head_of_account) {
         ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
+
+      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+
       const auditFeeExpense = new AuditFeeExpense({
         paidDate: paid_date,
         mainHeadOfAccount: main_head_id,
@@ -27,9 +31,10 @@ module.exports = {
         amount: amount,
         year: year,
         particular: particular,
-        chequeNo: cheque_no,
+        bank: bank_id?bank_id:null,
+        ...(check === 'Bank' ? { chequeNumber: cheque_no } : { chequeNumber: undefined}),
         challanNo: challan_no,
-        accountNo: bank_account
+        check: check
       });
 
       const update_id = auditFeeExpense._id;
@@ -40,7 +45,7 @@ module.exports = {
       {
         const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
         await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
-        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
+        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, challan_no,update_id);
       }else if(check == "Bank"){
         const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
         await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
@@ -132,12 +137,12 @@ module.exports = {
 
       const type = "expense";
 
-      if(req.body.check=="cash")
+      if(req.body.check=="Cash")
       {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       }
-      else if(req.body.check=="bank")
+      else if(req.body.check=="Bank")
       {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);

@@ -6,6 +6,7 @@ const GeneralLedger = require('../../middleware/createGeneralLedger');
 const BankLedger = require('../../middleware/createBankLedger');
 const VoucherNo = require('../../middleware/generateVoucherNo')
 const CashBookLedger = require('../../middleware/createCashBookLedger')
+const CheckBank = require('../../middleware/checkBank');
 
 
 module.exports = {
@@ -20,7 +21,7 @@ module.exports = {
       check,
       bank_account,
       cheque_no,
-      challan_no
+      challan_no,
 
     } = req.body;
     console.log(req.body)
@@ -38,6 +39,9 @@ module.exports = {
       if (req.body.head_of_account) {
         ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
+
+      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+
       const officeUtilExpense = new OfficeUtilExpense({
         paidDate: paid_date,
         mainHeadOfAccount: main_head_id,
@@ -46,10 +50,13 @@ module.exports = {
         amount: amount,
         billReference: bill_reference,
         advTax: adv_tax,
+        bank: bank_id?bank_id:null,
         challanNo: challan_no,
-        ...(check === 'Bank' ? { chequeNo: cheque_no, bankAccount: bank_account } : {}),
-        check: check
+        ...(check === 'Bank' ? { chequeNumber: cheque_no, bankAccount: bank_account } : { chequeNumber: undefined, bankAccount: undefined }),
+        check: check,
       });
+
+      officeUtilExpense.updateOne({ $unset: { chequeNumber: "", bankAccount: "" } });
 
       const update_id = officeUtilExpense._id;
 
@@ -59,7 +66,7 @@ module.exports = {
         {
           const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
           await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,billing_month, amount, paid_date,update_id);
-          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billing_month, amount, paid_date, null, null,update_id);
+          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billing_month, amount, paid_date, null, challan_no,update_id);
         }else if(check == "Bank"){
           const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
           await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,billing_month, amount, paid_date,cheque_no, challan_no,update_id);

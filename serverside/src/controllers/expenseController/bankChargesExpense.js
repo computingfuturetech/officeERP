@@ -7,6 +7,7 @@ const BankList = require("../../models/bankModel/bank");
 const GeneralLedger = require('../../middleware/createGeneralLedger');
 const BankLedger = require('../../middleware/createBankLedger');
 const VoucherNo = require('../../middleware/generateVoucherNo')
+const CheckBank = require('../../middleware/checkBank');
 
 module.exports = {
   createBankChargesExpense: async (req, res) => {
@@ -31,13 +32,17 @@ module.exports = {
       if (req.body.head_of_account) {
         ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
+
+      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+
       const bankChargesExpense = new BankChargesExpense({
         paidDate: paid_date,
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
         amount: amount,
-        bank: bank._id,
+        bank: bank_id?bank_id:null,
         particular: particular,
+        chequeNumber: cheque_no,
       });
 
       const update_id = bankChargesExpense._id;

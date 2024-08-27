@@ -17,20 +17,24 @@ const officeExpenseSchema = new Schema({
     amount:{
         type: Number,
     },
-    particulor:{
+    particular:{
         type: String,
     },
     vendor:{
         type: String,
     },
-    chequeNo:{
+    chequeNumber:{
         type: Number,
     },
     challanNo:{
         type: Number,
     },
-    accountNo:{
-        type: Number,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
+    },
+    check:{
+        type: String,
     },
 }
 , {
