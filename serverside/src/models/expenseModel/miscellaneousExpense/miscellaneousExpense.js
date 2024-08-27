@@ -25,15 +25,23 @@ const miscellaneousExpenseSchema = new Schema({
     vendor:{
         type: String,
     },
-    chequeNo:{
+    chequeNumber:{
         type: Number,
     },
     challanNo:{
         type: Number,
     },
-    accountNo:{
-        type: Number,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
     },
+    check:{
+        type: String,
+    },
+    
+},
+{
+    timestamps: true 
 }
 )
 

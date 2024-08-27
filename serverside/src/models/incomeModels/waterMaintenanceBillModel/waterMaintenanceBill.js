@@ -30,6 +30,9 @@ const waterMaintenaceBillSchema = new Schema({
     challanNo:{
         type: String,
     }
+},
+{
+    timestamps: true 
 }
 )
 

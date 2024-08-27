@@ -41,6 +41,9 @@ const cashBookSchema = new Schema({
     previousBalance:{
         type: Number,
     }, 
+},
+{
+    timestamps: true 
 })
 
 const CashBook = mongoose.model('CashBook',cashBookSchema)

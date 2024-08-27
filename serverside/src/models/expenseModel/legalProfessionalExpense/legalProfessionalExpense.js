@@ -16,21 +16,28 @@ const legalProfessionalExpenseSchema = new Schema({
     amount:{
         type: Number,
     },
-    particulor:{
+    particular:{
         type: String,
     },
     vendor:{
         type: String,
     },
-    challaNo:{
+    chequeNumber:{
         type: Number,
     },
-    chequeNo:{
+    challanNo:{
         type: Number,
     },
-    accountNo:{
-        type: Number,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
     },
+    check:{
+        type: String,
+    },
+},
+{
+    timestamps: true 
 }
 )
 

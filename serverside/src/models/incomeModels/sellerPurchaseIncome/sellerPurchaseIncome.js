@@ -38,6 +38,9 @@ const sellerPurchaseIncomeSchema = new Schema({
     check:{
         type: String,
     },
+},
+{
+    timestamps: true 
 }
 )
 

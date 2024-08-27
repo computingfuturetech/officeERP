@@ -42,6 +42,9 @@ const salariesSchema = new Schema({
         type: String,
     },
     
+},
+{
+    timestamps: true 
 });
 
 const SalariesSchema = mongoose.model('SalariesSchema', salariesSchema)

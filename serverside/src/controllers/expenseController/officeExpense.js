@@ -8,13 +8,14 @@ const GeneralLedger = require('../../middleware/createGeneralLedger');
 const BankLedger = require('../../middleware/createBankLedger');
 const VoucherNo = require('../../middleware/generateVoucherNo')
 const CashBookLedger = require('../../middleware/createCashBookLedger')
+const CheckBank = require('../../middleware/checkBank');
 
 module.exports = { 
   createOfficeExpense: async (req, res) => {
-    const { head_of_account, amount, particulor, vendor, paid_date,check,bank_account,cheque_no,challan_no } = req.body;
+    const { head_of_account, amount, particular, vendor, paid_date,check,bank_account,cheque_no,challan_no } = req.body;
     console.log(req.body);
     try {
-      if (!paid_date || !particulor || !vendor || !head_of_account || !amount) {
+      if (!paid_date || !particular || !vendor || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
       let main_head_id;
@@ -22,28 +23,35 @@ module.exports = {
       if (req.body.head_of_account) {
         ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
       }
+
+      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+
       const officeExpense = new OfficeExpense({
         paidDate: paid_date,
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
         amount: amount,
-        particulor: particulor,
+        particular: particular,
         vendor: vendor,
+        ...(check === 'Bank' ? { chequeNumber: cheque_no } : { chequeNumber: undefined}),
+        bank: bank_id?bank_id:null,
+        check: check,
+        challanNo: challan_no
       });
 
       const update_id = officeExpense._id;
 
       const type = "expense";
 
-      if(check == "cash")
+      if(check == "Cash")
         {
           const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
-          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particulor, amount, paid_date,update_id);
-          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particulor, amount, paid_date, null, null,update_id);
-        }else if(check == "bank"){
+          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
+          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, challan_no,update_id);
+        }else if(check == "Bank"){
           const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particulor, amount, paid_date,cheque_no, challan_no,update_id);
-          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particulor, amount, paid_date, cheque_no, challan_no,update_id);
+          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
+          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);
         }
 
       await officeExpense.save();
@@ -75,8 +83,8 @@ module.exports = {
       if (req.body.amount) {
         updateData.amount = req.body.amount;
       }
-      if (req.body.particulor) {
-        updateData.particulor = req.body.particulor;
+      if (req.body.particular) {
+        updateData.particular = req.body.particular;
       }
       if (req.body.vendor) {
         updateData.vendor = req.body.vendor;
@@ -93,11 +101,11 @@ module.exports = {
 
       const type = "expense";
 
-      if (req.body.check == "cash") {
+      if (req.body.check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       }
-      else if (req.body.check == "bank") {
+      else if (req.body.check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       }
