@@ -12,6 +12,7 @@ const sellerPurchaserIncome = require('../../controllers/incomeController/seller
 const incomeHeadOfAccount = require('../../controllers/incomeHeadOfAccount/incomeHeadOfAccount')
 const getAllIncome = require('../../controllers/incomeController/getAllIncome')
 const typeOfHeadOfAccount = require('../../controllers/incomeHeadOfAccount/typeOfHeadOfAccount')
+const income = require('../../controllers/incomeController/income')
 
 router.post("/createBankProfit",authenticateJWT,checkRole(['admin','employee']),bankProfit.createBankProfit);
 router.get("/getBankProfit/",authenticateJWT,checkRole(['admin','employee']),bankProfit.getBankProfits);
@@ -36,5 +37,7 @@ router.post("/updateIncomeHeadOfAccount",authenticateJWT,checkRole(['admin','emp
 
 router.get("/getAllIncome",authenticateJWT,checkRole(['admin','employee']),getAllIncome.getAllIncome);
 router.get("/getSingleIncome",authenticateJWT,checkRole(['admin','employee']),getAllIncome.getIncomeByHeadOfAccount);
+
+router.post("/createIncomeRecord",authenticateJWT,checkRole(['admin','employee']),income.createIncomeRecord);
 
 module.exports = router

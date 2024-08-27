@@ -36,12 +36,12 @@ module.exports = {
 
       const type = "expense";
 
-      if(check == "cash")
+      if(check == "Cash")
       {
         const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
         await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
         await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
-      }else if(check == "bank"){
+      }else if(check == "Bank"){
         const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
         await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
         await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);

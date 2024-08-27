@@ -9,6 +9,18 @@ const generalLedgerSchema = new Schema({
     headOfAccount:{
         type: String,
     },
+    mainHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'MainExpenseHeadOfAccount',
+    },
+    subHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'SubExpenseHeadOfAccount',
+    },
+    incomeHeadOfAccount:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'IncomeHeadOfAccount',
+    },
     accountNumber:{
         type: Number,
     },

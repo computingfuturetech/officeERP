@@ -39,6 +39,7 @@ const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
 const memberRouter = require("./src/routes/coreRoutes/memberApi");
 const fixedAmountRouter = require("./src/routes/coreRoutes/fixedAmountApi");
 const liabilityRouter = require("./src/routes/coreRoutes/liability");
+const ledgerRouter = require("./src/routes/coreRoutes/ledgerApi");
 
 app.use(express.json());
 app.use(cors());
@@ -58,7 +59,7 @@ app.use("/user", expenseRouter);
 app.use("/user", memberRouter);
 app.use("/user", fixedAmountRouter);
 app.use("/user", liabilityRouter);
-
+app.use("/user", ledgerRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

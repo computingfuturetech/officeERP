@@ -47,18 +47,21 @@ module.exports = {
                 salaryType: salaryType._id,
                 bank: bank_id?bank_id:null,
                 chequeNumber: cheque_no,
+                challanNo: challan_no,
+                check: check,
+                particular: particular
             });
 
             const update_id = salaries._id;
 
             const type = "expense";
 
-            if(check == "cash")
+            if(check == "Cash")
                 {
                 const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
                 await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
-                await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
-                }else if(check == "bank"){
+                await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, challan_no,update_id);
+                }else if(check == "Bank"){
                 const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
                 await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
                 await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);
@@ -121,11 +124,11 @@ module.exports = {
 
             const type = "expense";
 
-            if (req.body.check == "cash") {
+            if (req.body.check == "Cash") {
                 await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
                 await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
             }
-            else if (req.body.check == "bank") {
+            else if (req.body.check == "Bank") {
                 await BankLedger.updateBankLedger(req, res, id, updateData, type);
                 await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
             }
