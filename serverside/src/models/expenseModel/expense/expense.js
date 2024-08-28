@@ -5,7 +5,8 @@ const expenseSchema = new Schema({
     headOfAccountAmount: [
         {
             id: { type: String },
-            amount: { type: Number }
+            amount: { type: Number },
+            name: { type: String }
         }
     ],
     startDate: {

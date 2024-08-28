@@ -75,12 +75,12 @@ module.exports = {
           if (check === 'Cash') {
             const voucherNo = await VoucherNo.generateCashVoucherNo(req, res, type_of_entry);
             await CashBookLedger.createCashBookLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, createSellerPurchaser._id);
-            await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id);
+            await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id,bank_account);
           }
           else if (check === 'Bank') {
             const voucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type_of_entry);
-            await BankLedger.createBankLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id);
-            await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id);
+            await BankLedger.createBankLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id,bank_account);
+            await GeneralLedger.createGeneralLedger(req, res, voucherNo, type_of_entry, name, particular, amount, paid_date, cheque_no, challan_no, createSellerPurchaser._id,bank_account);
           }
         }
       } else {

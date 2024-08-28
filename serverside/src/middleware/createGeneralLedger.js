@@ -3,6 +3,7 @@ const GeneralLedger = require('../models/ledgerModels/generalLedger');
 const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
 const CheckMainAndSubHeadOfAccount = require('../middleware/checkMainAndSubHeadOfAccount');
 const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
+const CheckBank = require('../middleware/checkBank');
 
 async function updateAddNextGeneralLedger(nextIds, type, difference) {
   try {
@@ -63,8 +64,11 @@ async function updateSubNextGeneralLedger(nextIds, type, difference) {
 }
 
 module.exports = {
-  createGeneralLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, cheque_no, challan_no, update_id) => {
+  createGeneralLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, cheque_no, challan_no, update_id, bank_account) => {
     try {
+
+      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+
       let balance;
       let latestBalance = await GeneralLedger.findOne({ balance: { $exists: true } })
         .sort({
@@ -110,7 +114,8 @@ module.exports = {
         chequeNo: cheque_no,
         balance: newBalance,
         updateId: update_id,
-        previousBalance: balance
+        previousBalance: balance,
+        bank: bank_id
       });
       await generalLedger.save();
       console.log("General Ledger created successfully");

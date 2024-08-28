@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Account Sheet</title>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+      }
+
+      .container {
+        width: 100%;
+        margin: 0 auto;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .top-container {
+        display: flex !important;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        width: 100%;
+      }
+
+      .header {
+        width: 40%;
+      }
+
+      .info {
+        display: flex;
+        justify-content: space-between;
+        gap: 20px;
+        margin-bottom: 8px;
+        align-items: center;
+        width: 100%;
+      }
+
+      .info div {
+        margin-bottom: 10px;
+      }
+
+      .info div {
+        width: 260px;
+        font-size: 14px;
+      }
+
+      .info input {
+        padding: 8px;
+        border: none;
+        width: 100%;
+        background-color: #f0f0f0;
+        border-radius: 0;
+        padding: 10px;
+        margin: 0;
+      }
+
+      .balance {
+        align-items: center;
+        gap: 20px;
+      }
+
+      .balance .info {
+        display: block;
+        margin-bottom: 0px;
+      }
+
+      .balance .info div {
+        padding: 10px 10px;
+        background-color: #3f4d61;
+        width: 100%;
+        text-align: center;
+        color: white;
+        font-size: 14px;
+        margin-bottom: 0;
+      }
+
+      .balance .info input {
+        padding: 8px;
+        border: none;
+        width: 100%;
+        background-color: #f0f0f0;
+        border-radius: 0;
+        padding: 10px;
+        margin: 0;
+        text-align: center;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      table th,
+      table td {
+        padding: 10px;
+        border: 1px solid #ccc;
+        text-align: left;
+        background-color: #f9f9f9;
+      }
+
+      table th {
+        font-size: 14px;
+        background-color: #3f4d61;
+        text-align: center;
+        color: white;
+      }
+
+      table td {
+        padding: 0px;
+        background-color: #f9f9f9;
+      }
+
+      table td input {
+        width: 100%;
+        padding: 8px;
+        border: none;
+        font-size: 10px;
+      }
+
+      table tbody tr {
+        width: 100vw;
+      }
+
+      table tbody tr :nth-last-child(2) {
+        width: 100px;
+      }
+
+      table tbody tr :nth-last-child(3) {
+        width: 100px;
+      }
+
+      table tbody tr :nth-child(9) {
+        width: 100px;
+      }
+
+      textarea {
+        width: 100%;
+        padding: 8px;
+        border: none;
+        font-size: 12px;
+        resize: none;
+        background-color: #f9f9f9;
+        box-sizing: border-box;
+        overflow-y: hidden;
+        height: 10px;
+        max-height: 10px;
+        line-height: 1.5;
+        text-align: center;
+      }
+
+      textarea.top-aligned {
+        text-align: left;
+      }
+    </style>
+  </head>
+  <body >
+    <div class="container">
+      <div class="top-container" style="display: flex !important;">
+        <div class="header">
+          <div class="info">
+            <div style="border:5px;"><strong >ACCOUNT NAME</strong></div>
+            <input type="text" value="{{bankName}}"/>
+
+          </div>
+          <div class="info">
+            <div><strong>ACCOUNT NUMBER</strong></div>
+            <input type="text" value="{{accountNo}}"/>
+          </div>
+          <div class="info">
+            <div><strong>MONTH ENDING</strong></div>
+            <input type="text" />
+          </div>
+        </div>
+        <div class="balance">
+          <div class="info">
+            <div><strong>STARTING BALANCE</strong></div>
+            <input type="text" value="{{bankName}}"/>
+          </div>
+          <div class="info">
+            <div><strong>TOTAL ADJUSTED BALANCE</strong></div>
+            <input type="text" />
+          </div>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Head of Account</th>
+            <th>Particulars</th>
+            <th>Cheque Number</th>
+            <th>Challan Number</th>
+            <th>Voucher Number</th>
+            <th>Debit</th>
+            <th>Credit</th>
+            <th>Balance</th>
+          </tr>
+        </thead>
+        <tbody>
+          {{tableRows}}
+        </tbody>
+      </table>
+    </div>
+    <script>
+      document.addEventListener("input", function (event) {
+        if (event.target.tagName.toLowerCase() === "textarea") {
+          autoResizeTextarea(event.target);
+        }
+      });
+
+      function autoResizeTextarea(textarea) {
+        textarea.style.height = "auto";
+        const scrollHeight = textarea.scrollHeight;
+        textarea.style.height = scrollHeight + "px";
+        textarea.style.maxHeight = scrollHeight + "px";
+        const singleLineHeight = parseInt(
+          getComputedStyle(textarea).lineHeight,
+          10
+        );
+        if (scrollHeight > singleLineHeight * 1.5) {
+          textarea.classList.add("top-aligned");
+        } else {
+          textarea.classList.remove("top-aligned");
+        }
+      }
+
+      document.querySelectorAll("textarea").forEach(autoResizeTextarea);
+
+      function resizeAllTextareasForPrint() {
+        document.querySelectorAll("textarea").forEach((textarea) => {
+          debugger;
+          textarea.style.height = "auto";
+          textarea.style.height = textarea.scrollHeight + "px";
+          textarea.style.maxHeight = "none";
+
+          const singleLineHeight = parseInt(
+            getComputedStyle(textarea).lineHeight,
+            10
+          );
+          const lines = Math.ceil(textarea.scrollHeight / singleLineHeight);
+          if (lines === 2) {
+            if (textarea.value.length < 12) {
+              return;
+            }
+
+            const height = singleLineHeight + 20;
+            const maxHeight = singleLineHeight * lines + 40;
+            textarea.style.maxHeight = maxHeight + "px";
+            textarea.style.height = height + "px";
+          }
+          if (lines > 2) {
+            const height = singleLineHeight * lines + 24;
+            const maxHeight = singleLineHeight * lines + 100;
+            textarea.style.maxHeight = maxHeight + "px";
+            textarea.style.height = height + "px";
+          }
+        });
+      }
+
+      window.addEventListener("beforeprint", resizeAllTextareasForPrint);
+    </script>
+  </body>
+</html>

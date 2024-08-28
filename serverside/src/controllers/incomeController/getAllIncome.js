@@ -19,21 +19,23 @@ module.exports = {
           };
       
           const incomePromises = [
-            BankProfit.find(query, 'headOfAccount amount paidDate').populate("headOfAccount", "headOfAccount"),
-            PossessionFee.find(query, 'headOfAccount amount paidDate').populate("headOfAccount", "headOfAccount"),
-            SellerPurchaseIncome.find(query, 'headOfAccount amount paidDate').populate("headOfAccount", "headOfAccount"),
-            WaterMaintenancBill.find(query, 'headOfAccount amount paidDate').populate("headOfAccount", "headOfAccount"),
+            BankProfit.find(query, 'headOfAccount amount paidDate createdAt').populate("headOfAccount", "headOfAccount"),
+            PossessionFee.find(query, 'headOfAccount amount paidDate createdAt').populate("headOfAccount", "headOfAccount"),
+            SellerPurchaseIncome.find(query, 'headOfAccount amount paidDate createdAt').populate("headOfAccount", "headOfAccount"),
+            WaterMaintenancBill.find(query, 'headOfAccount amount paidDate createdAt').populate("headOfAccount", "headOfAccount"),
           ];
       
           const combinedincomes = (await Promise.all(incomePromises)).flat();
-      
+
+          combinedincomes.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+ 
           if (combinedincomes.length === 0) {
-            res.status(404).json({ message: "No incomes found for the given income type" });
+            return res.status(404).json({ message: "No incomes found for the given income type" });
           }
       
-          res.status(200).json(combinedincomes);
+          return res.status(200).json(combinedincomes);
         } catch (err) {
-          res.status(500).json({ message: err.message });
+          return res.status(500).json({ message: err.message });
         }
       },
       getIncomeByHeadOfAccount: async (req, res) => {

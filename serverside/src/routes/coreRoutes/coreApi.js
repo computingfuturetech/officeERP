@@ -20,6 +20,8 @@ const createPayableVoucher = require('../../controllers/payableVoucherController
 const singleTierchallanController = require('../../controllers/templateController/singleTierChallan');
 const threeTierchallanController = require('../../controllers/templateController/threeTierChallan');
 
+const ledger = require('../../controllers/templateController/ledger');
+
 const fixedAmountController = require('../../controllers/fixedAmountController/fixedAmount');
 
 
@@ -38,6 +40,8 @@ router.get('/', threeTierchallanController.renderTemplate);
 
 router.get('/stc-generate-pdf',authenticateJWT,checkRole(['admin','employee']), singleTierchallanController.generatePDF);
 router.get('/ttc-generate-pdf',authenticateJWT,checkRole(['admin','employee']), threeTierchallanController.generatePDF);
+
+router.get('/ledger-generate-pdf', ledger.generatePDF);
 
 router.post("/addFixedAmount",authenticateJWT,checkRole(['admin','employee']),fixedAmountController.addFixedAmount);
 

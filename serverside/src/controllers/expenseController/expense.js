@@ -15,6 +15,7 @@ module.exports = {
                 },
                 debit: { $exists: true }
             });
+
             const mainHeadMap = {};
             const subHeadMap = {};
 
@@ -47,6 +48,7 @@ module.exports = {
                 id,
                 amount: subHeadMap[id]
             }));
+
             const expenseRecord = new Expense({
                 headOfAccountAmount: [...mainHeadOfAccountAmount, ...subHeadOfAccountAmount],
                 startDate: new Date(startDate),

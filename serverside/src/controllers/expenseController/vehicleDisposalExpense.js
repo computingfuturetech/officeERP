@@ -36,7 +36,7 @@ module.exports = {
 
       const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
       await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
-      await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id);
+      await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, null,update_id,null);
 
 
       await vehicleDisposalExpense.save();

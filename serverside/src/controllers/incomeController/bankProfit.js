@@ -40,8 +40,8 @@ module.exports = {
       const update_id = bankProfit._id;
       const type = "income";
       const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type)
-      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id);
-      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id);
+      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
+      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
       await bankProfit.save();
       res.status(200).json({
         message: "Bank profit created successfully",
