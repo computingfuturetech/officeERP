@@ -4,6 +4,7 @@ const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
 const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 const CheckMainAndSubHeadOfAccount = require('../middleware/checkMainAndSubHeadOfAccount');
 const CheckBank = require('../middleware/checkBank');
+const BankBalance = require('../models/bankModel/bankBalance');
 
 async function updateAddNextBankLedger(nextIds, type, difference) {
     try {
@@ -67,35 +68,24 @@ async function updateSubNextBankLedger(nextIds, type, difference) {
 module.exports = {
     createBankLedger: async (req, res, voucherNo, type, head_of_account, particular, amount, date, cheque_no, challan_no, update_id,bank_account) => {
         try {
-
             const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
-            
             let balance;
-            let latestBalance = await BankLedger.findOne({ balance: { $exists: true } })
-                .sort({
-                    $natural: -1
-                })
+            let latestBalance = await BankLedger.findOne({ balance: { $exists: true }, bank: bank_id })
+                .sort({ _id: -1 }) 
                 .exec();
-
             if (latestBalance) {
                 balance = latestBalance.balance;
             } else {
-                latestBalance = await FixedAmount.findOne({})
-                    .sort({ bankOpeningBalance: -1 })
-                    .exec();
-                balance = latestBalance.bankOpeningBalance;
+                latestBalance = await BankBalance.findOne({bank: bank_id}).exec();
+                balance = latestBalance.balance;
             }
-
             const newBalance = type === 'income' ? parseInt(balance) + parseInt(amount) : parseInt(balance) - parseInt(amount);
-
             let main_head_id;
             let sub_head_id;
             if (type == 'expense') {
                 ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
             }
-
             let incomeHOF = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-
             const bankLedger = new BankLedger({
                 date: date,
                 voucherNo: voucherNo,
@@ -115,7 +105,6 @@ module.exports = {
                 previousBalance: balance,
                 bank: bank_id
             });
-
             await bankLedger.save();
             console.log("Bank Ledger created successfully");
         } catch (err) {
