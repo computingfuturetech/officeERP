@@ -4,6 +4,7 @@ const FixedAmount = require('../models/fixedAmountModel/fixedAmount');
 const CheckMainAndSubHeadOfAccount = require('../middleware/checkMainAndSubHeadOfAccount');
 const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 const CheckBank = require('../middleware/checkBank');
+const BankBalance = require('../models/bankModel/bankBalance');
 
 async function updateAddNextGeneralLedger(nextIds, type, difference) {
   try {
@@ -79,13 +80,20 @@ module.exports = {
       if (latestBalance) {
         balance = latestBalance.balance;
       } else {
+        let totalBalance = await BankBalance.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalBalance: { $sum: "$balance" } 
+            }
+          }
+        ]);
+        console.log(totalBalance);
         latestBalanceCash = await FixedAmount.findOne({})
           .sort({ cashOpeningBalance: -1 })
           .exec();
-        latestBalanceBank = await FixedAmount.findOne({})
-          .sort({ bankOpeningBalance: -1 })
-          .exec();
-        balance = parseInt(latestBalanceCash.cashOpeningBalance) + parseInt(latestBalanceBank.bankOpeningBalance);
+
+        balance = parseInt(latestBalanceCash.cashOpeningBalance) + parseInt(totalBalance[0].totalBalance);
       }
 
       const newBalance = type === 'income' ? parseInt(balance) + parseInt(amount) : parseInt(balance) - parseInt(amount);
