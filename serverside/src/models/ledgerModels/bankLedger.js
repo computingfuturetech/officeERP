@@ -23,11 +23,9 @@ const bankLedgerSchema = new Schema({
     particular:{
         type: String,
     },
-    accountNumber:{
-        type: Number,
-    },
-    bankAccount:{
-        type: String,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
     },
     voucherNo:{
         type: String,

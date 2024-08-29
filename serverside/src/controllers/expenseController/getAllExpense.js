@@ -13,7 +13,7 @@ const VechicleDisposal = require("../../models/expenseModel/vehicleDisposalExpen
 
 module.exports = {
     getAllExpense: async (req, res) => {
-        const { expense_type } = req.query;
+        const { expense_type,search } = req.query;
     
         try {
             
@@ -35,32 +35,43 @@ module.exports = {
             const subHeadAccountIds = subHeadAccounts.map(account => account._id);
 
             const query = {
-                $or: [
-                    { mainHeadOfAccount: { $in: mainHeadAccountIds } },
-                    { subHeadOfAccount: { $in: subHeadAccountIds } }
-                ]
+              $or: [
+                { mainHeadOfAccount: { $in: mainHeadAccountIds } },
+                { subHeadOfAccount: { $in: subHeadAccountIds } }
+              ]
             };
-    
+            
             const expenses = await Promise.all([
-                AuditFeeExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                BankChargesExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                ElectricityAndWaterConnectionExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                LegalProfessionalExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                MiscellaneousExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                OfficeExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                OfficeUtilExpense.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                Salaries.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
-                VechicleDisposal.find(query, 'headOfAccount amount paidDate').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                AuditFeeExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                BankChargesExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                ElectricityAndWaterConnectionExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                LegalProfessionalExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                MiscellaneousExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                OfficeExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                OfficeUtilExpense.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                Salaries.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
+                VechicleDisposal.find(query, 'headOfAccount amount paidDate createdAt').populate("mainHeadOfAccount", "headOfAccount").populate("subHeadOfAccount", "headOfAccount").sort({ createdAt: -1 }) .exec(),
             ]);
     
             const allExpenses = expenses.flat();
+
+            allExpenses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             
     
             if (allExpenses.length === 0) {
                 return res.status(404).json({ message: "No expenses found for the given expense type" });
             }
+
+            let filteredExpenses=allExpenses;
+
+            if (search) {
+              filteredExpenses = allExpenses.filter(expense => {
+                const headOfAccount = expense.mainHeadOfAccount ? expense.mainHeadOfAccount.headOfAccount : expense.subHeadOfAccount ? expense.subHeadOfAccount.headOfAccount : '';
+                return headOfAccount.toLowerCase().includes(search.toLowerCase());
+              });
+            }
     
-            res.status(200).json(allExpenses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)));
+            res.status(200).json(filteredExpenses);
         } catch (err) {
             res.status(500).json({ message: err.message });
         }

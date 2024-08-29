@@ -33,8 +33,9 @@ module.exports = {
                 return res.status(404).json({ message: "Salary type not found" });
             }
     
-    
-            const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+            if(bank_account){
+                const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+            }
     
             const { main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res);
     
@@ -60,11 +61,11 @@ module.exports = {
                 {
                 const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
                 await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,particular, amount, paid_date,update_id);
-                await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, challan_no,update_id);
+                await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, particular, amount, paid_date, null, challan_no,update_id,null);
                 }else if(check == "Bank"){
                 const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-                await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id);
-                await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id);
+                await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id,bank_account);
+                await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id,bank_account);
                 }
 
     

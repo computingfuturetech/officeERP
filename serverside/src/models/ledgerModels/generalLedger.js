@@ -21,8 +21,9 @@ const generalLedgerSchema = new Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'IncomeHeadOfAccount',
     },
-    accountNumber:{
-        type: Number,
+    bank:{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'BankListSchema',
     },
     particular:{
         type: String,
