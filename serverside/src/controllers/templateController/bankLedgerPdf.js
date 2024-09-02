@@ -43,21 +43,7 @@ module.exports = {
                     balance = latestBalanceDoc ? latestBalanceDoc.balance : 0;
                 }
             } else {
-                bankLedgerData = await BankLedger.find({
-                    date: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate)
-                    },
-                });
-                let totalBalance = await BankBalance.aggregate([
-                    {
-                        $group: {
-                            _id: null,
-                            totalBalance: { $sum: "$balance" }
-                        }
-                    }
-                ]);
-                actualBalance = parseInt(totalBalance[0].totalBalance);
+                return res.status(400).json({ message: "Provide Bank Account Number" });
             }
 
             const lastEntry = bankLedgerData[bankLedgerData.length - 1];
@@ -75,41 +61,23 @@ module.exports = {
 
             doc.font('Helvetica');
 
-            if (bank_account) {
-                doc.fontSize(11).text('STARTING BALANCE', pageMargin, 110);
-                doc.rect(pageMargin, 130, 140, 20).stroke();
-                doc.text(balance.toString(), pageMargin + 10, 135);
+            doc.fontSize(11).text('STARTING BALANCE', pageMargin, 110);
+            doc.rect(pageMargin, 130, 140, 20).stroke();
+            doc.text(balance.toString(), pageMargin + 10, 135);
 
-                doc.fontSize(11).text('ACCOUNT NUMBER', pageMargin, 50);
-                doc.rect(pageMargin, 70, 140, 20).stroke();
-                doc.text(bank_account, pageMargin + 10, 75);
+            doc.fontSize(11).text('ACCOUNT NUMBER', pageMargin, 50);
+            doc.rect(pageMargin, 70, 140, 20).stroke();
+            doc.text(bank_account, pageMargin + 10, 75);
 
-                doc.fontSize(11).text('MONTH ENDING', 200, 50);
-                doc.rect(200, 70, 140, 20).stroke();
-                doc.text(monthEnding, 210, 75);
+            doc.fontSize(11).text('MONTH ENDING', 200, 50);
+            doc.rect(200, 70, 140, 20).stroke();
+            doc.text(monthEnding, 210, 75);
 
-                doc.fontSize(11).text('TOTAL ADJUSTED BALANCE', 200, 110);
-                doc.rect(200, 130, 140, 20).stroke();
-                doc.text(lastEntry.balance, 210, 135);
+            doc.fontSize(11).text('TOTAL ADJUSTED BALANCE', 200, 110);
+            doc.rect(200, 130, 140, 20).stroke();
+            doc.text(lastEntry.balance, 210, 135);
 
-                headerOffsetY = 170; 
-            } 
-            else {
-                doc.fontSize(11).text('STARTING BALANCE', pageMargin, 50);
-                doc.rect(pageMargin, 70, 140, 20).stroke();
-                doc.text(actualBalance, pageMargin + 10, 75);
-
-                doc.fontSize(11).text('MONTH ENDING', 200, 50);
-                doc.rect(200, 70, 140, 20).stroke();
-                doc.text(monthEnding, 210, 75);
-
-                doc.fontSize(11).text('ADJUSTED BALANCE', 350, 50);
-                doc.rect(350, 70, 140, 20).stroke();
-                doc.text(lastEntry.balance, 360, 75);
-
-                headerOffsetY = 120; 
-            }
-
+            headerOffsetY = 170; 
             doc.fontSize(8).fillColor('white').rect(pageMargin, headerOffsetY, containerWidth, 20).fill('#3f4d61');
             doc.fillColor('white').text('Date', pageMargin + 3, headerOffsetY + 5, { width: 40, align: 'center' });
             doc.text('Head of Account', pageMargin + 43, headerOffsetY + 5, { width: 70, align: 'center' });

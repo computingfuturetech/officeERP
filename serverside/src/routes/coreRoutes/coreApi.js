@@ -5,6 +5,8 @@ router.use(express.urlencoded({extended:true}))
 const authenticateJWT = require('../../middleware/authenticateJWT');
 const checkRole = require('../../middleware/checkRole');
 
+
+const incomeRecordController = require('../../controllers/templateController/incomeRecord');
 const coreController = require('../../controllers/userController/create')
 const loginController = require('../../controllers/userController/login')
 const forgetPassword = require('../../controllers/userController/forgetPassword')
@@ -50,6 +52,7 @@ router.get('/ttc-generate-pdf',authenticateJWT,checkRole(['admin','employee']), 
 router.get('/bankLedgerPdf', bankLedger.generatePDF);
 router.get('/generalLedgerPdf', generalLedger.generatePDF);
 router.get('/cashLedgerPdf', cashLedger.generatePDF);
+router.get('/incomeRecordPdf', incomeRecordController.generatePDF);
 
 router.post("/addFixedAmount",authenticateJWT,checkRole(['admin','employee']),fixedAmountController.addFixedAmount);
 
