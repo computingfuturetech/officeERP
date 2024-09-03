@@ -51,7 +51,7 @@ module.exports = {
         const type = "income";
         const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res, type);
         await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], update_id);
-        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], null, challanNos[index], update_id,bank_account);   
+        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billingMonths[index], amounts[index], paidDates[index], null, challanNos[index], update_id,null);   
         return waterMaintenanceBill.save();
       });
       const createdWaterMaintenanceBills = await Promise.all(promises);
