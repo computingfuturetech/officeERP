@@ -3,10 +3,7 @@ const schema= mongoose.Schema;
 
 const fixedAmountSchema = new schema({
     shareCapital:{
-        type:String,
-    },
-    provisionForTaxation:{
-        type:String,
+        type:Number,
     },
     bankOpeningBalance:{
         type:Number,

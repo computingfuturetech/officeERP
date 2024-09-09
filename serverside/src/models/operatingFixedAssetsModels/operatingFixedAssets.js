@@ -2,10 +2,6 @@ const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
 const operatingFixedAssetsSchema = new Schema({
-    date:{
-        type: Date,
-        default:Date.now,
-    },
     building:{
         type: Number,
     },
@@ -16,10 +12,10 @@ const operatingFixedAssetsSchema = new Schema({
         type: Number,
     },
     furnitureAndFixture:{
-        type: String,
+        type: Number,
     },
     officeEquipment:{
-        type: String,
+        type: Number,
     },
     computerEquipment:{
         type: Number,
@@ -40,9 +36,6 @@ const operatingFixedAssetsSchema = new Schema({
         type: Number,
     },
     bankName:{
-        type: Number,
-    },
-    total:{
         type: Number,
     },
 })
