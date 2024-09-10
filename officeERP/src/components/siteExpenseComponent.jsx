@@ -53,6 +53,8 @@ function SiteExpenseComponent() {
     "Electricity/Water Connection",
     "Repair/Maintainance",
     "Misc",
+    "Development Expenditure",
+    "Purchase of Land"
   ];
   const [HeadOfAccountssiteList, setHeadOfAccountssiteList] = useState([]);
   const [billingMonth, setBillingMonth] = useState("");
@@ -174,7 +176,10 @@ function SiteExpenseComponent() {
     setBillReference(e.target.value);
   };
   const handleBankAccountChange = (e) => setBankAccount(e.target.value);
-  const handleBankNameChange = (e) => setBankName(e.target.value);
+  const handleBankNameChange = (e) => {
+    setBankName(e.target.value)
+    setBankAccount("")
+  };
 
   const handleChequeNumberChange = (e) => {
     setChequeNumber(e.target.value);
@@ -276,6 +281,7 @@ function SiteExpenseComponent() {
             expenseData.subHeadOfAccount?.headOfAccount
         );
       }
+      console.log(expenseData)
       setHeadOfAccount(headOfAccountValue);
       if (headOfAccountValue === "Electricity")
         setHeadOfAccount("Electricity/Water Connection");
@@ -284,6 +290,7 @@ function SiteExpenseComponent() {
       if (headOfAccountValue === "Salaries Office Employees")
         setHeadOfAccount("Salary");
       setAmount(expenseData.amount);
+      setExpenseType(expenseData.check);
       setParticular(expenseData.particular);
       setDate(convertDate(expenseData.paidDate));
       setVendor(expenseData.vendor);
@@ -454,6 +461,33 @@ function SiteExpenseComponent() {
         };
         break;
 
+        case "Purchase of Land":
+        url = `/user/updateLegalProfessionalExpense?id=${expenseId}`;
+        data = {
+          head_of_account:headOfAccount,
+          amount: amount,
+          paid_date: date,
+          challan_no:challanNo,
+          check: expenseType,
+          cheque_no: chequeNo,
+          bank_account: bankAccount,
+          particular: particular,
+        };
+        break;
+        case "Development Expenditure":
+        url = `/user/updateLegalProfessionalExpense?id=${expenseId}`;
+        data = {
+          head_of_account:headOfAccount,
+          amount: amount,
+          paid_date: date,
+          check: expenseType,
+          challan_no:challanNo,
+          cheque_no: chequeNo,
+          bank_account: bankAccount,
+          particular: particular,
+        };
+        break;
+
       case "Repair/Maintainance":
         switch (SubHeadOfAccount) {
           case "Phase 1":
@@ -596,6 +630,32 @@ function SiteExpenseComponent() {
           cheque_no: chequeNo,
           challan_no: challanNo,
           bank_account: bankAccount,
+        };
+        break;
+        case "Purchase of Land":
+        url = "/user/createLegalProfessionalExpense";
+        data = {
+          head_of_account:headOfAccount,
+          amount: amount,
+          paid_date: date,
+          check: expenseType,
+          cheque_no: chequeNo,
+          bank_account: bankAccount,
+          particular: particular,
+          challan_no:challanNo,
+        };
+        break;
+        case "Development Expenditure":
+        url = "/user/createLegalProfessionalExpense";
+        data = {
+          head_of_account:headOfAccount,
+          amount: amount,
+          paid_date: date,
+          check: expenseType,
+          challan_no:challanNo,
+          cheque_no: chequeNo,
+          bank_account: bankAccount,
+          particular: particular,
         };
         break;
       case "Salary":
@@ -757,6 +817,7 @@ function SiteExpenseComponent() {
       default:
         return;
     }
+    console.log(url,data)
 
     const createExpense = async () => {
       try {
@@ -852,7 +913,7 @@ function SiteExpenseComponent() {
           ))}
         </div>
 
-        {/* ADD NEW SEcTION */}
+        {/* ADD NEW SECTION */}
 
         {addNew && (
           <div className="left-section">
@@ -937,7 +998,108 @@ function SiteExpenseComponent() {
                     />
                   </>
                 )}
-
+                {(headOfAccount === "Development Expenditure" || headOfAccount === "Purchase of Land") && (
+                  <>
+                    
+                        <label htmlFor="expenseType">Type: </label>
+                        <select
+                          name="expenseType"
+                          id="expenseType"
+                          onChange={(e) => setExpenseType(e.target.value)}
+                          required
+                        >
+                          <option value="select" hidden>
+                            Select
+                          </option>
+                          <option value="Cash">Cash</option>
+                          <option value="Bank">Bank</option>
+                        </select>
+                        {expenseType === "Bank" && (
+                          <>
+                            <label htmlFor="bank-name">Bank Name: </label>
+                            <select
+                              name="bank-name"
+                              id="bank-name"
+                              onChange={handleBankNameChange}
+                            >
+                              <option value="select" hidden>
+                                {bankName}
+                              </option>
+                              {bankList.map((bank) => (
+                                <option value={bank._id} key={bank._id}>
+                                  {bank.bankName} - {bank.branchCode}
+                                </option>
+                              ))}
+                            </select>
+                            <label htmlFor="purchaseName">
+                              Account Number:{" "}
+                            </label>
+                            <select
+                              name="account-number"
+                              id="account-number"
+                              onChange={handleBankAccountChange}
+                            >
+                              <option value="select" hidden>
+                                Select
+                              </option>
+                              {bankList
+                                .filter((bank) => bank._id === bankName)
+                                .map((bank) => (
+                                  <option
+                                    value={bank.accountNo}
+                                    key={bank.accountNo}
+                                  >
+                                    {bank.accountNo}
+                                  </option>
+                                ))}
+                            </select>
+                            <label htmlFor="chequeNo">Cheque No: </label>
+                            <input
+                              type="text"
+                              name="chequeNo"
+                              id="chequeNo"
+                              value={chequeNo}
+                              onChange={(e) => setChequeNo(e.target.value)}
+                              required
+                            />
+                          </>
+                        )}
+                        <label htmlFor="amount">Amount: </label>
+                        <input
+                          type="number"
+                          name="amount"
+                          id="amount"
+                          value={amount}
+                          onChange={handleAmountChange}
+                        />
+                        <label htmlFor="particular">Particular: </label>
+                        <input
+                          type="text"
+                          name="particular"
+                          id="particular"
+                          value={particular}
+                          onChange={handleParticularChange}
+                        />
+                        <label htmlFor="challanno">Challan No: </label>
+                        <input
+                          type="text"
+                          name="challanno"
+                          id="challanno"
+                          value={challanNo}
+                          onChange={(e) => setChallanNo(e.target.value)}
+                          required
+                        />
+                        <label htmlFor="paidDate">Paid Date: </label>
+                        <input
+                          type="date"
+                          name="paidDate"
+                          id="paidDate"
+                          value={date}
+                          onChange={handleDateChange}
+                        />
+                  </>
+                )}
+               
                 {headOfAccount === "Lesco Site" && (
                   <>
                     <label htmlFor="subHeadOfAccount">
@@ -1667,6 +1829,111 @@ function SiteExpenseComponent() {
                       value={date}
                       onChange={handleDateChange}
                     />
+                  </>
+                )}
+                {(headOfAccount === "Development Expenditure" || headOfAccount === "Purchase of Land") && (
+                  <>
+                    
+                        <label htmlFor="expenseType">Type: </label>
+                        <select
+                          name="expenseType"
+                          id="expenseType"
+                          value={expenseType}
+                          className="read-only"
+                          readOnly
+                          onChange={(e) => setExpenseType(e.target.value)}
+                          required
+                        >
+                          <option value={expenseType} readOnly hidden>
+                            {expenseType}
+                          </option>
+                         
+                        </select>
+                        {expenseType === "Bank" && (
+                          <>
+                            <label htmlFor="bank-name">Bank Name: </label>
+                            <select
+                              name="bank-name"
+                              id="bank-name"
+                              onChange={handleBankNameChange}
+                            >
+                              <option value="select" hidden>
+                                {bankName}
+                              </option>
+                              {bankList.map((bank) => (
+                                <option value={bank._id} key={bank._id}>
+                                  {bank.bankName} - {bank.branchCode}
+                                </option>
+                              ))}
+                            </select>
+                            <label htmlFor="purchaseName">
+                              Account Number:{" "}
+                            </label>
+                            <select
+                              name="account-number"
+                              id="account-number"
+                              onChange={handleBankAccountChange}
+                            >
+                              <option value="select" hidden>
+                                {bankAccount}
+                              </option>
+                              {bankList
+                                .filter((bank) => bank._id === bankName)
+                                .map((bank) => (
+                                  <option
+                                    value={bank.accountNo}
+                                    key={bank.accountNo}
+                                  >
+                                    {bank.accountNo}
+                                  </option>
+                                ))}
+                            </select>
+                            <label htmlFor="chequeNo">Cheque No: </label>
+                            <input
+                              type="text"
+                              name="chequeNo"
+                              id="chequeNo"
+                              value={chequeNo}
+                              onChange={(e) => setChequeNo(e.target.value)}
+                              required
+                            />
+                          </>
+                        )}
+                        <label htmlFor="amount">Amount: </label>
+                        <input
+                          type="number"
+                          name="amount"
+                          id="amount"
+                          value={amount}
+                          onChange={handleAmountChange}
+                        />
+                        <label htmlFor="particular">Particular: </label>
+                        <input
+                          type="text"
+                          name="particular"
+                          id="particular"
+                          value={particular}
+                          onChange={handleParticularChange}
+                        />
+                        <label htmlFor="challanno">Challan No: </label>
+                        <input
+                          type="text"
+                          name="challanno"
+                          id="challanno"
+                          readOnly
+                          className="read-only"
+                          value={challanNo}
+                          onChange={(e) => setChallanNo(e.target.value)}
+                          required
+                        />
+                        <label htmlFor="paidDate">Paid Date: </label>
+                        <input
+                          type="date"
+                          name="paidDate"
+                          id="paidDate"
+                          value={date}
+                          onChange={handleDateChange}
+                        />
                   </>
                 )}
 
