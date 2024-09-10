@@ -17,7 +17,6 @@ const createBank = require('../../controllers/bankController/createBank')
 const bankList = require('../../controllers/bankController/bankList')
 const createBankBalance = require('../../controllers/bankController/createBankBalance') 
 
-const createGeneralLedger = require('../../controllers/ledgerController/generalLedger')
 const createPayableVoucher = require('../../controllers/payableVoucherController/createPayableVoucher')
 
 const singleTierchallanController = require('../../controllers/templateController/singleTierChallan');
@@ -29,8 +28,11 @@ const cashLedger = require('../../controllers/templateController/cashLedgerPdf')
 
 const fixedAmountController = require('../../controllers/fixedAmountController/fixedAmount');
 
+const operatingFixedAmountController = require('../../controllers/operatingFixedAssetsController/operatingFixedAssets');
 
+const balanceSheet = require('../../controllers/templateController/balanceSheet');
 
+const incomeStatement = require('../../controllers/incomeStatementController/incomeStatement');
 
 router.get("/hello",coreController.get);
 router.post("/create",authenticateJWT,checkRole(['admin']),coreController.create);
@@ -53,7 +55,13 @@ router.get('/bankLedgerPdf', bankLedger.generatePDF);
 router.get('/generalLedgerPdf', generalLedger.generatePDF);
 router.get('/cashLedgerPdf', cashLedger.generatePDF);
 router.get('/incomeRecordPdf', incomeRecordController.generatePDF);
+router.get('/balanceSheetPdf', balanceSheet.generatePDF);
 
 router.post("/addFixedAmount",authenticateJWT,checkRole(['admin','employee']),fixedAmountController.addFixedAmount);
+
+router.post("/addOperatingFixedAssets",authenticateJWT,checkRole(['admin','employee']),operatingFixedAmountController.createOpertingFixedAssets);
+router.put("/updateOperatingFixedAssets",authenticateJWT,checkRole(['admin','employee']),operatingFixedAmountController.updateOperatingFixedAssets);
+
+router.post("/addIncomeStatement",incomeStatement.createIncomeStatement);
 
 module.exports = router

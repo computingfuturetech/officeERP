@@ -5,6 +5,7 @@ const GeneralLedger = require('../../models/ledgerModels/generalLedger');
 const LiabilitiesSchema = require('../../models/incomeModels/libility/libility');
 const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
 const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
+const IncomeStatement = require('../../models/incomeStatementModel/incomeStatement');
 const fs = require('fs');
 
 module.exports = {
@@ -215,7 +216,7 @@ module.exports = {
 
             currentY += 20;
 
-            const total=parseInt(netAmount)+parseInt(taxation);
+            const total=parseInt(netAmount)-parseInt(taxation);
 
             doc.fontSize(14).fillColor('black').text('Total', pageMargin + 30, currentY, { width: 200, align: 'center' });
             doc.text(formatForDisplay(total), pageMargin + 330, currentY, { width: 70, align: 'center' });
@@ -255,6 +256,16 @@ module.exports = {
 
             doc.fontSize(13).fillColor('black').text('Accumulated surplus transferred to balance sheet', pageMargin + 30, currentY, { width: 200, align: 'center' });
             doc.text(formatForDisplay(balance), pageMargin + 330, currentY, { width: 70, align: 'center' });
+
+            const incomeStatement = new IncomeStatement({
+                startDate: formattedSDate,
+                endDate: formattedEDate,
+                reservedFund: ten_percent,
+                surplusOfTheYear: after_appropriation,
+            });
+
+            await incomeStatement.save();
+            console.log('Income Statement added successfully');
 
             doc.end();
 
