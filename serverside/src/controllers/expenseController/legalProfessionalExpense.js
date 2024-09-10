@@ -12,9 +12,8 @@ const CheckBank = require('../../middleware/checkBank');
 module.exports = {
   createLegalProfessionalExpense: async (req, res) => {
     const { head_of_account, amount, particular, vendor, paid_date,challan_no,cheque_no,check,bank_account } = req.body;
-    console.log(req.body);
     try {
-      if (!paid_date || !particular || !vendor || !head_of_account || !amount) {
+      if (!paid_date || !particular || !head_of_account || !amount) {
         return res.status(400).json({ message: "All fields are required" });
       }
       let main_head_id;
@@ -99,6 +98,7 @@ module.exports = {
   },
   updateLegalProfessionalExpense: async (req, res) => {
     const id = req.query.id;
+    console.log(req.body);
     try {
       if (!id) {
         return res.status(400).json({ message: "ID is required" });
