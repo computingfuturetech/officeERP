@@ -1,837 +1,277 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import axios from "axios";
-import { ToastContainer, toast } from "react-toastify";
-import { showErrorToastMessage, showSuccessToastMessage } from "./toastUtils";
-
-import { useNavigate } from "react-router-dom";
+import React, { useState } from 'react';
+import axios from 'axios';
 import "./style/memberListStyle.css";
-import "./style/seller.css";
+import "./style/reports.css"
 
-export default function PossessionComponent() {
-  const [memberList, setMemberList] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(1);
-  const [msNo, setMsNo] = useState("");
-  const [ShowButton, setShowButton] = useState(true);
-  const [purchaseName, setPurchaseName] = useState("");
-  const [showSection, setShowSection] = useState(false);
+const ReportsComponent = () => {
+  const [selectedReport, setSelectedReport] = useState('');
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [taxation, setTaxation] = useState('');
+  const [accumulatedSurplus, setAccumulatedSurplus] = useState('');
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  
+  // New state for Balance Sheet specific fields
+  const [balanceSheetState, setBalanceSheetState] = useState({
+    reserve_fund: '',
+    accumulated_surplus: '',
+    share_deposit_money: '',
+    trade_and_other_payable: '',
+    provision_for_taxation: '',
+    intangible_assets: '',
+    purchase_of_land: '',
+    cost_of_land_developement: '',
+    long_term_security_deposit: ''
+  });
 
-  const [selectedMember, setSelectedMember] = useState(null);
-  const [editSection, setEditSection] = useState(false);
-  const [showOptions, setShowOptions] = useState(false);
-  const [formData, setFormData] = useState([]);
-  const [addDues, setAddDues] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [paymentType, setPaymentType] = useState("");
-  const [showForm, setShowForm] = useState(false);
+  const reports = [
+    { value: 'bankLedger', label: 'Bank Ledger' },
+    { value: 'cashBook', label: 'Cash Book' },
+    { value: 'generalLedger', label: 'General Ledger' },
+    { value: 'balanceSheet', label: 'Balance Sheet' },
+    { value: 'incomeStatement', label: 'Income Statement' },
+  ];
 
-  const [backAccount, setBankAccount] = useState([]);
-  const [updateMemberState, setUpdateMemberState] = useState([]);
-
-  const handleMsNumberChange = (e) => {
-    setMsNo(e.target.value);
+  const reportUrls = {
+    bankLedger: '/user/bankLedgerPdf',
+    cashBook: '/user/cashBookPdf',
+    generalLedger: '/user/generalLedgerPdf',
+    balanceSheet: '/user/balanceSheetPdf',
+    incomeStatement: '/user/incomeRecordPdf'
   };
-  const membersRef = useRef(null);
-  const editMember = (e) => {
-    e.preventDefault();
 
-    console.log(updateMemberState);
-    const {
-      challanNo,
-      date,
-      bank_account,
-      cheque_no,
-      particular,
-      paymentType = "Cash",
-
-      memberNo,
-
-      ...paymentDetails
-    } = updateMemberState;
-    const data = {
-      particular,
-      challanNo,
-      memberNo,
-      ...paymentDetails,
-    };
-
-    const update = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/user/updatePossessionFee?id=${updateMemberState._id}`,
-          data,
-          config
-        );
-        console.log(response.data);
-        closeSection();
-        showSuccessToastMessage("Added Successfully");
-        fetchMemberList();
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setUpdateMemberState([]);
-        setFormData([]);
-        setBankAccount([]);
-        setMsNo("");
-      }
-    };
-    update();
+  const formatAndEncodeDate = (date) => {
+    return encodeURIComponent(new Date(date).toISOString());
   };
-  const handleBankAccount = async (e) => {
+
+  const handleDownload = async () => {
+    if (!selectedReport) {
+      setError('Please select a report.');
+      return;
+    }
+
+    if (!startDate || !endDate) {
+      setError('Please fill in both start date and end date.');
+      return;
+    }
+    
+    if (selectedReport === 'incomeStatement' && (!taxation || !accumulatedSurplus)) {
+      setError('Please fill in both taxation and accumulated surplus fields.');
+      return;
+    }
+
+    setLoading(true);
+
     try {
       const config = {
         headers: {
           Authorization: "Bearer " + localStorage.getItem("token"),
+          Accept: 'application/pdf',
         },
+        responseType: 'blob',
       };
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/user/bankList`,
-        config
-      );
-      console.log(response.data);
-      setBankAccount(response.data);
-    } catch (error) {
-      console.error(error);
-      showErrorToastMessage("Error getting Bank Accounts");
-    }
-  };
 
-  const fetchMemberList = useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/user/getPossessionFee`,
-        {
-          headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
-        }
-      );
-      setMemberList(response.data);
-      console.log(response);
+      const apiUrl = reportUrls[selectedReport];
+      const url = `${process.env.REACT_APP_API_URL}${apiUrl}?startDate=${formatAndEncodeDate(startDate)}&endDate=${formatAndEncodeDate(endDate)}`;
+
+      const data = {};
+      
+      if (selectedReport === 'incomeStatement') {
+        data.taxation = taxation;
+        data.accumulated_surplus_brought_forward = accumulatedSurplus;
+      }
+
+      if (selectedReport === 'balanceSheet') {
+        Object.assign(data, balanceSheetState); // Add balance sheet specific fields to data
+      }
+
+      const response = await axios.post(url, data, config);
+      const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
+      const link = document.createElement('a');
+      link.href = window.URL.createObjectURL(pdfBlob);
+      link.setAttribute('download', `${selectedReport}_report.pdf`);
+
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setError('');
     } catch (error) {
-      console.error(error);
+      console.error('Error downloading report:', error);
+      setError('Failed to download report. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, [page]);
-  const getMemberData = (e) => {
-    setIsLoading(true);
-    setShowButton(false);
-    const fetchMemeber = async () => {
-      try {
-        const data = {
-          ms_no: msNo,
-        };
-        if (msNo === "") {
-          showErrorToastMessage("Please Enter Membership No");
-          setShowButton(true);
-          setIsLoading(false);
-          return;
-        }
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_URL}/user/getMemberList/?member_no=${msNo}`,
-          config
-        );
-        setPurchaseName(response.data[0].purchaseName);
-        setUpdateMemberState({
-          ...updateMemberState,
-          purchaseName: response.data[0].purchaseName,
-        });
-
-        setIsLoading(false);
-        setShowForm(true);
-      } catch (error) {
-        setIsLoading(false);
-        setShowButton(true);
-        showErrorToastMessage("Member Not Found!");
-        console.error(error);
-      }
-    };
-    fetchMemeber();
-    handleBankAccount();
-  };
-  useEffect(() => {
-    fetchMemberList();
-  }, [fetchMemberList]);
-
-  const handleScroll = useCallback(() => {
-    if (membersRef.current) {
-      const { scrollTop, scrollHeight, clientHeight } = membersRef.current;
-      if (scrollTop + clientHeight >= scrollHeight - 50 && !loading) {
-        setPage((prevPage) => prevPage + 1);
-      }
-    }
-  }, [loading]);
-
-  useEffect(() => {
-    const ref = membersRef.current;
-    if (ref) {
-      ref.addEventListener("scroll", handleScroll);
-    }
-    return () => {
-      if (ref) {
-        ref.removeEventListener("scroll", handleScroll);
-      }
-    };
-  }, [handleScroll]);
-
-  const handleShowOptions = (member) => {
-    setSelectedMember(member);
-    setShowOptions(!showOptions);
   };
 
-  const handleAddDues = () => {
-    handleBankAccount();
-    getPossessionHeadOfAccount();
-    setAddDues(true);
-  };
-
-  const closeSection = () => {
-    setAddDues(false);
-    setShowSection(false);
-    setEditSection(false);
-    setIsLoading(false);
-    setFormData([]);
-    setUpdateMemberState([]);
-    setShowForm(false);
-    setShowButton(true);
-    setPurchaseName("");
-    setMsNo("");
-    setPaymentType("");
-    setBankAccount([]);
-  };
-
-  const handleShowSection = (member) => {
-    setSelectedMember(member);
-    setShowSection(true);
-    setShowOptions(false);
-  };
-
-  const convertDate = (e) => {
-    const dateValue = new Date(e).toISOString().split("T")[0];
-    return dateValue;
-  };
-
-  const getPossessionHeadOfAccount = async () => {
-    setIsLoading(true);
-    try {
-      const config = {
-        headers: {
-          Authorization: "Bearer " + localStorage.getItem("token"),
-        },
-      };
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_URL}/user/getIncomeHeadOfAccount/?type=Possession Heads`,
-        config
-      );
-      console.log(response.data);
-      setFormData(response.data);
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  const handleEditSection = (member) => {
-    setUpdateMemberState(member);
-    setEditSection(true);
-    setSelectedMember(member);
-    setShowOptions(false);
-  };
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const {
-      purchaseName,
-      challan_no,
-      date,
-      bank_account,
-      cheque_no,
-      particular,
-      paymentType = "Cash",
-      ...payment
-    } = updateMemberState;
-    const data = {
-      member_no: msNo,
-      challan_no,
-      paid_date: new Date(date).toISOString(),
-      type: "Possession Heads",
-      bank_account,
-      paymentType,
-      particular,
-      cheque_no,
-      payment: {
-        ...payment,
-      },
-    };
-    const update = async () => {
-      try {
-        const config = {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        };
-        const response = await axios.post(
-          `${process.env.REACT_APP_API_URL}/user/createPossessionFee`,
-          data,
-          config
-        );
-        closeSection();
-        showSuccessToastMessage("Added Successfully");
-        fetchMemberList();
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setFormData([]);
-        setBankAccount([]);
-      }
-    };
-    update();
-  };
-  const calculateTotalPayment = (paymentDetail) => {
-    return Object.values(paymentDetail).reduce(
-      (total, amount) => total + amount,
-      0
-    );
-  };
   return (
-    <div className="member-list">
-      <div className="title">
-        <h2>Possession Income</h2>
-        <div className="title-buttons">
-          <button className="blue-button" onClick={handleAddDues}>
-            Add Fee
-          </button>
-          <button
-            className="simple-button"
-            onClick={() => window.location.reload()}
-          >
-            Refresh
-          </button>
-        </div>
-      </div>
+    <>
       <div className="top-bar">
         <div className="top-bar-item">
-          <h4>Membership No</h4>
-          <h4>Name</h4>
-          <h4>Amount</h4>
-          <h4>Date</h4>
-          <h4></h4>
+          <h4>Generate Report</h4>
         </div>
       </div>
-      <div className={`members ${loading ? "loading" : ""}`} ref={membersRef}>
-        {memberList.length > 0 ? (
-          memberList.map((member) => {
-            const totalAmount = calculateTotalPayment(member.paymentDetail);
 
-            return (
-              <div className="member" key={member.id}>
-                <div className="member-details">
-                  <p>{member.memberNo.msNo || "-"}</p>
-                  <p>{member.memberNo.purchaseName || "-"}</p>
-                  <p>{totalAmount || "-"}</p>
-                  <p>
-                    {member.paidDate
-                      ? new Date(member.paidDate).toISOString().split("T")[0]
-                      : "-"}
-                  </p>
-                  <img
-                    onClick={() => handleShowOptions(member)}
-                    src="data:image/svg+xml,%3Csvg width='800px' height='800px' viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cdefs%3E%3Cstyle%3E.cls-1%7Bfill:%23231f20;stroke:null;stroke-linecap:round;stroke-linejoin:round;stroke-width:2px;%7D%3C/style%3E%3C/defs%3E%3Cg id='more'%3E%3Ccircle class='cls-1' cx='16' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='6' cy='16' r='2'/%3E%3Ccircle class='cls-1' cx='26' cy='16' r='2'/%3E%3C/g%3E%3C/svg%3E"
-                    alt="Member Icon"
-                  />
-                </div>
-                {selectedMember === member && showOptions && (
-                  <div className="options income">
-                    <button onClick={() => handleShowSection(member)}>
-                      Show
-                    </button>
-                    <div className="horizontal-divider"></div>
-                    <button onClick={() => handleEditSection(member)}>
-                      Edit
-                    </button>
-                  </div>
-                )}
-              </div>
-            );
-          })
-        ) : (
-          <p style={{ textAlign: "center" }}>No Data Found</p>
-        )}
-        {loading && (
-          <div className="loading-indicator">
-            <div className="spinner"></div>
-          </div>
-        )}
-      </div>
-      {addDues && (
-        <div className="left-section">
-          <div className="left-section-content">
-            <div onClick={closeSection} className="close-button"></div>
-            <h3>Add Possession Fee</h3>
-            <div className="horizontal-divider"></div>
-            <form onSubmit={handleSubmit}>
-              <label htmlFor="msNo" className="required">
-                Membership No:{" "}
-              </label>
+      {error && <p>{error}</p>}
+
+      <div className="left-section-content">
+        <form className='reportForm'>
+          <label>Select Report:</label>
+          <select
+            value={selectedReport}
+            onChange={(e) => setSelectedReport(e.target.value)}
+          >
+            <option value="">Select a Report</option>
+            {reports.map((report) => (
+              <option key={report.value} value={report.value}>
+                {report.label}
+              </option>
+            ))}
+          </select>
+
+          <div className="details">
+            <div className="details-item">
+              <label>Start Date:</label>
               <input
-                type="text"
-                name="msNo"
-                id="msNo"
-                required
-                onChange={handleMsNumberChange}
+                type="date"
+                value={startDate}
+                onChange={(e) => setStartDate(e.target.value)}
               />
-              {ShowButton && (
-                <button
-                  type="submit"
-                  className="blue-button"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    getMemberData();
-                  }}
-                >
-                  Find
-                </button>
-              )}
-              {showForm && (
-                <>
-                  <div className="horizontal-divider"></div>
-                  <label htmlFor="purchaseName" className="required">
-                    Name:{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="purchaseName"
-                    id="purchaseName"
-                    required
-                    value={purchaseName}
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        purchaseName: e.target.value,
-                      })
-                    }
-                  />
-                  <label htmlFor="challanNumber" className="required">
-                    Challan Number:{" "}
-                  </label>
-                  <input
-                    type="number"
-                    name="challanNumber"
-                    id="challanNumber"
-                    value={updateMemberState.challan_no}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        challan_no: e.target.value,
-                      })
-                    }
-                  />
-                  <label htmlFor="particular" className="required">
-                    Particular:{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="particular"
-                    id="particular"
-                    value={updateMemberState.particular}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        particular: e.target.value,
-                      })
-                    }
-                  />
-                  <label htmlFor="paymentType" className="required">
-                    Payment Type:{" "}
-                  </label>
-                  <select
-                    name="paymentType"
-                    id="paymentType"
-                    onChange={(e) => {
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        paymentType: e.target.value,
-                      });
-                      setPaymentType(e.target.value);
-                    }}
-                  >
-                    <option value="Cash">Cash</option>
-                    <option value="Bank">Bank</option>
-                  </select>
-
-                  {paymentType === "Bank" && (
-                    <>
-                      <label htmlFor="bankName" className="required">
-                        Bank Account:{" "}
-                      </label>
-
-                      {backAccount.length > 0 ? (
-                        <select
-                          name="bankName"
-                          id="bankName"
-                          value={updateMemberState.bankAccount}
-                          onChange={(e) => {
-                            setUpdateMemberState({
-                              ...updateMemberState,
-                              bank_account: e.target.value,
-                            });
-                          }}
-                        >
-                          <option value="" hidden>
-                            Select Bank Account
-                          </option>
-                          {backAccount.map((item) => (
-                            <option value={item.accountNo}>
-                              {item.bankName} - {item.accountNo}
-                            </option>
-                          ))}
-                        </select>
-                      ) : (
-                        <p>Loading...</p>
-                      )}
-                      <label htmlFor="chequeNumber" className="required">
-                        Cheque/IBFT Number:{" "}
-                      </label>
-                      <input
-                        type="text"
-                        name="chequeNumber"
-                        id="chequeNumber"
-                        value={updateMemberState.cheque_no}
-                        required
-                        onChange={(e) =>
-                          setUpdateMemberState({
-                            ...updateMemberState,
-                            cheque_no: e.target.value,
-                          })
-                        }
-                      />
-                    </>
-                  )}
-
-                  <label htmlFor="date" className="required">
-                    Date:{" "}
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    // value={convertDate(updateMemberState.paidDate)}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        date: e.target.value,
-                      })
-                    }
-                  />
-                  {formData.length > 0 ? (
-                    <>
-                      {formData.map((item) => (
-                        <>
-                          <label htmlFor={item._id}>{item.headOfAccount}</label>
-                          <input
-                            type="Number"
-                            id={item._id}
-                            value={item.amount}
-                            onChange={(e) => {
-                              const inputValue = e.target.value;
-                              setUpdateMemberState({
-                                ...updateMemberState,
-                                [item._id]:
-                                  inputValue === ""
-                                    ? 0
-                                    : parseInt(e.target.value),
-                              });
-                            }}
-                          />
-                        </>
-                      ))}
-                      <button
-                        type="submit"
-                        className="blue-button"
-                        onClick={handleSubmit}
-                      >
-                        Save
-                      </button>
-                    </>
-                  ) : (
-                    <p>Loading...</p>
-                  )}
-                </>
-              )}
-
-              {isLoading && (
-                <div className="loading-indicator">
-                  <div className="spinner"></div>
-                </div>
-              )}
-            </form>
-          </div>
-        </div>
-      )}
-      {editSection &&
-        (console.log(updateMemberState),
-        (
-          <div className="left-section">
-            <div className="left-section-content">
-              <div onClick={closeSection} className="close-button"></div>
-              <h3>Add New Purchaser</h3>
-              <div className="horizontal-divider"></div>
-              <form onSubmit={editMember}>
-                <label htmlFor="msNo" className="required">
-                  Membership No:{" "}
-                </label>
-                <input
-                  type="text"
-                  name="msNo"
-                  id="msNo"
-                  required
-                  readOnly
-                  value={updateMemberState.memberNo.msNo}
-                />
-
-                <>
-                  <label htmlFor="purchaseName" className="required">
-                    Name:{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="purchaseName"
-                    id="purchaseName"
-                    required
-                    readOnly
-                    value={updateMemberState.memberNo.purchaseName}
-                  />
-                  <label htmlFor="challanNumber" className="required">
-                    Challan Number:{" "}
-                  </label>
-                  <input
-                    type="number"
-                    name="challanNumber"
-                    id="challanNumber"
-                    value={updateMemberState.challanNo}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        challan_no: e.target.value,
-                      })
-                    }
-                  />
-                  <label htmlFor="particular" className="required">
-                    Particular:{" "}
-                  </label>
-                  <input
-                    type="text"
-                    name="particular"
-                    id="particular"
-                    value={updateMemberState.particular}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        particular: e.target.value,
-                      })
-                    }
-                  />
-                  <label htmlFor="paymentType" className="required">
-                    Payment Type:{" "}
-                  </label>
-                  <select
-                    name="paymentType"
-                    id="paymentType"
-                    value={updateMemberState.check}
-                    onChange={(e) => {
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        paymentType: e.target.value,
-                      });
-                      setPaymentType(e.target.value);
-                    }}
-                  >
-                    <option value={updateMemberState.check}>
-                      {updateMemberState.check}
-                    </option>
-                  </select>
-
-                  {updateMemberState.check === "Bank" && (
-                    <>
-                      <label htmlFor="bankName" className="required">
-                        Bank Account:{" "}
-                      </label>
-
-                      {Object.keys(updateMemberState.check).length > 0 ? (
-                        <select
-                          name="bankName"
-                          id="bankName"
-                          value={updateMemberState.bankAccount}
-                          readOnly
-                        >
-                          <option value={updateMemberState.bankAccount}>
-                            {updateMemberState.bankAccount}
-                          </option>
-                        </select>
-                      ) : (
-                        <p>Loading...</p>
-                      )}
-                      <label htmlFor="chequeNumber" className="required">
-                        Cheque/IBFT Number:{" "}
-                      </label>
-                      <input
-                        type="text"
-                        name="chequeNumber"
-                        id="chequeNumber"
-                        value={updateMemberState.chequeNo}
-                        required
-                        onChange={(e) =>
-                          setUpdateMemberState({
-                            ...updateMemberState,
-                            cheque_no: e.target.value,
-                          })
-                        }
-                      />
-                    </>
-                  )}
-
-                  <label htmlFor="date" className="required">
-                    Date:{" "}
-                  </label>
-                  <input
-                    type="date"
-                    name="date"
-                    id="date"
-                    value={convertDate(updateMemberState.paidDate)}
-                    required
-                    onChange={(e) =>
-                      setUpdateMemberState({
-                        ...updateMemberState,
-                        date: e.target.value,
-                      })
-                    }
-                  />
-                  {Object.keys(updateMemberState.paymentDetail).length > 0 ? (
-                    <>
-                      {Object.entries(updateMemberState.paymentDetail).map(
-                        ([headOfAccount, amount]) => (
-                          <>
-                            <label htmlFor={headOfAccount}>
-                              {headOfAccount}
-                            </label>
-                            <input
-                              type="number"
-                              id={headOfAccount}
-                              value={amount}
-                              onChange={(e) => {
-                                const inputValue = e.target.value;
-                                setUpdateMemberState((prevState) => ({
-                                  ...prevState,
-                                  paymentDetail: {
-                                    ...prevState.paymentDetail,
-                                    [headOfAccount]:
-                                      inputValue === ""
-                                        ? 0
-                                        : parseInt(inputValue, 10),
-                                  },
-                                }));
-                              }}
-                            />
-                          </>
-                        )
-                      )}
-                      <button
-                        type="submit"
-                        className="blue-button"
-                        onClick={editMember}
-                      >
-                        Save
-                      </button>
-                    </>
-                  ) : (
-                    <p>Loading...</p>
-                  )}
-                </>
-
-                {isLoading && (
-                  <div className="loading-indicator">
-                    <div className="spinner"></div>
-                  </div>
-                )}
-              </form>
+              <label>End Date:</label>
+              <input
+                type="date"
+                value={endDate}
+                onChange={(e) => setEndDate(e.target.value)}
+              />
             </div>
           </div>
-        ))}
 
-      {showSection &&
-        (console.log(selectedMember),
-        (
-          <div className="left-section">
-            <div className="left-section-content">
-              <div onClick={closeSection} className="close-button"></div>
-              <h3>Possession Fee Details</h3>
-              <div className="horizontal-divider"></div>
-              <div className="details">
-                <div className="details-item">
-                  <h4>Membership No:</h4>
-                  <p>{selectedMember?.memberNo.msNo || "-"}</p>
-                </div>
-                <div className="details-item">
-                  <h4>Name:</h4>
-                  <p>{selectedMember?.memberNo.purchaseName || "-"}</p>
-                </div>
-                <div className="details-item">
-                  <h4>Paid Date:</h4>
-                  <p>{convertDate(selectedMember?.paidDate) || "-"}</p>
-                </div>
-                <div className="details-item">
-                  <h4>Challan Number:</h4>
-                  <p>{selectedMember?.challanNo || "-"}</p>
-                </div>
-                <div className="details-item">
-                  <h4>Particular:</h4>
-                  <p>{selectedMember?.particular || "-"}</p>
-                </div>
-                <div className="details-item">
-                  <h4>Payment Type:</h4>
-                  <p>{selectedMember?.check || "-"}</p>
-                </div>
-                {selectedMember?.check === "Bank" && (
-                  <>
-                    <div className="details-item">
-                      <h4>Bank Account:</h4>
-                      <p>{selectedMember?.bankAccount || "-"}</p>
-                    </div>
-                    <div className="details-item">
-                      <h4>Cheque/IBFT Number:</h4>
-                      <p>{selectedMember?.chequeNo || "-"}</p>
-                    </div>
-                  </>
-                )}
-                {/* Dynamic Payment Details */}
-                {selectedMember?.paymentDetail &&
-                  Object.entries(selectedMember.paymentDetail).map(
-                    ([feeType, amount]) => (
-                      <div className="details-item" key={feeType}>
-                        <h4>{feeType}:</h4>
-                        <p>{amount || "0"}</p>
-                      </div>
-                    )
-                  )}
+          {selectedReport === 'incomeStatement' && (
+            <div className="income-statement-fields">
+              <div className="details-item">
+                <label>Taxation:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Taxation Amount"
+                  value={taxation}
+                  onChange={(e) => setTaxation(e.target.value)}
+                />
+                <label>Accumulated Surplus Brought Forward:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Accumulated Surplus"
+                  value={accumulatedSurplus}
+                  onChange={(e) => setAccumulatedSurplus(e.target.value)}
+                />
               </div>
             </div>
-          </div>
-        ))}
-      <ToastContainer />
-    </div>
+          )}
+
+          {selectedReport === 'balanceSheet' && (
+            <div className="balance-sheet-fields">
+              <div className="details-item">
+                <label>Reserve Fund:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Reserve Fund"
+                  value={balanceSheetState.reserve_fund}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    reserve_fund: e.target.value
+                  })}
+                />
+                <label>Accumulated Surplus:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Accumulated Surplus"
+                  value={balanceSheetState.accumulated_surplus}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    accumulated_surplus: e.target.value
+                  })}
+                />
+                <label>Share Deposit Money:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Share Deposit Money"
+                  value={balanceSheetState.share_deposit_money}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    share_deposit_money: e.target.value
+                  })}
+                />
+                <label>Trade and Other Payables:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Trade and Other Payables"
+                  value={balanceSheetState.trade_and_other_payable}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    trade_and_other_payable: e.target.value
+                  })}
+                />
+                <label>Provision for Taxation:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Provision for Taxation"
+                  value={balanceSheetState.provision_for_taxation}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    provision_for_taxation: e.target.value
+                  })}
+                />
+                <label>Intangible Assets:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Intangible Assets"
+                  value={balanceSheetState.intangible_assets}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    intangible_assets: e.target.value
+                  })}
+                />
+                <label>Purchase of Land:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Purchase of Land"
+                  value={balanceSheetState.purchase_of_land}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    purchase_of_land: e.target.value
+                  })}
+                />
+                <label>Cost of Land Development:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Cost of Land Development"
+                  value={balanceSheetState.cost_of_land_developement}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    cost_of_land_developement: e.target.value
+                  })}
+                />
+                <label>Long Term Security Deposit:</label>
+                <input
+                  type="number"
+                  placeholder="Enter Long Term Security Deposit"
+                  value={balanceSheetState.long_term_security_deposit}
+                  onChange={(e) => setBalanceSheetState({
+                    ...balanceSheetState,
+                    long_term_security_deposit: e.target.value
+                  })}
+                />
+              </div>
+            </div>
+          )}
+
+          <button className="blue-button" type="button" onClick={handleDownload}>
+            {loading ? 'Downloading...' : 'Download Report'}
+          </button>
+        </form>
+      </div>
+    </>
   );
-}
+};
+
+export default ReportsComponent;
