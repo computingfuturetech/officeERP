@@ -257,7 +257,7 @@ export default function Sidebar() {
             </NavLink>
           </li>
           <li>
-            <NavLink to="/dummy4" activeClassName="active">
+            <NavLink to="/reports" activeClassName="active">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256">
                 <g fill="#5940d6" strokeMiterlimit="10" strokeWidth="1">
                   <path
