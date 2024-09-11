@@ -86,12 +86,15 @@ export default function SellerDetails() {
         body,
         config
       );
+      
       if (response.status === 200) {
         showSuccessToastMessage("Purchaser Added Successfully");
         setAddDues(true);
       } else {
+        
         showErrorToastMessage("Error Adding Purchaser");
       }
+      console.log(response)
       setPurchaseData({
         purchaserId: "",
         purchaserName: "",

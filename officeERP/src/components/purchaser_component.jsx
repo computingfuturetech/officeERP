@@ -349,7 +349,7 @@ export default function PurchaserComponent() {
         <div className="left-section">
           <div className="left-section-content">
             <div onClick={closeSection} className="close-button"></div>
-            <h3>Add Member Dues</h3>
+            <h3>Add Member Due</h3>
             <div className="horizontal-divider"></div>
             <form onSubmit={updateMember}>
               <label htmlFor="msNo" className="required">

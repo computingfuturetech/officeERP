@@ -288,6 +288,9 @@
                     margin-top: 10px;
 
                 }
+                input[type="date"]{
+                    min-height: 28px;
+                }
             }
 
         }
