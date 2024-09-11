@@ -20,9 +20,9 @@ module.exports = {
             cheque_no,
             check,
             challan_no,
-            particular
+            particular,
         } = req.body;
-
+        console.log(req.body);
         try {
             if (!head_of_account || !salary_type || !amount) {
                 return res.status(400).json({ message: "Head of Account and Salary Type are required" });
@@ -32,10 +32,13 @@ module.exports = {
             if (!salaryType) {
                 return res.status(404).json({ message: "Salary type not found" });
             }
-    
+            let bank_id
             if(bank_account){
-                const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+                bank_id= await CheckBank.checkBank(req, res, bank_account);
+                console.log("Bank ID:", bank_id);
             }
+
+            console.log("Bank ID:", bank_id._id);
     
             const { main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res);
     
@@ -52,6 +55,8 @@ module.exports = {
                 check: check,
                 particular: particular
             });
+
+            console.log("Salaries:", salaries);
 
             const update_id = salaries._id;
 
