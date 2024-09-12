@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import "./style/memberListStyle.css";
-import "./style/reports.css"
+import "./style/reports.css";
 
 const ReportsComponent = () => {
   const [selectedReport, setSelectedReport] = useState('');
@@ -11,8 +11,7 @@ const ReportsComponent = () => {
   const [accumulatedSurplus, setAccumulatedSurplus] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-
+  const [incomeStatementGenerated, setIncomeStatementGenerated] = useState(false);
   const [balanceSheetState, setBalanceSheetState] = useState({
     reserve_fund: '',
     accumulated_surplus: '',
@@ -21,7 +20,7 @@ const ReportsComponent = () => {
     provision_for_taxation: '',
     intangible_assets: '',
     purchase_of_land: '',
-    cost_of_land_developement: '',
+    cost_of_land_development: '',
     long_term_security_deposit: ''
   });
 
@@ -29,8 +28,8 @@ const ReportsComponent = () => {
     { value: 'bankLedger', label: 'Bank Ledger' },
     { value: 'cashBook', label: 'Cash Book' },
     { value: 'generalLedger', label: 'General Ledger' },
-    { value: 'balanceSheet', label: 'Balance Sheet' },
-    { value: 'incomeStatement', label: 'Income Statement' },
+    { value: 'balanceSheet', label: 'Balance Sheet', disabled: !incomeStatementGenerated },
+    { value: 'incomeStatement', label: 'Income Statement' }
   ];
 
   const reportUrls = {
@@ -55,7 +54,7 @@ const ReportsComponent = () => {
       setError('Please fill in both start date and end date.');
       return;
     }
-    
+
     if (selectedReport === 'incomeStatement' && (!taxation || !accumulatedSurplus)) {
       setError('Please fill in both taxation and accumulated surplus fields.');
       return;
@@ -80,13 +79,17 @@ const ReportsComponent = () => {
       if (selectedReport === 'incomeStatement') {
         data.taxation = taxation;
         data.accumulated_surplus_brought_forward = accumulatedSurplus;
+        setIncomeStatementGenerated(true); // Set income statement generated flag
       }
 
       if (selectedReport === 'balanceSheet') {
-        Object.assign(data, balanceSheetState); 
+        if (!incomeStatementGenerated) {
+          setError('Please generate the Income Statement first.');
+          return;
+        }
+        Object.assign(data, balanceSheetState);
       }
-      console.log(data)
-
+      
       const response = await axios.post(url, data, config);
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
       const link = document.createElement('a');
@@ -105,7 +108,6 @@ const ReportsComponent = () => {
       setLoading(false);
     }
   };
-  
 
   return (
     <>
@@ -126,7 +128,7 @@ const ReportsComponent = () => {
           >
             <option value="">Select a Report</option>
             {reports.map((report) => (
-              <option key={report.value} value={report.value}>
+              <option key={report.value} value={report.value} disabled={report.disabled}>
                 {report.label}
               </option>
             ))}
@@ -139,12 +141,14 @@ const ReportsComponent = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
+                disabled={selectedReport === 'balanceSheet'}
               />
               <label>End Date:</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
+                disabled={selectedReport === 'balanceSheet'}
               />
             </div>
           </div>
@@ -159,6 +163,8 @@ const ReportsComponent = () => {
                   value={taxation}
                   onChange={(e) => setTaxation(e.target.value)}
                 />
+              </div>
+              <div className="details-item">
                 <label>Accumulated Surplus Brought Forward:</label>
                 <input
                   type="number"
@@ -193,6 +199,8 @@ const ReportsComponent = () => {
                     accumulated_surplus: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Share Deposit Money:</label>
                 <input
                   type="number"
@@ -213,6 +221,8 @@ const ReportsComponent = () => {
                     trade_and_other_payable: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Provision for Taxation:</label>
                 <input
                   type="number"
@@ -233,6 +243,8 @@ const ReportsComponent = () => {
                     intangible_assets: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Purchase of Land:</label>
                 <input
                   type="number"
@@ -247,12 +259,14 @@ const ReportsComponent = () => {
                 <input
                   type="number"
                   placeholder="Enter Cost of Land Development"
-                  value={balanceSheetState.cost_of_land_developement}
+                  value={balanceSheetState.cost_of_land_development}
                   onChange={(e) => setBalanceSheetState({
                     ...balanceSheetState,
-                    cost_of_land_developement: e.target.value
+                    cost_of_land_development: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Long Term Security Deposit:</label>
                 <input
                   type="number"

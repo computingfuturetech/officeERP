@@ -72,7 +72,7 @@
 
   .details {
     display: flex;
-    justify-content: space-between;
+    justify-content:space-around;
   }
   
   .details-item label {
@@ -81,10 +81,20 @@
     font-weight: 600;
     color: #333;
   }
-  
-  .details-item input[type="date"] {
-    margin-bottom: 20px;
-  }
 
   
+  .reportForm .details-item {
+    display: flex;
+    gap: 20px; 
+    margin-bottom: 20px;
+    max-height: 40px;
+  }
   
+
+  .reportForm label {
+    align-self: center;
+    text-align: left;
+  }
+  .balance-sheet-fields{
+    display: contents;
+  }
