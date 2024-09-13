@@ -98,3 +98,7 @@
   .balance-sheet-fields{
     display: contents;
   }
+
+  .bank-name{
+    margin-bottom: 0px !important;
+  }

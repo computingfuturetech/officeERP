@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./style/memberListStyle.css";
 import "./style/reports.css";
+import useFetchBanks from './fetch_banks';
 
 const ReportsComponent = () => {
   const [selectedReport, setSelectedReport] = useState('');
@@ -12,6 +13,8 @@ const ReportsComponent = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [incomeStatementGenerated, setIncomeStatementGenerated] = useState(false);
+  const {bankList}=useFetchBanks();
+  const [selectedBank, setSelectedBank] = useState("");
   const [balanceSheetState, setBalanceSheetState] = useState({
     reserve_fund: '',
     accumulated_surplus: '',
@@ -23,7 +26,6 @@ const ReportsComponent = () => {
     cost_of_land_development: '',
     long_term_security_deposit: ''
   });
-
   const reports = [
     { value: 'bankLedger', label: 'Bank Ledger' },
     { value: 'cashBook', label: 'Cash Book' },
@@ -31,14 +33,37 @@ const ReportsComponent = () => {
     { value: 'balanceSheet', label: 'Balance Sheet', disabled: !incomeStatementGenerated },
     { value: 'incomeStatement', label: 'Income Statement' }
   ];
+  console.log(bankList)
 
   const reportUrls = {
     bankLedger: '/user/bankLedgerPdf',
-    cashBook: '/user/cashBookPdf',
+    cashBook: '/user/cashLedgerPdf',
     generalLedger: '/user/generalLedgerPdf',
     balanceSheet: '/user/balanceSheetPdf',
     incomeStatement: '/user/incomeRecordPdf'
   };
+
+  const getFixedStartDate = () => {
+    const now = new Date();
+    const year = now.getMonth() >= 6 ? now.getFullYear()-1 : now.getFullYear() - 1;
+    return new Date(`${year}-07-01`);
+  };
+
+  const getFixedEndDate = () => {
+    const now = new Date();
+    const year = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear();
+    return new Date(`${year}-06-30`);
+  };
+
+  useEffect(() => {
+    if (selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement') {
+      setStartDate(getFixedStartDate().toISOString().split('T')[0]);
+      setEndDate(getFixedEndDate().toISOString().split('T')[0]);
+    } else {
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [selectedReport]);
 
   const formatAndEncodeDate = (date) => {
     return encodeURIComponent(new Date(date).toISOString());
@@ -79,8 +104,22 @@ const ReportsComponent = () => {
       if (selectedReport === 'incomeStatement') {
         data.taxation = taxation;
         data.accumulated_surplus_brought_forward = accumulatedSurplus;
-        setIncomeStatementGenerated(true); // Set income statement generated flag
+        setIncomeStatementGenerated(true); 
       }
+      if (selectedReport === 'bankLedger') {
+        console.log(selectedBank)
+        const selectedBankDetails = bankList.find(bank => bank.accountNo=== selectedBank);
+        console.log(selectedBankDetails)
+        if (selectedBankDetails) {
+            console.log(selectedBankDetails.accountNo)
+          data.bank_account = selectedBankDetails.accountNo; 
+        } else {
+          setError('Selected bank not found.');
+          setLoading(false);
+          return;
+        }
+    }
+    
 
       if (selectedReport === 'balanceSheet') {
         if (!incomeStatementGenerated) {
@@ -141,18 +180,39 @@ const ReportsComponent = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                disabled={selectedReport === 'balanceSheet'}
+                disabled={selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement'}
               />
               <label>End Date:</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                disabled={selectedReport === 'balanceSheet'}
+                disabled={selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement'}
               />
             </div>
           </div>
 
+          {selectedReport === 'bankLedger' && (
+            <div className="details-item">
+              <label htmlFor="bank-name">Bank Name: </label>
+                    <select
+                      name="bank-name"
+                      className='bank-name'
+                      id="bank-name"
+                      value={selectedBank}
+                      onChange={(e) => setSelectedBank(e.target.value)}
+                    >
+                      <option value="select" hidden>
+                        {selectedBank}
+                      </option>
+                      {bankList.map((bank) => (
+                        <option value={bank.accountNo} key={bank.accountNo}>
+                          {bank.bankName} - {bank.branchCode}
+                        </option>
+                      ))}
+                    </select>
+            </div>
+          )} 
           {selectedReport === 'incomeStatement' && (
             <div className="income-statement-fields">
               <div className="details-item">
@@ -281,7 +341,7 @@ const ReportsComponent = () => {
             </div>
           )}
 
-          <button className="blue-button" type="button" onClick={handleDownload}>
+            <button className="blue-button" type="button" onClick={handleDownload}>
             {loading ? 'Downloading...' : 'Download Report'}
           </button>
         </form>
