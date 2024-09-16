@@ -3,6 +3,8 @@ import axios from 'axios';
 import "./style/memberListStyle.css";
 import "./style/reports.css";
 import useFetchBanks from './fetch_banks';
+import { ToastContainer } from 'react-toastify';
+import { showErrorToastMessage, showSuccessToastMessage } from './toastUtils'; // Import both error and success toast
 
 const ReportsComponent = () => {
   const [selectedReport, setSelectedReport] = useState('');
@@ -10,10 +12,9 @@ const ReportsComponent = () => {
   const [endDate, setEndDate] = useState('');
   const [taxation, setTaxation] = useState('');
   const [accumulatedSurplus, setAccumulatedSurplus] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [incomeStatementGenerated, setIncomeStatementGenerated] = useState(false);
-  const {bankList}=useFetchBanks();
+  const { bankList } = useFetchBanks();
   const [selectedBank, setSelectedBank] = useState("");
   const [balanceSheetState, setBalanceSheetState] = useState({
     reserve_fund: '',
@@ -33,7 +34,6 @@ const ReportsComponent = () => {
     { value: 'balanceSheet', label: 'Balance Sheet', disabled: !incomeStatementGenerated },
     { value: 'incomeStatement', label: 'Income Statement' }
   ];
-  console.log(bankList)
 
   const reportUrls = {
     bankLedger: '/user/bankLedgerPdf',
@@ -41,6 +41,25 @@ const ReportsComponent = () => {
     generalLedger: '/user/generalLedgerPdf',
     balanceSheet: '/user/balanceSheetPdf',
     incomeStatement: '/user/incomeRecordPdf'
+  };
+  const clearData = () => {
+    setSelectedReport('');
+    setStartDate('');
+    setEndDate('');
+    setTaxation('');
+    setAccumulatedSurplus('');
+    setSelectedBank('');
+    setBalanceSheetState({
+      reserve_fund: '',
+      accumulated_surplus: '',
+      share_deposit_money: '',
+      trade_and_other_payable: '',
+      provision_for_taxation: '',
+      intangible_assets: '',
+      purchase_of_land: '',
+      cost_of_land_development: '',
+      long_term_security_deposit: ''
+    });
   };
 
   const getFixedStartDate = () => {
@@ -71,17 +90,17 @@ const ReportsComponent = () => {
 
   const handleDownload = async () => {
     if (!selectedReport) {
-      setError('Please select a report.');
+      showErrorToastMessage('Please select a report.');
       return;
     }
 
     if (!startDate || !endDate) {
-      setError('Please fill in both start date and end date.');
+      showErrorToastMessage('Please fill in both start date and end date.');
       return;
     }
 
     if (selectedReport === 'incomeStatement' && (!taxation || !accumulatedSurplus)) {
-      setError('Please fill in both taxation and accumulated surplus fields.');
+      showErrorToastMessage('Please fill in both taxation and accumulated surplus fields.');
       return;
     }
 
@@ -106,24 +125,21 @@ const ReportsComponent = () => {
         data.accumulated_surplus_brought_forward = accumulatedSurplus;
         setIncomeStatementGenerated(true); 
       }
+
       if (selectedReport === 'bankLedger') {
-        console.log(selectedBank)
-        const selectedBankDetails = bankList.find(bank => bank.accountNo=== selectedBank);
-        console.log(selectedBankDetails)
+        const selectedBankDetails = bankList.find(bank => bank.accountNo === selectedBank);
         if (selectedBankDetails) {
-            console.log(selectedBankDetails.accountNo)
           data.bank_account = selectedBankDetails.accountNo; 
         } else {
-          setError('Selected bank not found.');
+          showErrorToastMessage('Selected bank not found.');
           setLoading(false);
           return;
         }
-    }
-    
+      }
 
       if (selectedReport === 'balanceSheet') {
         if (!incomeStatementGenerated) {
-          setError('Please generate the Income Statement first.');
+          showErrorToastMessage('Please generate the Income Statement first.');
           return;
         }
         Object.assign(data, balanceSheetState);
@@ -139,10 +155,11 @@ const ReportsComponent = () => {
       link.click();
       document.body.removeChild(link);
 
-      setError('');
+      showSuccessToastMessage('Report downloaded successfully!');
+      clearData();
     } catch (error) {
+      showErrorToastMessage('Failed to download report. Please try again.');
       console.error('Error downloading report:', error);
-      setError('Failed to download report. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -155,8 +172,6 @@ const ReportsComponent = () => {
           <h4>Generate Report</h4>
         </div>
       </div>
-
-      {error && <p>{error}</p>}
 
       <div className="left-section-content">
         <form className='reportForm'>
@@ -180,14 +195,12 @@ const ReportsComponent = () => {
                 type="date"
                 value={startDate}
                 onChange={(e) => setStartDate(e.target.value)}
-                disabled={selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement'}
               />
               <label>End Date:</label>
               <input
                 type="date"
                 value={endDate}
                 onChange={(e) => setEndDate(e.target.value)}
-                disabled={selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement'}
               />
             </div>
           </div>
@@ -195,24 +208,25 @@ const ReportsComponent = () => {
           {selectedReport === 'bankLedger' && (
             <div className="details-item">
               <label htmlFor="bank-name">Bank Name: </label>
-                    <select
-                      name="bank-name"
-                      className='bank-name'
-                      id="bank-name"
-                      value={selectedBank}
-                      onChange={(e) => setSelectedBank(e.target.value)}
-                    >
-                      <option value="select" hidden>
-                        {selectedBank}
-                      </option>
-                      {bankList.map((bank) => (
-                        <option value={bank.accountNo} key={bank.accountNo}>
-                          {bank.bankName} - {bank.branchCode}
-                        </option>
-                      ))}
-                    </select>
+              <select
+                name="bank-name"
+                className='bank-name'
+                id="bank-name"
+                value={selectedBank}
+                onChange={(e) => setSelectedBank(e.target.value)}
+              >
+                <option value="select" hidden>
+                  {selectedBank}
+                </option>
+                {bankList.map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>
+                    {bank.bankName} - {bank.branchCode}
+                  </option>
+                ))}
+              </select>
             </div>
-          )} 
+          )}
+
           {selectedReport === 'incomeStatement' && (
             <div className="income-statement-fields">
               <div className="details-item">
@@ -236,7 +250,7 @@ const ReportsComponent = () => {
             </div>
           )}
 
-          {selectedReport === 'balanceSheet' && (
+           {selectedReport === 'balanceSheet' && (
             <div className="balance-sheet-fields">
               <div className="details-item">
                 <label>Reserve Fund:</label>
@@ -324,7 +338,7 @@ const ReportsComponent = () => {
                     ...balanceSheetState,
                     cost_of_land_development: e.target.value
                   })}
-                />
+                  />
               </div>
               <div className="details-item">
                 <label>Long Term Security Deposit:</label>
@@ -341,11 +355,12 @@ const ReportsComponent = () => {
             </div>
           )}
 
-            <button className="blue-button" type="button" onClick={handleDownload}>
+          <button className="blue-button" type="button" onClick={handleDownload}>
             {loading ? 'Downloading...' : 'Download Report'}
           </button>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };
