@@ -16,6 +16,7 @@ import OfficeExpense from './expense/office-expense'
 import SiteExpense from './expense/site-expense'
 import WaterMaintainance from './income/water-maintainance'
 import Possession from './income/possession'
+import Reports from './reports/reports'
 
 function App() {
   
@@ -38,8 +39,8 @@ function App() {
           <Route path="/income/possession" element={<Possession/>}/>
           <Route path="/income/purchaser" element={<Purchaser/>}/>
           <Route path="/income/water-maintainance" element={<WaterMaintainance/>}/>
-          <Route path="/dummy3" element={<Dummy2/>}/>
-          <Route path="/dummy4" element={<Dummy3/>}/>
+          <Route path="/dumm4" element={<Dummy3/>}/>
+          <Route path="/reports" element={<Reports/>}/>
           <Route path="/dummy5" element={<Dummy4/>}/>
           <Route path="/dummy6" element={<Dummy5/>}/>
           <Route path="/dummy7" element={<Dummy6/>}/>
