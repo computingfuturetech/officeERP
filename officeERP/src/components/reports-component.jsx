@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import "./style/memberListStyle.css";
-import "./style/reports.css"
+import "./style/reports.css";
+import useFetchBanks from './fetch_banks';
+import { ToastContainer } from 'react-toastify';
+import { showErrorToastMessage, showSuccessToastMessage } from './toastUtils'; // Import both error and success toast
 
 const ReportsComponent = () => {
   const [selectedReport, setSelectedReport] = useState('');
@@ -9,10 +12,10 @@ const ReportsComponent = () => {
   const [endDate, setEndDate] = useState('');
   const [taxation, setTaxation] = useState('');
   const [accumulatedSurplus, setAccumulatedSurplus] = useState('');
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  // New state for Balance Sheet specific fields
+  const [incomeStatementGenerated, setIncomeStatementGenerated] = useState(false);
+  const { bankList } = useFetchBanks();
+  const [selectedBank, setSelectedBank] = useState("");
   const [balanceSheetState, setBalanceSheetState] = useState({
     reserve_fund: '',
     accumulated_surplus: '',
@@ -21,25 +24,65 @@ const ReportsComponent = () => {
     provision_for_taxation: '',
     intangible_assets: '',
     purchase_of_land: '',
-    cost_of_land_developement: '',
+    cost_of_land_development: '',
     long_term_security_deposit: ''
   });
-
   const reports = [
     { value: 'bankLedger', label: 'Bank Ledger' },
     { value: 'cashBook', label: 'Cash Book' },
     { value: 'generalLedger', label: 'General Ledger' },
-    { value: 'balanceSheet', label: 'Balance Sheet' },
-    { value: 'incomeStatement', label: 'Income Statement' },
+    { value: 'balanceSheet', label: 'Balance Sheet', disabled: !incomeStatementGenerated },
+    { value: 'incomeStatement', label: 'Income Statement' }
   ];
 
   const reportUrls = {
     bankLedger: '/user/bankLedgerPdf',
-    cashBook: '/user/cashBookPdf',
+    cashBook: '/user/cashLedgerPdf',
     generalLedger: '/user/generalLedgerPdf',
     balanceSheet: '/user/balanceSheetPdf',
     incomeStatement: '/user/incomeRecordPdf'
   };
+  const clearData = () => {
+    setSelectedReport('');
+    setStartDate('');
+    setEndDate('');
+    setTaxation('');
+    setAccumulatedSurplus('');
+    setSelectedBank('');
+    setBalanceSheetState({
+      reserve_fund: '',
+      accumulated_surplus: '',
+      share_deposit_money: '',
+      trade_and_other_payable: '',
+      provision_for_taxation: '',
+      intangible_assets: '',
+      purchase_of_land: '',
+      cost_of_land_development: '',
+      long_term_security_deposit: ''
+    });
+  };
+
+  const getFixedStartDate = () => {
+    const now = new Date();
+    const year = now.getMonth() >= 6 ? now.getFullYear()-1 : now.getFullYear() - 1;
+    return new Date(`${year}-07-01`);
+  };
+
+  const getFixedEndDate = () => {
+    const now = new Date();
+    const year = now.getMonth() >= 6 ? now.getFullYear() : now.getFullYear();
+    return new Date(`${year}-06-30`);
+  };
+
+  useEffect(() => {
+    if (selectedReport === 'balanceSheet' || selectedReport === 'incomeStatement') {
+      setStartDate(getFixedStartDate().toISOString().split('T')[0]);
+      setEndDate(getFixedEndDate().toISOString().split('T')[0]);
+    } else {
+      setStartDate('');
+      setEndDate('');
+    }
+  }, [selectedReport]);
 
   const formatAndEncodeDate = (date) => {
     return encodeURIComponent(new Date(date).toISOString());
@@ -47,17 +90,17 @@ const ReportsComponent = () => {
 
   const handleDownload = async () => {
     if (!selectedReport) {
-      setError('Please select a report.');
+      showErrorToastMessage('Please select a report.');
       return;
     }
 
     if (!startDate || !endDate) {
-      setError('Please fill in both start date and end date.');
+      showErrorToastMessage('Please fill in both start date and end date.');
       return;
     }
-    
+
     if (selectedReport === 'incomeStatement' && (!taxation || !accumulatedSurplus)) {
-      setError('Please fill in both taxation and accumulated surplus fields.');
+      showErrorToastMessage('Please fill in both taxation and accumulated surplus fields.');
       return;
     }
 
@@ -80,12 +123,28 @@ const ReportsComponent = () => {
       if (selectedReport === 'incomeStatement') {
         data.taxation = taxation;
         data.accumulated_surplus_brought_forward = accumulatedSurplus;
+        setIncomeStatementGenerated(true); 
+      }
+
+      if (selectedReport === 'bankLedger') {
+        const selectedBankDetails = bankList.find(bank => bank.accountNo === selectedBank);
+        if (selectedBankDetails) {
+          data.bank_account = selectedBankDetails.accountNo; 
+        } else {
+          showErrorToastMessage('Selected bank not found.');
+          setLoading(false);
+          return;
+        }
       }
 
       if (selectedReport === 'balanceSheet') {
-        Object.assign(data, balanceSheetState); // Add balance sheet specific fields to data
+        if (!incomeStatementGenerated) {
+          showErrorToastMessage('Please generate the Income Statement first.');
+          return;
+        }
+        Object.assign(data, balanceSheetState);
       }
-
+      
       const response = await axios.post(url, data, config);
       const pdfBlob = new Blob([response.data], { type: 'application/pdf' });
       const link = document.createElement('a');
@@ -96,10 +155,11 @@ const ReportsComponent = () => {
       link.click();
       document.body.removeChild(link);
 
-      setError('');
+      showSuccessToastMessage('Report downloaded successfully!');
+      clearData();
     } catch (error) {
+      showErrorToastMessage('Failed to download report. Please try again.');
       console.error('Error downloading report:', error);
-      setError('Failed to download report. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -113,8 +173,6 @@ const ReportsComponent = () => {
         </div>
       </div>
 
-      {error && <p>{error}</p>}
-
       <div className="left-section-content">
         <form className='reportForm'>
           <label>Select Report:</label>
@@ -124,7 +182,7 @@ const ReportsComponent = () => {
           >
             <option value="">Select a Report</option>
             {reports.map((report) => (
-              <option key={report.value} value={report.value}>
+              <option key={report.value} value={report.value} disabled={report.disabled}>
                 {report.label}
               </option>
             ))}
@@ -147,6 +205,28 @@ const ReportsComponent = () => {
             </div>
           </div>
 
+          {selectedReport === 'bankLedger' && (
+            <div className="details-item">
+              <label htmlFor="bank-name">Bank Name: </label>
+              <select
+                name="bank-name"
+                className='bank-name'
+                id="bank-name"
+                value={selectedBank}
+                onChange={(e) => setSelectedBank(e.target.value)}
+              >
+                <option value="select" hidden>
+                  {selectedBank}
+                </option>
+                {bankList.map((bank) => (
+                  <option value={bank.accountNo} key={bank.accountNo}>
+                    {bank.bankName} - {bank.branchCode}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )}
+
           {selectedReport === 'incomeStatement' && (
             <div className="income-statement-fields">
               <div className="details-item">
@@ -157,6 +237,8 @@ const ReportsComponent = () => {
                   value={taxation}
                   onChange={(e) => setTaxation(e.target.value)}
                 />
+              </div>
+              <div className="details-item">
                 <label>Accumulated Surplus Brought Forward:</label>
                 <input
                   type="number"
@@ -168,7 +250,7 @@ const ReportsComponent = () => {
             </div>
           )}
 
-          {selectedReport === 'balanceSheet' && (
+           {selectedReport === 'balanceSheet' && (
             <div className="balance-sheet-fields">
               <div className="details-item">
                 <label>Reserve Fund:</label>
@@ -191,6 +273,8 @@ const ReportsComponent = () => {
                     accumulated_surplus: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Share Deposit Money:</label>
                 <input
                   type="number"
@@ -211,6 +295,8 @@ const ReportsComponent = () => {
                     trade_and_other_payable: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Provision for Taxation:</label>
                 <input
                   type="number"
@@ -231,6 +317,8 @@ const ReportsComponent = () => {
                     intangible_assets: e.target.value
                   })}
                 />
+              </div>
+              <div className="details-item">
                 <label>Purchase of Land:</label>
                 <input
                   type="number"
@@ -245,12 +333,14 @@ const ReportsComponent = () => {
                 <input
                   type="number"
                   placeholder="Enter Cost of Land Development"
-                  value={balanceSheetState.cost_of_land_developement}
+                  value={balanceSheetState.cost_of_land_development}
                   onChange={(e) => setBalanceSheetState({
                     ...balanceSheetState,
-                    cost_of_land_developement: e.target.value
+                    cost_of_land_development: e.target.value
                   })}
-                />
+                  />
+              </div>
+              <div className="details-item">
                 <label>Long Term Security Deposit:</label>
                 <input
                   type="number"
@@ -270,6 +360,7 @@ const ReportsComponent = () => {
           </button>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };
