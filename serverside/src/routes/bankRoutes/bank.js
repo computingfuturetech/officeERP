@@ -1,0 +1,30 @@
+const express = require("express");
+const router = express.Router();
+router.use(express.json());
+router.use(express.urlencoded({ extended: true }));
+const authenticateJWT = require("../../middleware/authenticateJWT");
+const checkRole = require("../../middleware/checkRole");
+
+const bank = require("../../controllers/bankController/bank");
+const bankBalance = require("../../controllers/bankController/bankBalance");
+
+router.post(
+  "/addNewBank",
+  authenticateJWT,
+  checkRole(["admin"]),
+  bank.createBank
+);
+router.get(
+  "/bankList",
+  authenticateJWT,
+  checkRole(["admin", "employee"]),
+  bank.getBankList
+);
+router.post(
+  "/createBankBalance",
+  authenticateJWT,
+  checkRole(["admin", "employee"]),
+  bankBalance.createBankBalance
+);
+
+module.exports = router;
