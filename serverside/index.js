@@ -11,6 +11,7 @@ const app = express();
 const bankRouter = require("./src/routes/bankRoutes/bank");
 const bankBalanceRouter = require("./src/routes/bankBalanceRoutes/bankBalance");
 const auditExpenseRouter = require("./src/routes/auditExpenseRoutes/auditExpense");
+const bankChargesExpenseRouter = require("./src/routes/bankChargesExpenseRoutes/bankChargesExpense");
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use("/user", ledgerRouter);
 app.use("/bank", bankRouter);
 app.use("/bank", bankBalanceRouter);
 app.use("/auditExpense", auditExpenseRouter);
+app.use("/bankChargesExpense", bankChargesExpenseRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

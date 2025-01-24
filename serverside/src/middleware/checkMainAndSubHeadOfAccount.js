@@ -3,12 +3,12 @@ const MainHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/m
 
 module.exports = {
   getHeadOfAccount: async (req, res, updateData, legalProfessionalExpense) => {
-    if (req.body.head_of_account) {
+    if (req.body.headOfAccount) {
       const mainHeadOfAccount = await MainHeadOfAccount.findOne({
-        headOfAccount: req.body.head_of_account,
+        headOfAccount: req.body.headOfAccount,
       });
       const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
-        headOfAccount: req.body.head_of_account,
+        headOfAccount: req.body.headOfAccount,
       });
       if (!mainHeadOfAccount && !subHeadOfAccount) {
         return res.status(404).json({ message: "Head of Account not found" });
