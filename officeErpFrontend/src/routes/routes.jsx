@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { Home, LoginPage, Members } from "../views";
+import ProtectedRoute from "@/components/components/protected-route";
 
 const staticRoutes = [
   {
     path: "/",
-    element: <Home />,
+    element: <ProtectedRoute element={<Home />} />,
   },
   {
     path: "/login",
@@ -12,7 +13,7 @@ const staticRoutes = [
   },
   {
     path: "/members",
-    element: <Members />,
+    element: <ProtectedRoute element={<Members />} />,
   },
 ];
 
