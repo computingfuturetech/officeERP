@@ -1,8 +1,6 @@
-import * as React from "react"
+import * as React from "react";
 import {
   AudioWaveform,
-  BookOpen,
-  Bot,
   ChevronRight,
   Command,
   Frame,
@@ -10,19 +8,21 @@ import {
   Map,
   PanelTopClose,
   PieChart,
-  Settings2,
-  SquareTerminal,
-} from "lucide-react"
+} from "lucide-react";
 
-import { NavMain } from "@/components/components/nav-main"
+import { NavMain } from "@/components/components/nav-main";
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
   SidebarRail,
-} from "@/components/components/ui/sidebar"
-import images from "../../assets"
+} from "@/components/components/ui/sidebar";
+import images from "../../assets";
+import { Button } from "./ui/button";
+import { useDispatch } from "react-redux";
+import { removeUser } from "../../redux/user/user";
+import { useNavigate } from "react-router-dom";
 
 const data = {
   navMain: [
@@ -69,26 +69,43 @@ const data = {
       ],
     },
   ],
-  logout: [{
-    title: "Logout",
-    url: "/login",
-    icon: PanelTopClose,
-  }],
-}
+  logout: [
+    {
+      title: "Logout",
+      url: "/login",
+      icon: PanelTopClose,
+    },
+  ],
+};
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(removeUser());
+    navigate(data.logout[0].url);
+  };
+
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="flex items-center justify-center h-16 m-4">
-        <img src={images.logo} alt="" className="w-16" />
+      <SidebarHeader className="flex items-center justify-center h-16 m-4 cursor-pointer" onClick={() => navigate("/")}>
+        <img src={images.logo} alt="Logo" className="w-16" />
       </SidebarHeader>
       <SidebarContent>
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavMain items={data.logout} />
+        <Button
+          variant="ghost"
+          className="w-full justify-start text-red-500 hover:text-red-600"
+          onClick={handleLogout}
+        >
+          <PanelTopClose className="mr-2" />
+          {data.logout[0].title}
+        </Button>
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
-  )
+  );
 }

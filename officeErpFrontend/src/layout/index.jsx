@@ -14,7 +14,11 @@ function Layout() {
     <>
       <SidebarProvider>
         {!isLoginRoute && <AppSidebar />}
-        <main className="flex flex-col w-full h-screen overflow-y-auto p-4">
+        <main
+          className={`flex flex-col w-full h-screen overflow-y-auto ${
+            !isLoginRoute ? `p-4` : ``
+          }`}
+        >
           <Outlet />
         </main>
         <Toaster />
