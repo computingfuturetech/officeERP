@@ -1,60 +1,136 @@
 const Member = require("../../models/memberModels/memberList");
-const BankChargesExpense = require("../../models/expenseModel/bankChargesExpense/bankChargesExpense")
-const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
-const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
-const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
+const BankChargesExpense = require("../../models/expenseModel/bankChargesExpense/bankChargesExpense");
+const SubExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
+const MainHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
 const BankList = require("../../models/bankModel/bank");
-const GeneralLedger = require('../../middleware/createGeneralLedger');
-const BankLedger = require('../../middleware/createBankLedger');
-const VoucherNo = require('../../middleware/generateVoucherNo')
-const CheckBank = require('../../middleware/checkBank');
+const GeneralLedger = require("../../middleware/createGeneralLedger");
+const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../middleware/generateVoucherNo");
+const CheckBank = require("../../middleware/checkBank");
 
 module.exports = {
   createBankChargesExpense: async (req, res) => {
-    const { head_of_account, amount, bank_account,paid_date,particular,challan_no,cheque_no } = req.body;
-    console.log(req.body);
+    const {
+      headOfAccount,
+      amount,
+      paidDate,
+      particular,
+      challanNo,
+      chequeNumber,
+      bank,
+    } = req.body;
     try {
-      if (!bank_account || !head_of_account || !amount || !paid_date) {
-        return res.status(400).json({ message: "All fields are required" });
+      if (!amount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Amount is required",
+        });
       }
 
-      const bank = await BankList.findOne({
-        accountNo: bank_account
-      });
+      if (!paidDate) {
+        return res.status(400).json({
+          status: "error",
+          message: "Paid Date is required",
+        });
+      }
+
+      if (!headOfAccount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Head of Account is required",
+        });
+      }
+
       if (!bank) {
-        return res
-          .status(400)
-          .json({ message: "Invalid Bank Account Number" });
+        return res.status(400).json({
+          status: "error",
+          message: "Bank is required",
+        });
+      }
+
+      const bankFound = await BankList.findOne({
+        accountNo: bank,
+      });
+      if (!bankFound) {
+        return res.status(400).json({
+          status: "error",
+          message: "Invalid Bank Account Number",
+        });
       }
 
       let main_head_id;
       let sub_head_id;
-      if (req.body.head_of_account) {
-        ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+      if (req.body.headOfAccount) {
+        ({ main_head_id, sub_head_id } =
+          await CheckMainAndSubHeadOfAccount.checkHeadOfAccount(
+            req,
+            res,
+            headOfAccount
+          ));
       }
 
-      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+      const { bankId } = await CheckBank.checkBank(req, res, bank);
+
+      if (bankId === null) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank not found",
+        });
+      }
 
       const bankChargesExpense = new BankChargesExpense({
-        paidDate: paid_date,
+        paidDate: paidDate,
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
         amount: amount,
-        bank: bank_id?bank_id:null,
+        bank: bankId ? bankId : null,
         particular: particular,
-        chequeNumber: cheque_no,
+        chequeNumber: chequeNumber,
       });
 
       const update_id = bankChargesExpense._id;
 
       const type = "expense";
 
-      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,particular, amount, paid_date,cheque_no, challan_no,update_id,bank_account);
-      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, particular, amount, paid_date, cheque_no, challan_no,update_id,bank_account);
+      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(
+        req,
+        res,
+        bank,
+        type
+      );
+      await BankLedger.createBankLedger(
+        req,
+        res,
+        bankVoucherNo,
+        type,
+        headOfAccount,
+        particular,
+        amount,
+        paidDate,
+        chequeNumber,
+        challanNo,
+        update_id,
+        bank
+      );
+      await GeneralLedger.createGeneralLedger(
+        req,
+        res,
+        bankVoucherNo,
+        type,
+        headOfAccount,
+        particular,
+        amount,
+        paidDate,
+        chequeNumber,
+        challanNo,
+        update_id,
+        bank
+      );
 
       await bankChargesExpense.save();
       res.status(201).json({
+        status: "success",
         message: "Bank Expense created successfully",
         data: bankChargesExpense,
       });
@@ -64,31 +140,43 @@ module.exports = {
     }
   },
   getBankChargesExpense: async (req, res) => {
-    const { head_of_account } = req.query;
+    const { headOfAccount } = req.query;
 
     try {
       let query = {};
 
-      if (head_of_account) {
-        const mainHeadOfAccount = await MainHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-  
+      if (headOfAccount) {
+        const mainHeadOfAccount = await MainHeadOfAccount.findOne({
+          headOfAccount: headOfAccount,
+        }).exec();
+
         if (mainHeadOfAccount) {
           query.mainHeadOfAccount = mainHeadOfAccount._id;
         } else {
-          return res.status(404).json({ message: "Head of Account not found" });
+          return res.status(404).json({
+            status: "error",
+            message: "Head of Account not found",
+          });
         }
       }
 
       const bankChargesExpense = await BankChargesExpense.find(query)
         .populate("mainHeadOfAccount", "headOfAccount")
-        .populate({ path: 'bank', select: 'bankName accountNo' })
+        .populate({ path: "bank", select: "bankName accountNo" })
         .exec();
 
       if (bankChargesExpense.length === 0) {
-        return res.status(404).json({ message: "Bank Expense not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Bank Expense not found",
+        });
       }
 
-      res.status(200).json(bankChargesExpense);
+      res.status(200).json({
+        status: "success",
+        message: "Bank Expense found",
+        data: bankChargesExpense,
+      });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -97,41 +185,53 @@ module.exports = {
     const id = req.query.id;
     try {
       if (!id) {
-        return res.status(400).json({ message: "ID is required" });
+        return res.status(400).json({
+          status: "error",
+          message: "ID is required",
+        });
       }
       const bankChargesExpense = await BankChargesExpense.findById(id).exec();
       if (!bankChargesExpense) {
-        return res.status(404).json({ message: "Bank Expense not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Bank Expense not found",
+        });
       }
       const updateData = {};
-      if (req.body.paid_date) {
-        updateData.paidDate = req.body.paid_date;
+      if (req.body.paidDate) {
+        updateData.paidDate = req.body.paidDate;
       }
       if (req.body.amount) {
         updateData.amount = req.body.amount;
       }
-      if(req.body.particular){
+      if (req.body.particular) {
         updateData.particular = req.body.particular;
       }
-      if(req.body.challan_no){
-        updateData.challanNo = req.body.challan_no;
+      if (req.body.challanNo) {
+        updateData.challanNo = req.body.challanNo;
       }
-      if(req.body.cheque_no){
-        updateData.chequeNo = req.body.cheque_no;
+      if (req.body.chequeNumber) {
+        updateData.chequeNumber = req.body.chequeNumber;
       }
-      if (req.body.bank_account) {
-        const bank = await BankList.findOne({
-            accountNo:req.body.bank_account
+      if (req.body.bank) {
+        const bankFound = await BankList.findOne({
+          accountNo: req.body.bank,
+        });
+        if (!bankFound) {
+          return res.status(400).json({
+            status: "error",
+            message: "Invalid Bank Account Number",
           });
-          if (!bank) {
-            return res
-              .status(400)
-              .json({ message: "Invalid Bank Account Number" });
-          }
-        updateData.bank = bank._id;
+        }
+        updateData.bank = bankFound._id;
       }
-      if (req.body.head_of_account) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,bankChargesExpense);
+      if (req.body.headOfAccount) {
+        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(
+          req,
+          res,
+          updateData,
+          bankChargesExpense
+        );
       }
 
       const type = "expense";
@@ -139,15 +239,17 @@ module.exports = {
       await BankLedger.updateBankLedger(req, res, id, updateData, type);
       await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
 
-      const updatedbankChargesExpense = await BankChargesExpense.findByIdAndUpdate(
-        id,
-        { $set: updateData },
-        { new: true }
-      ).exec();
+      const updatedBankChargesExpense =
+        await BankChargesExpense.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true }
+        ).exec();
 
       res.status(200).json({
+        status: "success",
         message: "Bank  Expense updated successfully",
-        data: updatedbankChargesExpense,
+        data: updatedBankChargesExpense,
       });
     } catch (err) {
       console.error("Error:", err);
@@ -155,6 +257,3 @@ module.exports = {
     }
   },
 };
-
-
-
