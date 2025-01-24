@@ -7,14 +7,14 @@ module.exports = {
 
     try {
       if (!balance) {
-        return res.status(404).json({
+        return res.status(400).json({
           status: "error",
           message: "Balance is Required",
         });
       }
 
       if (!bank) {
-        return res.status(404).json({
+        return res.status(400).json({
           status: "error",
           message: "Bank Account is Required",
         });

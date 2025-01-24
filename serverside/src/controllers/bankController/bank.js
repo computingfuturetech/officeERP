@@ -13,27 +13,45 @@ module.exports = {
 
     try {
       if (!bankName) {
-        return res.status(404).json({ message: "Bank Name is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Bank Name is Required",
+        });
       }
 
       if (!accountNo) {
-        return res.status(404).json({ message: "Account Number is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Account Number is Required",
+        });
       }
 
       if (!branchName) {
-        return res.status(404).json({ message: "Branch Name is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Branch Name is Required",
+        });
       }
 
       if (!branchCode) {
-        return res.status(404).json({ message: "Branch Code is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Branch Code is Required",
+        });
       }
 
       if (!accountName) {
-        return res.status(404).json({ message: "Account Name is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Account Name is Required",
+        });
       }
 
       if (!accountType) {
-        return res.status(404).json({ message: "Account Type is Required" });
+        return res.status(400).json({
+          status: "error",
+          message: "Account Type is Required",
+        });
       }
 
       const foundBank = await BankList.findOne({
