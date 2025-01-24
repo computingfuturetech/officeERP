@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/components/*": ["src/components/*"],
+      "@/lib/*": ["src/components/lib/*"]
+    },
+    "allowJs": true,
+    "checkJs": false,
+    "jsx": "react",
+    "esModuleInterop": true
+  },
+  "include": ["src/**/*", "*.jsx"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "eslint.config.js",
+    "postcss.config.js",
+    "src/assets/index.js",
+    "src/redux/store.js",
+    "src/redux/user/user.js",
+    "tailwind.config.js",
+    "vite.config.js"
+  ]
+}
