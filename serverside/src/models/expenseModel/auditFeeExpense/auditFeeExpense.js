@@ -1,45 +1,49 @@
-const mongoose = require('mongoose')
-const Schema=mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const auditFeeExpenseSchema = new Schema({
-    paidDate:{
-        type: Date,
+const auditFeeExpenseSchema = new Schema(
+  {
+    paidDate: {
+      type: Date,
     },
-    mainHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MainExpenseHeadOfAccount',
+    mainHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MainExpenseHeadOfAccount",
     },
-    subHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SubExpenseHeadOfAccount',
+    subHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubExpenseHeadOfAccount",
     },
-    amount:{
-        type: Number,
+    amount: {
+      type: Number,
     },
-    year:{
-        type: Number,
+    year: {
+      type: Number,
     },
-    particular:{
-        type: String,
+    particular: {
+      type: String,
     },
-    chequeNumber:{
-        type: Number,
+    chequeNumber: {
+      type: Number,
     },
-    challanNo:{
-        type: Number,
+    challanNo: {
+      type: Number,
     },
-    bank:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'BankListSchema',
+    bank: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BankListSchema",
     },
-    check:{
-        type: String,
+    check: {
+      type: String,
     },
-},
-{
-    timestamps: true 
-}
-)
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const AuditFeeExpenseSchema = mongoose.model('AuditFeeExpenseSchema',auditFeeExpenseSchema)
-module.exports=AuditFeeExpenseSchema;
+const AuditFeeExpenseSchema = mongoose.model(
+  "AuditFeeExpenseSchema",
+  auditFeeExpenseSchema
+);
+module.exports = AuditFeeExpenseSchema;
