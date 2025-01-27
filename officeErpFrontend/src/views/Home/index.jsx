@@ -187,7 +187,7 @@ export default function Home() {
           heading="Payments"
           columns={columns}
           data={data}
-          enableFilters={true}
+          enableFilters={false}
           enableColumnVisibility={true}
           seeAllPath="/all-entries"
           filters={filters}

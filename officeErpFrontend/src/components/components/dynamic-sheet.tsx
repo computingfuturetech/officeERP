@@ -20,7 +20,7 @@ export type SelectOption = {
 export type FieldConfig = {
     id: string;
     label: string;
-    type?: "text" | "email" | "number" | "date" | "select";
+    type?: "text" | "email" | "number" | "date" | "select" | "cnic";
     value: string | number;
     required?: boolean;
     placeholder?: string;
@@ -142,19 +142,50 @@ export function DynamicSheet({
             setFormValues(initialValues);
         }
     }, [open, fields]);
+    const formatCnic = (value: string) => {
+        const digits = value.replace(/\D/g, "");
+
+        const formatted = digits
+            .replace(/^(\d{5})(\d{0,7})/, "$1-$2")
+            .replace(/-(\d{7})(\d{0,1})/, "-$1-$2");
+
+        return formatted.substring(0, 15);
+    };
 
     const renderField = (field: FieldConfig) => {
-        // Set readonly only for fields in edit mode with `readOnly` set to true
         const isReadOnly = mode === "edit" && field.readOnly;
         const error = validationErrors[field.id];
         const value = formValues[field.id] || '';
 
-        // Render different input types
         switch (field.type) {
+            case "cnic":
+                return (
+                    <div key={field.id} className="space-y-1">
+                        <Label htmlFor={field.id}>
+                            {field.label}
+                            {field.required && (
+                                <span className="text-destructive ml-1">*</span>
+                            )}
+                        </Label>
+                        <Input
+                            id={field.id}
+                            name={field.id}
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleValueChange(field.id, formatCnic(e.target.value))}
+                            className={`col-span-3 ${error ? "border-red-500" : ""}`}
+                            placeholder={field.placeholder || "11111-1111111-1"}
+                            readOnly={isReadOnly}
+                            disabled={isReadOnly || isViewMode}
+                            maxLength={15}
+                        />
+                        {error && <p className="text-red-500 text-sm">{error}</p>}
+                    </div>
+                );
             case "select":
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id} className="text-right">
+                        <Label htmlFor={field.id} className="text-left">
                             {field.label}
                             {field.required && (
                                 <span className="text-destructive ml-1">*</span>
@@ -185,7 +216,7 @@ export function DynamicSheet({
             default:
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id} className="text-right">
+                        <Label htmlFor={field.id}>
                             {field.label}
                             {field.required && (
                                 <span className="text-destructive ml-1">*</span>
