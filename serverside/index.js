@@ -12,13 +12,14 @@ const bankRouter = require("./src/routes/bankRoutes/bank");
 const bankBalanceRouter = require("./src/routes/bankBalanceRoutes/bankBalance");
 const auditExpenseRouter = require("./src/routes/auditExpenseRoutes/auditExpense");
 const bankChargesExpenseRouter = require("./src/routes/bankChargesExpenseRoutes/bankChargesExpense");
+const memberRouter = require("./src/routes/memberRoutes/member");
 
 dotenv.config();
 
 const coreRouter = require("./src/routes/coreRoutes/coreApi");
 const incomeRouter = require("./src/routes/coreRoutes/incomeApi");
 const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
-const memberRouter = require("./src/routes/coreRoutes/memberApi");
+// const memberRouter = require("./src/routes/coreRoutes/memberApi");
 const fixedAmountRouter = require("./src/routes/coreRoutes/fixedAmountApi");
 const liabilityRouter = require("./src/routes/coreRoutes/liability");
 const ledgerRouter = require("./src/routes/coreRoutes/ledgerApi");
@@ -48,6 +49,7 @@ app.use("/bank", bankRouter);
 app.use("/bank", bankBalanceRouter);
 app.use("/auditExpense", auditExpenseRouter);
 app.use("/bankChargesExpense", bankChargesExpenseRouter);
+app.use("/member", memberRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

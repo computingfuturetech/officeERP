@@ -1,68 +1,70 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const generalLedgerSchema = new Schema({
-    date:{
-        type: Date,
-        default:Date.now,
+const generalLedgerSchema = new Schema(
+  {
+    date: {
+      type: Date,
+      default: Date.now,
     },
-    headOfAccount:{
-        type: String,
+    headOfAccount: {
+      type: String,
     },
-    mainHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MainExpenseHeadOfAccount',
+    mainHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MainExpenseHeadOfAccount",
     },
-    subHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SubExpenseHeadOfAccount',
+    subHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubExpenseHeadOfAccount",
     },
-    incomeHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'IncomeHeadOfAccount',
+    incomeHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "IncomeHeadOfAccount",
     },
-    bank:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'BankListSchema',
+    bank: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BankListSchema",
     },
-    particular:{
-        type: String,
+    particular: {
+      type: String,
     },
-    chequeNo:{
-        type: Number,
+    chequeNo: {
+      type: Number,
     },
-    challanNo:{
-        type: Number,
+    challanNo: {
+      type: Number,
     },
-    voucherNo:{
-        type: String,
+    voucherNo: {
+      type: String,
     },
-    credit:{
-        type: Number,
-    },  
-    debit:{
-        type: Number,
-    },  
-    amount:{
-        type: Number,
+    credit: {
+      type: Number,
     },
-    type:{
-        type:String,
+    debit: {
+      type: Number,
     },
-    balance:{
-        type: Number,
+    amount: {
+      type: Number,
     },
-    updateId:{
-        type: String,
-    }, 
-    previousBalance:{
-        type: Number,
+    type: {
+      type: String,
     },
-},
-{
-    timestamps: true 
-})
+    balance: {
+      type: Number,
+    },
+    updateId: {
+      type: String,
+    },
+    previousBalance: {
+      type: Number,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const GeneralLedger = mongoose.model('GeneralLedger',generalLedgerSchema)
+const GeneralLedger = mongoose.model("GeneralLedger", generalLedgerSchema);
 
-module.exports=GeneralLedger;
+module.exports = GeneralLedger;
