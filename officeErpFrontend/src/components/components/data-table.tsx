@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import {
     ColumnDef,
     flexRender,
@@ -30,7 +30,12 @@ import {
 import {
     MultiSelect,
 } from "./ui/multi-selector"
-import { Plus } from "lucide-react"
+import { Plus, RefreshCw } from "lucide-react"
+
+export interface PaginationState {
+    pageIndex: number;
+    pageSize: number;
+}
 
 export interface DataTableFilter {
     id: string;
@@ -51,6 +56,13 @@ interface DataTableProps<TData, TValue> {
     filters?: DataTableFilter[]
     onFilterChange?: (filters: Record<string, string[] | string>) => void
     filterableField?: string;
+    pageCount: number;
+    pagination: PaginationState;
+    onPaginationChange: (pagination: PaginationState) => void;
+    resetFilters?: {
+        onClick: () => void;
+        disabled: boolean;
+    };
 }
 
 export function DataTable<TData, TValue>({
@@ -64,13 +76,39 @@ export function DataTable<TData, TValue>({
     filters = [],
     onFilterChange,
     filterableField,
+    pageCount,
+    pagination,
+    onPaginationChange,
+    resetFilters,
 }: DataTableProps<TData, TValue>) {
     const navigate = useNavigate()
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
     const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({})
     const [searchTerm, setSearchTerm] = useState(""); // State for the input field
+    const [inputValue, setInputValue] = useState("")
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(""); // Debounced value
     const [currentFilters, setCurrentFilters] = React.useState<Record<string, string[] | string>>({})
+    const inputRef = React.useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (filterableField) {
+                const newFilters = {
+                    ...currentFilters,
+                    [filterableField]: inputValue || undefined,
+                };
+
+                const cleanedFilters = Object.fromEntries(
+                    Object.entries(newFilters).filter(([_, v]) => v !== undefined)
+                );
+
+                setCurrentFilters(cleanedFilters);
+                onFilterChange?.(cleanedFilters);
+            }
+        }, 800);
+
+        return () => clearTimeout(timeoutId);
+    }, [inputValue, filterableField]);
 
     const table = useReactTable({
         data,
@@ -86,7 +124,11 @@ export function DataTable<TData, TValue>({
         state: {
             columnFilters,
             columnVisibility,
+            pagination,
         },
+        pageCount,
+        manualPagination: true,
+        onPaginationChange: onPaginationChange,
     })
 
     const handleFilterChange = (filterId: string, values: string[]) => {
@@ -118,15 +160,42 @@ export function DataTable<TData, TValue>({
         onFilterChange?.(cleanedFilters);
     };
 
+    const handleCompleteReset = () => {
+        setCurrentFilters({});
+        setSearchTerm("");
+        setDebouncedSearchTerm("");
+        setColumnFilters([]);
+
+        if (inputRef.current) {
+            inputRef.current.value = "";
+        }
+
+        filters.forEach(filter => {
+            if (filter.type === 'select' || filter.type === 'multiselect') {
+                handleFilterChange(filter.id, []);
+            }
+        });
+
+        resetFilters?.onClick();
+    };
+
     return (
         <div>
-            <h2 className="text-2xl font-semibold">{heading}</h2>
+            {
+                enableFilters &&
+                <h2 className="text-2xl font-semibold mb-2">{heading}</h2>
+            }
             <div className="flex items-center pb-4 gap-4">
+                {
+                    !enableFilters &&
+                    <h2 className="text-2xl font-semibold">{heading}</h2>
+                }
                 {enableFilters && filterableField && (
                     <Input
+                        ref={inputRef}
                         placeholder={`Filter by ${filterableField}...`}
-                        value={(currentFilters[filterableField] as string) ?? ""}
-                        onChange={(event) => handleInputFilterChange(event.target.value)}
+                        value={inputValue}
+                        onChange={(event) => setInputValue(event.target.value)}
                         className="max-w-sm"
                     />
                 )}
@@ -147,6 +216,18 @@ export function DataTable<TData, TValue>({
                             )}
                         </div>
                     ))}
+
+                    {resetFilters && (
+                        <Button
+                            variant="outline"
+                            onClick={handleCompleteReset}
+                            disabled={resetFilters.disabled}
+                        >
+                            <RefreshCw className="h-4 w-4 mr-2" />
+                            Reset Filters
+                        </Button>
+                    )}
+
 
                     {enableColumnVisibility && (
                         <DropdownMenu>
@@ -238,24 +319,30 @@ export function DataTable<TData, TValue>({
                     </TableBody>
                 </Table>
             </div>
-            <div className="flex items-center justify-end space-x-2 py-4">
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.previousPage()}
-                    disabled={!table.getCanPreviousPage()}
-                >
-                    Previous
-                </Button>
-                <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => table.nextPage()}
-                    disabled={!table.getCanNextPage()}
-                >
-                    Next
-                </Button>
-            </div>
+            {
+                pagination &&
+                <div className="flex items-center justify-end space-x-2 py-4">
+                    <div className="flex-1 text-sm text-muted-foreground">
+                        Page {pagination.pageIndex + 1} of {pageCount}
+                    </div>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.previousPage()}
+                        disabled={!table.getCanPreviousPage()}
+                    >
+                        Previous
+                    </Button>
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => table.nextPage()}
+                        disabled={!table.getCanNextPage()}
+                    >
+                        Next
+                    </Button>
+                </div>
+            }
         </div>
     )
 }

@@ -7,36 +7,79 @@ import {
   DropdownMenuTrigger,
 } from "@/components/components/ui/dropdown-menu";
 import { MoreHorizontal, MoreVertical, Plus } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { DataTable } from "@/components/components/data-table";
 import RevenueCard from "@/components/components/revenue-card";
 import DailyTransactionDisplay from "@/components/components/transaction-card";
 import { Button } from "@/components/components/ui/button";
 import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { useToast } from "@/components/hooks/use-toast";
+import { createMember, getMembers, updateMember } from "../../services/members";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Members() {
-  const [currentFilters, setCurrentFilters] = useState({});
+  const [searchParams, setSearchParams] = useSearchParams();
+  const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
   const [viewingMember, setViewingMember] = useState(null);
-  const { toast } = useToast();
-  const { dismiss } = useToast();
+  const { toast, dismiss } = useToast();
+  const [pagination, setPagination] = useState({
+    pageIndex: parseInt(searchParams.get("page")) - 1 || 0,
+    pageSize: parseInt(searchParams.get("limit")) || 50,
+  });
+  const [pageCount, setPageCount] = useState(0);
+  const [filters, setFilters] = useState(() => {
+    const initialFilters = {};
+    searchParams.forEach((value, key) => {
+      if (key !== "page" && key !== "limit") {
+        initialFilters[key] = value;
+      }
+    });
+    return initialFilters;
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleEditSubmit = (data) => {
-    console.log("Edit data:", data);
-    setEditingMember(null);
-    // Handle edit logic
+  const handleEditSubmit = async (data) => {
+    try {
+      const response = await updateMember(editingMember._id, data);
+
+      if (response.status === 200) {
+        setData((prev) =>
+          prev.map((member) =>
+            member._id === editingMember._id ? { ...member, ...data } : member
+          )
+        );
+        toast({
+          title: "Member updated",
+          description: "Member has been successfully updated.",
+        });
+        setEditingMember(null);
+      } else {
+        toast({
+          title: "Edit Failed",
+          description:
+            response?.data?.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Edit submission error:", error);
+      toast({
+        title: "Edit Failed",
+        description:
+          error?.response?.data?.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+    }
   };
   const handleCreateSubmit = async (data) => {
     try {
-      console.log("Create data:", data);
-      // Simulate an API call or processing
-      // Return true if successful, false otherwise
-      // Replace this with your actual create logic
-      const response = await someCreateMemberAPI(data);
+      const response = await createMember(data);
+      console.log("Create response:", response);
 
-      if (response.success) {
+      if (response.status === 201) {
+        setData((prev) => [response?.data?.data, ...prev]);
         toast({
           title: "Member created",
           description: "Member has been successfully created.",
@@ -46,7 +89,8 @@ export default function Members() {
       } else {
         toast({
           title: "Creation Failed",
-          description: "There was an error creating the member.",
+          description:
+            response?.data?.message || "An unexpected error occurred.",
           variant: "destructive",
         });
         return false;
@@ -55,28 +99,67 @@ export default function Members() {
       console.error("Create submission error:", error);
       toast({
         title: "Creation Failed",
-        description: "An unexpected error occurred.",
+        description:
+          error?.response?.data?.message || "An unexpected error occurred.",
         variant: "destructive",
       });
       return false;
     }
   };
 
+  useEffect(() => {
+    const params = new URLSearchParams();
+    params.set("page", (pagination.pageIndex + 1).toString());
+    params.set("limit", pagination.pageSize.toString());
+
+    Object.entries(filters).forEach(([key, value]) => {
+      if (value !== undefined && value !== "" && value !== null) {
+        if (Array.isArray(value)) {
+          value.forEach((v) => params.append(key, v));
+        } else {
+          params.set(key, value.toString());
+        }
+      }
+    });
+
+    setSearchParams(params);
+  }, [pagination, filters]);
+
+  useEffect(() => {
+    fetchMembers();
+  }, [pagination.pageIndex, pagination.pageSize, filters]);
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0,
+    }));
+  };
+
+  const handleResetFilters = () => {
+    setFilters({});
+    setPagination((prev) => ({
+      ...prev,
+      pageIndex: 0,
+    }));
+  };
+
   const getFieldConfig = (member) => [
     {
-      id: "memberNo",
+      id: "msNo",
       label: "Member No",
-      type: "number",
-      value: member?.memberNo || "",
+      type: "text",
+      value: member?.msNo || "",
       required: true,
       placeholder: "Enter member number",
       readOnly: true,
     },
     {
-      id: "name",
+      id: "purchaseName",
       label: "Name",
       type: "text",
-      value: member?.name || "",
+      value: member?.purchaseName || "",
       placeholder: "Enter member name",
       required: true,
       validate: (value) => {
@@ -92,13 +175,6 @@ export default function Members() {
       type: "text",
       value: member?.guardianName || "",
       placeholder: "Enter guardian name",
-      required: true,
-      validate: (value) => {
-        if (value.length < 3) {
-          return "Guardian name must be at least 3 characters long";
-        }
-        return null;
-      },
     },
     {
       id: "phase",
@@ -114,7 +190,6 @@ export default function Members() {
       type: "text",
       value: member?.plotNo || "",
       placeholder: "Enter plot number",
-      required: true,
     },
     {
       id: "block",
@@ -122,12 +197,11 @@ export default function Members() {
       type: "text",
       value: member?.block || "",
       placeholder: "Enter block",
-      required: true,
     },
     {
       id: "cnicNo",
       label: "CNIC No",
-      type: "text",
+      type: "cnic",
       value: member?.cnicNo || "",
       placeholder: "Enter CNIC number",
       required: true,
@@ -141,21 +215,58 @@ export default function Members() {
       required: true,
     },
     {
-      id: "status",
-      label: "Status",
+      id: "category",
+      label: "Category",
       type: "select",
-      value: member?.status || "active",
+      value: member?.category || "",
+      placeholder: "Select category",
       options: [
-        { label: "Active", value: "active" },
-        { label: "Inactive", value: "inactive" },
+        { value: "Residential", label: "Residential" },
+        { value: "Commercial", label: "Commercial" },
       ],
+    },
+    {
+      id: "area",
+      label: "Area",
+      type: "number",
+      value: member?.area || 0,
+      placeholder: "Enter area",
     },
   ];
 
+  const fetchMembers = async () => {
+    try {
+      setIsLoading(true);
+      const queryParams = {
+        page: pagination.pageIndex + 1,
+        limit: pagination.pageSize,
+        ...filters,
+      };
+
+      const response = await getMembers(queryParams);
+
+      setData(response.data.data);
+      setPageCount(response.data.pagination.totalPages);
+    } catch (error) {
+      console.error("Error fetching members:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch members data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const columns = [
     {
-      accessorKey: "memberNo",
+      accessorKey: "msNo",
       header: "Member No",
+    },
+    {
+      accessorKey: "purchaseName",
+      header: "Name",
     },
     {
       accessorKey: "phase",
@@ -166,13 +277,22 @@ export default function Members() {
       header: "Plot No",
     },
     {
+      accessorKey: "block",
+      header: "Block",
+    },
+    {
+      accessorKey: "category",
+      header: "Category",
+    },
+    {
+      accessorKey: "area",
+      header: "Area",
+    },
+    {
       id: "actions",
       header: "Actions",
-      size: 50,
-      maxSize: 80,
       cell: ({ row }) => {
         const member = row.original;
-
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -183,23 +303,11 @@ export default function Members() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setEditingMember(member);
-                }}
-              >
+              <DropdownMenuItem onClick={() => setEditingMember(member)}>
                 Edit Member
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onSelect={(e) => {
-                  e.preventDefault();
-                  setViewingMember(member);
-                }}
-              >
-                View details
+              <DropdownMenuItem onClick={() => setViewingMember(member)}>
+                View Details
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -207,41 +315,6 @@ export default function Members() {
       },
     },
   ];
-
-  const data = [
-    {
-      memberNo: 1,
-      phase: "A",
-      plotNo: "A-1",
-    },
-    {
-      memberNo: 2,
-      phase: "B",
-      plotNo: "B-1",
-    },
-    {
-      memberNo: 3,
-      phase: "C",
-      plotNo: "C-1",
-    },
-    {
-      memberNo: 4,
-      phase: "D",
-      plotNo: "D-1",
-    },
-    {
-      memberNo: 5,
-      phase: "E",
-      plotNo: "E-1",
-      status: "inactive",
-    },
-  ];
-
-  const handleFilterChange = (filters) => {
-    console.log("Filters updated:", filters);
-    setCurrentFilters(filters);
-    // Implement your filtering logic here
-  };
 
   return (
     <div>
@@ -252,14 +325,21 @@ export default function Members() {
           data={data}
           enableFilters={true}
           enableColumnVisibility={true}
-          filterableField="memberNo"
+          filterableField="msNo"
           onFilterChange={handleFilterChange}
+          pagination={pagination}
+          pageCount={pageCount}
+          onPaginationChange={setPagination}
           createButton={{
             onClick: () => {
               dismiss();
               setIsCreateOpen(true);
             },
             label: "Create",
+          }}
+          resetFilters={{
+            onClick: handleResetFilters,
+            disabled: Object.keys(filters).length === 0,
           }}
         />
       </div>
@@ -299,14 +379,4 @@ export default function Members() {
       )}
     </div>
   );
-}
-
-// Placeholder functions - replace with actual API calls
-async function someCreateMemberAPI(data) {
-  // Simulate an API call
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve({ success: false });
-    }, 1000);
-  });
 }

@@ -89,7 +89,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
   return (
     <Sidebar collapsible="icon" {...props}>
-      <SidebarHeader className="flex items-center justify-center h-16 m-4 cursor-pointer" onClick={() => navigate("/")}>
+      <SidebarHeader className="flex items-center justify-center h-16 m-1 my-4 cursor-pointer" onClick={() => navigate("/")}>
         <img src={images.logo} alt="Logo" className="w-16" />
       </SidebarHeader>
       <SidebarContent>
