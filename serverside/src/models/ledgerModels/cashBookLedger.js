@@ -1,51 +1,53 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
 
-const cashBookSchema = new Schema({
-    date:{
-        type: Date,
+const cashBookSchema = new Schema(
+  {
+    date: {
+      type: Date,
     },
-    headOfAccount:{
-        type: String,
+    headOfAccount: {
+      type: String,
     },
-    mainHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MainExpenseHeadOfAccount',
+    mainHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MainExpenseHeadOfAccount",
     },
-    subHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'SubExpenseHeadOfAccount',
+    subHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "SubExpenseHeadOfAccount",
     },
-    incomeHeadOfAccount:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'IncomeHeadOfAccount',
+    incomeHeadOfAccount: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "IncomeHeadOfAccount",
     },
-    particular:{
-        type: String,
+    particular: {
+      type: String,
     },
-    voucherNo:{
-        type: String,
+    voucherNo: {
+      type: String,
     },
-    credit:{
-        type: Number,
-    },  
-    debit:{
-        type: Number,
-    },  
-    balance:{
-        type: Number,
+    credit: {
+      type: Number,
     },
-    updateId:{
-        type: String,
-    }, 
-    previousBalance:{
-        type: Number,
-    }, 
-},
-{
-    timestamps: true 
-})
+    debit: {
+      type: Number,
+    },
+    balance: {
+      type: Number,
+    },
+    updateId: {
+      type: String,
+    },
+    previousBalance: {
+      type: Number,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const CashBook = mongoose.model('CashBook',cashBookSchema)
+const CashBook = mongoose.model("CashBook", cashBookSchema);
 
-module.exports=CashBook;
+module.exports = CashBook;

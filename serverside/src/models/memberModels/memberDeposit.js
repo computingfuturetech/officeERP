@@ -1,26 +1,28 @@
-const mongoose = require('mongoose')
-const Schema = mongoose.Schema
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const mongoosePaginate = require("mongoose-paginate-v2");
 
 const memberDepositSchema = new Schema({
-    msNo: {
-        type: String,
-    },
-    date:{
-        type: Date,
-    },
-    challanNo:{
-        type: Number,
-    },
-    type:{
-        type:String,
-        enum:['cash','bank'],
-        default:'bank'
-    },
-    amount:{
-        type: Number,
-    },
-})
+  msNo: {
+    type: String,
+  },
+  date: {
+    type: Date,
+  },
+  challanNo: {
+    type: Number,
+  },
+  type: {
+    type: String,
+    enum: ["cash", "bank"],
+    default: "bank",
+  },
+  amount: {
+    type: Number,
+  },
+});
 
-const MemberDeposit = mongoose.model('MemberDeposit',memberDepositSchema)
+memberDepositSchema.plugin(mongoosePaginate);
+const MemberDeposit = mongoose.model("MemberDeposit", memberDepositSchema);
 
-module.exports=MemberDeposit;
+module.exports = MemberDeposit;
