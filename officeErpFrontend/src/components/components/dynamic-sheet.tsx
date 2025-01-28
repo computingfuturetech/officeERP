@@ -1,5 +1,14 @@
-import { ReactNode, useState, useRef } from "react";
-import { Sheet, SheetClose, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
+import React, { ReactNode, useState, useRef } from "react";
+import {
+    Sheet,
+    SheetClose,
+    SheetContent,
+    SheetDescription,
+    SheetFooter,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "./ui/sheet";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
@@ -8,9 +17,9 @@ import {
     SelectContent,
     SelectItem,
     SelectTrigger,
-    SelectValue
+    SelectValue,
 } from "./ui/select";
-import React from "react";
+import { DatePicker } from "./date-picker";
 
 export type SelectOption = {
     value: string;
@@ -21,7 +30,7 @@ export type FieldConfig = {
     id: string;
     label: string;
     type?: "text" | "email" | "number" | "date" | "select" | "cnic";
-    value: string | number;
+    value: string | number | Date | undefined;
     required?: boolean;
     placeholder?: string;
     readOnly?: boolean;
@@ -56,7 +65,7 @@ export function DynamicSheet({
 }: DynamicSheetProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
-    const [formValues, setFormValues] = useState<Record<string, string>>({});
+    const [formValues, setFormValues] = useState<Record<string, any>>({});
     const formRef = useRef<HTMLFormElement>(null);
 
     const isViewMode = mode === "view";
@@ -65,17 +74,17 @@ export function DynamicSheet({
     const validateForm = () => {
         const errors: Record<string, string> = {};
 
-        fields.forEach(field => {
-            const value = formValues[field.id] || '';
+        fields.forEach((field) => {
+            const value = formValues[field.id] || "";
 
             // Check required fields
-            if (field.required && !value.trim()) {
+            if (field.required && !value.toString().trim()) {
                 errors[field.id] = `${field.label} is required`;
             }
 
             // Custom validation if provided
             if (field.validate && !errors[field.id]) {
-                const customError = field.validate(value);
+                const customError = field.validate(value.toString());
                 if (customError) {
                     errors[field.id] = customError;
                 }
@@ -86,98 +95,80 @@ export function DynamicSheet({
         return Object.keys(errors).length === 0;
     };
 
-    // New function to clear error for a specific field
+    const handleValueChange = (fieldId: string, value: any) => {
+        setFormValues((prev) => ({
+            ...prev,
+            [fieldId]: value,
+        }));
+        clearFieldError(fieldId);
+    };
+
     const clearFieldError = (fieldId: string) => {
-        setValidationErrors(prev => {
+        setValidationErrors((prev) => {
             const newErrors = { ...prev };
             delete newErrors[fieldId];
             return newErrors;
         });
     };
 
-    const handleValueChange = (fieldId: string, value: string) => {
-        setFormValues(prev => ({
-            ...prev,
-            [fieldId]: value
-        }));
-        clearFieldError(fieldId);
-    };
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        e.stopPropagation(); // Prevent event bubbling
 
-        // Validate form first
         if (!validateForm()) {
             return;
         }
 
-        // Prevent multiple submissions
         if (isSubmitting) return;
 
         try {
             setIsSubmitting(true);
-
-            // Use formValues instead of FormData
             const result = await onSubmit(formValues);
 
-            // Close the sheet only if the submit is successful (returns true or doesn't return false)
             if (result !== false) {
                 onOpenChange?.(false);
             }
         } catch (error) {
-            // Optionally handle submission errors
             console.error("Submission error:", error);
         } finally {
             setIsSubmitting(false);
         }
     };
 
-    // Initialize form values when the sheet opens
     React.useEffect(() => {
         if (open) {
-            const initialValues: Record<string, string> = {};
-            fields.forEach(field => {
-                initialValues[field.id] = String(field.value || '');
+            const initialValues: Record<string, any> = {};
+            fields.forEach((field) => {
+                initialValues[field.id] = field.value || "";
             });
             setFormValues(initialValues);
         }
     }, [open, fields]);
-    const formatCnic = (value: string) => {
-        const digits = value.replace(/\D/g, "");
-
-        const formatted = digits
-            .replace(/^(\d{5})(\d{0,7})/, "$1-$2")
-            .replace(/-(\d{7})(\d{0,1})/, "-$1-$2");
-
-        return formatted.substring(0, 15);
-    };
 
     const renderField = (field: FieldConfig) => {
         const isReadOnly = mode === "edit" && field.readOnly;
         const error = validationErrors[field.id];
-        const value = formValues[field.id] || '';
+        const value = formValues[field.id] || "";
 
         switch (field.type) {
-            case "cnic":
+            case "date":
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id}>
+                        <Label htmlFor={field.id} className="text-left">
                             {field.label}
                             {field.required && (
                                 <span className="text-destructive ml-1">*</span>
                             )}
                         </Label>
-                        <Input
-                            id={field.id}
-                            name={field.id}
-                            type="text"
-                            value={value}
-                            onChange={(e) => handleValueChange(field.id, formatCnic(e.target.value))}
-                            className={`col-span-3 ${error ? "border-red-500" : ""}`}
-                            placeholder={field.placeholder || "11111-1111111-1"}
-                            readOnly={isReadOnly}
+                        <DatePicker
+                            value={formValues[field.id] ? new Date(formValues[field.id]) : undefined}
+                            onChange={(date) => {
+                                handleValueChange(
+                                    field.id,
+                                    date ? date.toISOString() : ""
+                                );
+                            }}
                             disabled={isReadOnly || isViewMode}
-                            maxLength={15}
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
                     </div>
@@ -196,7 +187,7 @@ export function DynamicSheet({
                             onValueChange={(newValue) => handleValueChange(field.id, newValue)}
                             disabled={isReadOnly || isViewMode}
                         >
-                            <SelectTrigger className={`col-span-3 ${error ? 'border-red-500' : ''}`}>
+                            <SelectTrigger className={`col-span-3 ${error ? "border-red-500" : ""}`}>
                                 <SelectValue placeholder={field.placeholder} />
                             </SelectTrigger>
                             <SelectContent>
@@ -207,9 +198,7 @@ export function DynamicSheet({
                                 ))}
                             </SelectContent>
                         </Select>
-                        {error && (
-                            <p className="text-red-500 text-sm">{error}</p>
-                        )}
+                        {error && <p className="text-red-500 text-sm">{error}</p>}
                     </div>
                 );
 
@@ -228,22 +217,25 @@ export function DynamicSheet({
                             type={field.type || "text"}
                             value={value}
                             onChange={(e) => handleValueChange(field.id, e.target.value)}
-                            className={`col-span-3 ${error ? 'border-red-500' : ''}`}
+                            className={`col-span-3 ${error ? "border-red-500" : ""}`}
                             required={field.required}
                             placeholder={field.placeholder}
                             readOnly={isReadOnly}
                             disabled={isReadOnly || isViewMode}
                         />
-                        {error && (
-                            <p className="text-red-500 text-sm">{error}</p>
-                        )}
+                        {error && <p className="text-red-500 text-sm">{error}</p>}
                     </div>
                 );
         }
     };
 
     return (
-        <Sheet open={open} onOpenChange={onOpenChange}>
+        <Sheet open={open} onOpenChange={(newOpen) => {
+            // Only allow closing if we're not in the middle of a date selection
+            if (onOpenChange) {
+                onOpenChange(newOpen);
+            }
+        }}>
             {!open && trigger && (
                 <SheetTrigger asChild>
                     {trigger || (
@@ -281,12 +273,11 @@ export function DynamicSheet({
                         >
                             {isSubmitting
                                 ? "Submitting..."
-                                : (isCreateMode
+                                : isCreateMode
                                     ? "Create"
                                     : isViewMode
                                         ? "Close"
-                                        : "Save changes")
-                            }
+                                        : "Save changes"}
                         </Button>
                     </SheetFooter>
                 </form>

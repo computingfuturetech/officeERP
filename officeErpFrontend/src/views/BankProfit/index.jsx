@@ -14,15 +14,21 @@ import DailyTransactionDisplay from "@/components/components/transaction-card";
 import { Button } from "@/components/components/ui/button";
 import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { useToast } from "@/components/hooks/use-toast";
-import { createMember, getMembers, updateMember } from "../../services/members";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import {
+  createBankProfit,
+  getBankProfit,
+  updateBankProfit,
+} from "../../services/bankProfit";
+import { months } from "../../assets/options";
 
-export default function Members() {
+export default function BankProfit() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingMember, setEditingMember] = useState(null);
-  const [viewingMember, setViewingMember] = useState(null);
+  const [editingBankProfit, setEditingBankProfit] = useState(null);
+  const [viewingBankProfit, setViewingBankProfit] = useState(null);
+  const [originalFilters, setOriginalFilters] = useState({});
   const { toast, dismiss } = useToast();
   const [pagination, setPagination] = useState({
     pageIndex: parseInt(searchParams.get("page")) - 1 || 0,
@@ -42,19 +48,28 @@ export default function Members() {
 
   const handleEditSubmit = async (data) => {
     try {
-      const response = await updateMember(editingMember._id, data);
-
+      data.headOfAccount = (originalFilters?.headOfAccount ?? []).find(
+        (headOfAccount) => headOfAccount.headOfAccount === "Bank Profit"
+      )?._id;
+      const response = await updateBankProfit(editingBankProfit._id, data);
+      console.log("Edit response:", response);
       if (response.status === 200) {
         setData((prev) =>
-          prev.map((member) =>
-            member._id === editingMember._id ? { ...member, ...data } : member
+          prev.map((bankProfit) =>
+            bankProfit._id === editingBankProfit._id
+              ? {
+                  ...bankProfit,
+                  ...response?.data?.data,
+                  paidDate: formatDate(response?.data?.data.paidDate),
+                }
+              : bankProfit
           )
         );
         toast({
-          title: "Member updated",
-          description: "Member has been successfully updated.",
+          title: "Bank Profit updated",
+          description: "Bank Profit has been successfully updated.",
         });
-        setEditingMember(null);
+        setEditingBankProfit(null);
       } else {
         toast({
           title: "Edit Failed",
@@ -75,14 +90,23 @@ export default function Members() {
   };
   const handleCreateSubmit = async (data) => {
     try {
-      const response = await createMember(data);
+      data.headOfAccount = (originalFilters?.headOfAccount ?? []).find(
+        (headOfAccount) => headOfAccount.headOfAccount === "Bank Profit"
+      )?._id;
+      const response = await createBankProfit(data);
       console.log("Create response:", response);
 
       if (response.status === 201) {
-        setData((prev) => [response?.data?.data, ...prev]);
+        setData((prev) => [
+          {
+            ...response?.data?.data,
+            paidDate: formatDate(response?.data?.data.paidDate),
+          },
+          ...prev,
+        ]);
         toast({
-          title: "Member created",
-          description: "Member has been successfully created.",
+          title: "Bank Profit created",
+          description: "Bank Profit has been successfully created.",
         });
         setIsCreateOpen(false);
         return true;
@@ -126,7 +150,7 @@ export default function Members() {
   }, [pagination, filters]);
 
   useEffect(() => {
-    fetchMembers();
+    fetchBankProfitData();
   }, [pagination.pageIndex, pagination.pageSize, filters]);
 
   const handleFilterChange = (newFilters) => {
@@ -145,96 +169,62 @@ export default function Members() {
     }));
   };
 
-  const getFieldConfig = (member) => [
+  const getFieldConfig = (bankProfit) => [
     {
-      id: "msNo",
-      label: "Member No",
-      type: "text",
-      value: member?.msNo || "",
-      required: true,
-      placeholder: "Enter member number",
-      readOnly: true,
-    },
-    {
-      id: "purchaseName",
-      label: "Name",
-      type: "text",
-      value: member?.purchaseName || "",
-      placeholder: "Enter member name",
-      required: true,
-      validate: (value) => {
-        if (value.length < 3) {
-          return "Name must be at least 3 characters long";
-        }
-        return null;
-      },
-    },
-    {
-      id: "guardianName",
-      label: "Guardian Name",
-      type: "text",
-      value: member?.guardianName || "",
-      placeholder: "Enter guardian name",
-    },
-    {
-      id: "phase",
-      label: "Phase",
-      type: "text",
-      value: member?.phase || "",
-      placeholder: "Enter phase",
-      required: true,
-    },
-    {
-      id: "plotNo",
-      label: "Plot No",
-      type: "text",
-      value: member?.plotNo || "",
-      placeholder: "Enter plot number",
-    },
-    {
-      id: "block",
-      label: "Block",
-      type: "text",
-      value: member?.block || "",
-      placeholder: "Enter block",
-    },
-    {
-      id: "cnicNo",
-      label: "CNIC No",
-      type: "cnic",
-      value: member?.cnicNo || "",
-      placeholder: "Enter CNIC number",
-      required: true,
-    },
-    {
-      id: "address",
-      label: "Address",
-      type: "text",
-      value: member?.address || "",
-      placeholder: "Enter address",
-      required: true,
-    },
-    {
-      id: "category",
-      label: "Category",
+      id: "bank",
+      label: "Bank Name",
       type: "select",
-      value: member?.category || "",
-      placeholder: "Select category",
-      options: [
-        { value: "Residential", label: "Residential" },
-        { value: "Commercial", label: "Commercial" },
-      ],
+      value: bankProfit?.bank?._id || "",
+      options: originalFilters?.bankList?.map((bank) => ({
+        value: bank._id,
+        label: bank.bankName + " - " + bank.accountNo.slice(-4),
+      })),
+      required: true,
+      placeholder: "Enter bank name",
     },
     {
-      id: "area",
-      label: "Area",
-      type: "number",
-      value: member?.area || 0,
-      placeholder: "Enter area",
+      id: "challanNo",
+      label: "Challan No",
+      type: "text",
+      value: bankProfit?.challanNo || "",
+      placeholder: "Enter challan number",
+      required: true,
+    },
+    {
+      id: "chequeNumber",
+      label: "Cheque No",
+      type: "text",
+      value: bankProfit?.chequeNumber || "",
+      placeholder: "Enter cheque number",
+    },
+    {
+      id: "paidDate",
+      label: "Paid Date",
+      type: "date",
+      value: bankProfit?.paidDate || "",
+      placeholder: "Enter paid date",
+      required: true,
+    },
+    {
+      id: "amount",
+      label: "Amount",
+      type: "text",
+      value: bankProfit?.amount || "",
+      placeholder: "Enter amount",
+      required: true,
     },
   ];
 
-  const fetchMembers = async () => {
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-PK", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(date);
+  };
+
+  const fetchBankProfitData = async () => {
     try {
       setIsLoading(true);
       const queryParams = {
@@ -243,15 +233,21 @@ export default function Members() {
         ...filters,
       };
 
-      const response = await getMembers(queryParams);
+      const response = await getBankProfit(queryParams);
+      const formattedData = response?.data?.data.map((item) => ({
+        ...item,
+        paidDate: formatDate(item.paidDate),
+      }));
 
-      setData(response?.data?.data);
+      setData(formattedData);
+      setOriginalFilters(response?.data?.filters);
+      console.log("Original filters:", response?.data?.filters);
       setPageCount(response?.data?.pagination?.totalPages);
     } catch (error) {
-      console.error("Error fetching members:", error);
+      console.error("Error fetching bankProfit:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch members data",
+        description: "Failed to fetch bank profit data",
         variant: "destructive",
       });
     } finally {
@@ -261,38 +257,26 @@ export default function Members() {
 
   const columns = [
     {
-      accessorKey: "msNo",
-      header: "Member No",
+      accessorKey: "bank.bankName",
+      header: "Bank Name",
     },
     {
-      accessorKey: "purchaseName",
-      header: "Name",
+      accessorKey: "bank.accountNo",
+      header: "Account No",
     },
     {
-      accessorKey: "phase",
-      header: "Phase",
+      accessorKey: "paidDate",
+      header: "Paid Date",
     },
     {
-      accessorKey: "plotNo",
-      header: "Plot No",
-    },
-    {
-      accessorKey: "block",
-      header: "Block",
-    },
-    {
-      accessorKey: "category",
-      header: "Category",
-    },
-    {
-      accessorKey: "area",
-      header: "Area",
+      accessorKey: "amount",
+      header: "Amount",
     },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const member = row.original;
+        const bankProfit = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -303,10 +287,14 @@ export default function Members() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem onClick={() => setEditingMember(member)}>
-                Edit Member
+              <DropdownMenuItem
+                onClick={() => setEditingBankProfit(bankProfit)}
+              >
+                Edit Bank Profit
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setViewingMember(member)}>
+              <DropdownMenuItem
+                onClick={() => setViewingBankProfit(bankProfit)}
+              >
                 View Details
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -316,17 +304,30 @@ export default function Members() {
     },
   ];
 
+  const filterConfig = [
+    {
+      id: "bank",
+      label: "Bank Name",
+      type: "select",
+      mode: "single",
+      options:
+        originalFilters?.bankList?.map((bank) => ({
+          value: bank._id,
+          label: bank.bankName + " - " + bank.accountNo,
+        })) || [],
+    },
+  ];
+
   return (
     <div>
       <div className="mt-4">
         <DataTable
-          heading="Members"
+          heading="Bank Profit"
           columns={columns}
           data={data}
-          enableFilters={true}
+          enableFilters={false}
           enableColumnVisibility={true}
-          filterableField="msNo"
-          filterableFieldLabel="Member No"
+          filters={filterConfig}
           onFilterChange={handleFilterChange}
           pagination={pagination}
           pageCount={pageCount}
@@ -347,35 +348,35 @@ export default function Members() {
 
       <DynamicSheet
         mode="create"
-        title="Create Member"
-        description="Add a new member to the system."
+        title="Create Bank Profit"
+        description="Add a new bak profit to the system."
         fields={getFieldConfig()}
         onSubmit={handleCreateSubmit}
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
       />
 
-      {editingMember && (
+      {editingBankProfit && (
         <DynamicSheet
           mode="edit"
-          title="Edit Member"
-          description="Make changes to the member details."
-          fields={getFieldConfig(editingMember)}
+          title="Edit Bank Profit"
+          description="Make changes to the bank profit details."
+          fields={getFieldConfig(editingBankProfit)}
           onSubmit={handleEditSubmit}
-          open={!!editingMember}
-          onOpenChange={(open) => !open && setEditingMember(null)}
+          open={!!editingBankProfit}
+          onOpenChange={(open) => !open && setEditingBankProfit(null)}
         />
       )}
 
-      {viewingMember && (
+      {viewingBankProfit && (
         <DynamicSheet
           mode="view"
-          title="View Member"
-          description="View member details."
-          fields={getFieldConfig(viewingMember)}
+          title="View Bank Profit"
+          description="View bank profit details."
+          fields={getFieldConfig(viewingBankProfit)}
           onSubmit={() => {}}
-          open={!!viewingMember}
-          onOpenChange={(open) => !open && setViewingMember(null)}
+          open={!!viewingBankProfit}
+          onOpenChange={(open) => !open && setViewingBankProfit(null)}
         />
       )}
     </div>

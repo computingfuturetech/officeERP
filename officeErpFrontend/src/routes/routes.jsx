@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Home, LoginPage, Members } from "../views";
+import { BankProfit, Home, LoginPage, Members } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
+import path from "path";
 
 const staticRoutes = [
   {
@@ -14,6 +15,10 @@ const staticRoutes = [
   {
     path: "/members",
     element: <ProtectedRoute element={<Members />} />,
+  },
+  {
+    path: "/bank-profit",
+    element: <ProtectedRoute element={<BankProfit />} />,
   },
 ];
 
