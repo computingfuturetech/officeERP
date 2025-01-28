@@ -14,6 +14,7 @@ const auditExpenseRouter = require("./src/routes/auditExpenseRoutes/auditExpense
 const bankChargesExpenseRouter = require("./src/routes/bankChargesExpenseRoutes/bankChargesExpense");
 const memberRouter = require("./src/routes/memberRoutes/member");
 const bankProfitRouter = require("./src/routes/bankProfitRoutes/bankProfit");
+const waterMaintenaceBillRouter = require("./src/routes/waterMaintenanceBillRoutes/waterMaintenanceBill");
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use("/auditExpense", auditExpenseRouter);
 app.use("/bankChargesExpense", bankChargesExpenseRouter);
 app.use("/member", memberRouter);
 app.use("/bankProfit", bankProfitRouter);
+app.use("/waterMaintenanceBill", waterMaintenaceBillRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

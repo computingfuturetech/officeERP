@@ -29,14 +29,13 @@ module.exports = {
     }
   },
   checkHeadOfAccount: async (req, res, headOfAccount) => {
-    const mainHeadOfAccount = await MainHeadOfAccount.findOne({
-      headOfAccount: headOfAccount,
-    });
-    const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
-      headOfAccount: headOfAccount,
-    });
-    if (!mainHeadOfAccount && !subHeadOfAccount) {
-      return res.status(404).json({ message: "Head of Account not found" });
+    let mainHeadOfAccount = await MainHeadOfAccount.findById(headOfAccount);
+    let subHeadOfAccount;
+    if (!mainHeadOfAccount) {
+      subHeadOfAccount = await SubExpenseHeadOfAccount.findById(headOfAccount);
+      if (!subHeadOfAccount) {
+        return res.status(404).json({ message: "Head of Account not found" });
+      }
     }
     let main_head_id;
     let sub_head_id;
