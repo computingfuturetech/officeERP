@@ -56,6 +56,7 @@ interface DataTableProps<TData, TValue> {
     filters?: DataTableFilter[]
     onFilterChange?: (filters: Record<string, string[] | string>) => void
     filterableField?: string;
+    filterableFieldLabel?: string;
     pageCount: number;
     pagination: PaginationState;
     onPaginationChange: (pagination: PaginationState) => void;
@@ -76,6 +77,7 @@ export function DataTable<TData, TValue>({
     filters = [],
     onFilterChange,
     filterableField,
+    filterableFieldLabel,
     pageCount,
     pagination,
     onPaginationChange,
@@ -193,7 +195,7 @@ export function DataTable<TData, TValue>({
                 {enableFilters && filterableField && (
                     <Input
                         ref={inputRef}
-                        placeholder={`Filter by ${filterableField}...`}
+                        placeholder={`Filter by ${filterableFieldLabel}...`}
                         value={inputValue}
                         onChange={(event) => setInputValue(event.target.value)}
                         className="max-w-sm"

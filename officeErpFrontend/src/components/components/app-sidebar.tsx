@@ -1,13 +1,24 @@
 import * as React from "react";
 import {
   AudioWaveform,
+  Banknote,
+  Building,
+  ChartNoAxesCombined,
   ChevronRight,
+  CircleDollarSign,
   Command,
+  Droplet,
+  Factory,
   Frame,
   GalleryVerticalEnd,
+  HandCoins,
+  Landmark,
+  LandPlot,
+  LayoutDashboard,
   Map,
   PanelTopClose,
   PieChart,
+  Users,
 } from "lucide-react";
 
 import { NavMain } from "@/components/components/nav-main";
@@ -29,34 +40,34 @@ const data = {
     {
       title: "Dashboard",
       url: "/",
-      icon: GalleryVerticalEnd,
+      icon: LayoutDashboard,
     },
     {
       title: "Members",
       url: "/members",
-      icon: AudioWaveform,
+      icon: Users,
     },
     {
       title: "Income",
-      icon: Command,
+      icon: Banknote,
       items: [
-        { title: "Transfer Income", url: "#", icon: ChevronRight },
-        { title: "Bank Profit", url: "#", icon: ChevronRight },
-        { title: "Water/Maintenance", url: "#", icon: ChevronRight },
-        { title: "Possession", url: "#", icon: ChevronRight },
+        { title: "Transfer Income", url: "#", icon: HandCoins },
+        { title: "Bank Profit", url: "/bank-profit", icon: Landmark },
+        { title: "Water/Maintenance", url: "#", icon: Droplet },
+        { title: "Possession", url: "#", icon: LandPlot },
       ],
     },
     {
       title: "Expense",
-      icon: Frame,
+      icon: CircleDollarSign,
       items: [
-        { title: "Office Expense", url: "#", icon: ChevronRight },
-        { title: "Site Expense", url: "#", icon: ChevronRight },
+        { title: "Office Expense", url: "#", icon: Building },
+        { title: "Site Expense", url: "#", icon: Factory },
       ],
     },
     {
       title: "Reports",
-      icon: PieChart,
+      icon: ChartNoAxesCombined,
       items: [
         {
           title: "Transaction Report",
