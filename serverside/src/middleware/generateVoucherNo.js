@@ -5,7 +5,7 @@ const CashLedger = require("../models/ledgerModels/cashBookLedger");
 module.exports = {
   generateBankVoucherNo: async (req, res, bank, type) => {
     try {
-      const bankFound = await BankList.findOne({ accountNo: bank });
+      const bankFound = await BankList.findById(bank);
       if (!bankFound) {
         return res
           .status(400)
