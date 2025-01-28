@@ -93,7 +93,6 @@ module.exports = {
             },
           },
         ]);
-        console.log(totalBalance);
         latestBalanceCash = await FixedAmount.findOne({})
           .sort({ cashOpeningBalance: -1 })
           .exec();
@@ -119,9 +118,7 @@ module.exports = {
           ));
       }
 
-      let incomeHOF = await IncomeHeadOfAccount.findOne({
-        headOfAccount: headOfAccount,
-      }).exec();
+      let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
 
       const generalLedger = new GeneralLedger({
         date: paidDate,

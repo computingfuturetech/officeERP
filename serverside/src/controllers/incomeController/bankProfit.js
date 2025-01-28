@@ -1,51 +1,125 @@
 const BankList = require("../../models/bankModel/bank");
 const BankProfit = require("../../models/incomeModels/bankProfitModels/bankProfit");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
-const bankLedger = require("../../models/ledgerModels/bankLedger")
-const fixedAmount = require("../../models/fixedAmountModel/fixedAmount")
-const mongoose = require('mongoose')
-const VoucherNo = require('../../middleware/generateVoucherNo')
-const GeneralLedger = require('../../middleware/createGeneralLedger');
-const BankLedger = require('../../middleware/createBankLedger');
+const VoucherNo = require("../../middleware/generateVoucherNo");
+const GeneralLedger = require("../../middleware/createGeneralLedger");
+const BankLedger = require("../../middleware/createBankLedger");
 
 module.exports = {
   createBankProfit: async (req, res) => {
-    const { amount, bank_account, profit_month, paid_date, challan_no, cheque_no } = req.body;
+    const {
+      amount,
+      bank,
+      profitMonth,
+      paidDate,
+      challanNo,
+      chequeNumber,
+      headOfAccount,
+    } = req.body;
     try {
-      if (!amount || !bank_account || !profit_month) {
-        return res.status(400).json({ message: "All fields are required" });
+      if (!amount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Amount is required",
+        });
       }
-      const head_of_account = "Bank Profit";
-      const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+
+      if (!bank) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank is required",
+        });
+      }
+
+      if (!paidDate) {
+        return res.status(400).json({
+          status: "error",
+          message: "Paid Date is required",
+        });
+      }
+
+      if (!headOfAccount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Head of Account is required",
+        });
+      }
+
+      const incomeHeadOfAccount = await IncomeHeadOfAccount.findById(
+        headOfAccount
+      ).exec();
       if (!incomeHeadOfAccount) {
-        return res.status(404).json({ message: 'Income head of account not found' });
+        return res.status(404).json({
+          status: "error",
+          message: "Income head of account not found",
+        });
       }
-      const bankList = await BankList.findOne({
-        accountNo: bank_account
-      });
+
+      const bankList = await BankList.findById(bank).exec();
       if (!bankList) {
-        return res
-          .status(400)
-          .json({ message: "Invalid Bank Account Number" });
+        return res.status(404).json({
+          status: "error",
+          message: "Bank not found",
+        });
       }
       const bankProfit = new BankProfit({
         amount: amount,
-        bank: bankList._id,
-        profitMonth: profit_month,
-        paidDate: paid_date,
-        headOfAccount: incomeHeadOfAccount._id,
-        chequeNo: cheque_no,
-        challanNo: challan_no
+        bank: bank,
+        profitMonth: profitMonth,
+        paidDate: paidDate,
+        headOfAccount: headOfAccount,
+        chequeNo: chequeNumber,
+        challanNo: challanNo,
       });
       const update_id = bankProfit._id;
       const type = "income";
-      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type)
-      await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
-      await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, profit_month, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
+      const bankVoucherNo = await VoucherNo.generateBankVoucherNo(
+        req,
+        res,
+        bank,
+        type
+      );
+      await BankLedger.createBankLedger(
+        req,
+        res,
+        bankVoucherNo,
+        type,
+        headOfAccount,
+        profitMonth,
+        amount,
+        paidDate,
+        chequeNumber,
+        challanNo,
+        update_id,
+        bank
+      );
+
+      await GeneralLedger.createGeneralLedger(
+        req,
+        res,
+        bankVoucherNo,
+        type,
+        headOfAccount,
+        profitMonth,
+        amount,
+        paidDate,
+        chequeNumber,
+        challanNo,
+        update_id,
+        bank
+      );
+
       await bankProfit.save();
-      res.status(200).json({
+
+      const newBankProfit = await BankProfit.findById(bankProfit._id)
+        .populate("bank", "bankName accountNo")
+        .populate("headOfAccount", "headOfAccount")
+        .exec();
+
+      res.status(201).json({
+        status: "success",
         message: "Bank profit created successfully",
-        data: bankProfit,
+        data: newBankProfit,
       });
     } catch (err) {
       res.status(500).json({ message: err });
@@ -53,37 +127,48 @@ module.exports = {
   },
   updateBankProfit: async (req, res) => {
     const id = req.query.id;
-    const { amount, bank_account, profit_month, paid_date } = req.body;
+    const { amount, bank, profitMonth, paidDate, challanNo, chequeNo } =
+      req.body;
     try {
-      const bankProfit = await BankProfit.findById(id).exec();
+      const bankProfit = await BankProfit.findById(id)
+        .populate("bank", "bankName accountNo")
+        .populate("headOfAccount", "headOfAccount")
+        .exec();
       if (!bankProfit) {
-        return res.status(404).json({ message: "Bank Profit not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Bank Profit not found",
+        });
       }
-      const head_of_account = "Bank Profit";
       const updateData = {};
-      if (head_of_account) {
-        const incomeHeadOfAccount = await IncomeHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-        if (!incomeHeadOfAccount) {
-          return res.status(404).json({ message: 'Income head of account not found' });
-        }
-        updateData.headOfAccount = incomeHeadOfAccount._id;
-      }
-      if (bank_account) {
-        const bankList = await BankList.findOne({ accountNo: bank_account });
+      if (bank) {
+        const bankList = await BankList.findById(bank);
         if (!bankList) {
-          return res.status(400).json({ message: "Invalid bank_name or bank_account" });
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
         }
-        updateData.bank = bankList._id;
+        updateData.bank = bank;
       }
       if (amount) {
         updateData.amount = amount;
       }
-      if (paid_date) {
-        updateData.paidDate = paid_date;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (profit_month) {
-        updateData.profitMonth = profit_month;
+      if (profitMonth) {
+        updateData.profitMonth = profitMonth;
       }
+      if (challanNo) {
+        updateData.challanNo = challanNo;
+      }
+      if (chequeNo) {
+        updateData.chequeNo = chequeNo;
+      }
+
+      updateData.headOfAccount = bankProfit.headOfAccount;
+
       const type = "income";
       await BankLedger.updateBankLedger(req, res, id, updateData, type);
       await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
@@ -91,55 +176,92 @@ module.exports = {
         id,
         { $set: updateData },
         { new: true }
-      ).exec();
+      )
+        .populate("bank", "bankName accountNo")
+        .populate("headOfAccount", "headOfAccount")
+        .exec();
       res.status(200).json({
+        status: "success",
         message: "Bank Profit updated successfully",
         data: updatedBankProfit,
       });
     } catch (err) {
-      winston.error(err);
-      res.status(500).json({ message: 'Internal Server Error' });
+      res.status(500).json({ status: "error", message: err.message });
     }
   },
   getBankProfits: async (req, res) => {
-    const { id, bank_account, sort, profit_month, page_no = 1, limit = 10 } = req.query;
-    let sortOrder = {};
-    if (sort === 'asc') {
-      sortOrder = { amount: 1 };
-    } else if (sort === 'desc') {
-      sortOrder = { amount: -1 };
-    }
+    const { id, bank, profitMonth, page = 1, limit = 10 } = req.query;
+
     try {
       let filter = {};
 
-      if (profit_month) {
-        filter.profitMonth = profit_month;
-      }
       if (id) {
         const bankProfit = await BankProfit.findById(id)
-          .populate('bank', 'bankName accountNo')
-          .populate('headOfAccount', 'headOfAccount')
+          .populate("bank", "bankName accountNo")
+          .populate("headOfAccount", "headOfAccount")
           .exec();
         if (!bankProfit) {
-          return res.status(404).json({ message: "Bank Profit not found" });
+          return res.status(404).json({
+            status: "error",
+            message: "Bank Profit not found",
+          });
         }
-        res.status(200).json(bankProfit);
-      } else {
-        let bankProfits = await BankProfit.find(filter)
-          .populate('bank', 'bankName accountNo')
-          .populate('headOfAccount', 'headOfAccount')
-          .exec();
-
-        if (bank_account) {
-          bankProfits = bankProfits.filter((bankProfit) => bankProfit.bank.accountNo === bank_account);
-        }
-        const totalCount = bankProfits.length;
-        bankProfits = bankProfits.slice((page_no - 1) * limit, page_no * limit);
-        let hasMore = totalCount > page_no * limit;
-        res.status(200).json({ bankProfits, hasMore });
+        return res.status(200).json({
+          status: "success",
+          message: "Bank Profit found",
+          data: bankProfit,
+        });
       }
+
+      const bankList = await BankList.find()
+        .select("bankName accountNo")
+        .exec();
+
+      if (profitMonth) {
+        const bankProfitValue = profitMonth.split(",");
+        filter.profitMonth = { $in: bankProfitValue };
+      }
+
+      if (bank) {
+        const bankValue = bank.split(",");
+        filter.bank = { $in: bankValue };
+      }
+
+      const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        populate: [
+          { path: "bank", select: "bankName accountNo" },
+          { path: "headOfAccount", select: "headOfAccount" },
+        ],
+        sort: { createdAt: -1 },
+      };
+
+      const bankProfits = await BankProfit.paginate(filter, options);
+
+      const listOfHeadOfAccount = await IncomeHeadOfAccount.find()
+        .select("headOfAccount")
+        .exec();
+
+      res.status(200).json({
+        status: "success",
+        message: "Bank Profits found",
+        data: bankProfits.docs,
+        filters: {
+          bankList: bankList,
+          headOfAccount: listOfHeadOfAccount,
+        },
+        pagination: {
+          totalDocs: bankProfits.totalDocs,
+          totalPages: bankProfits.totalPages,
+          currentPage: bankProfits.page,
+          limit: bankProfits.limit,
+          hasNextPage: bankProfits.hasNextPage,
+          hasPrevPage: bankProfits.hasPrevPage,
+        },
+      });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(500).json({ status: "error", message: err.message });
     }
   },
 };

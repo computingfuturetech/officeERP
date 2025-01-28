@@ -78,13 +78,18 @@ module.exports = {
       })
         .sort({ _id: -1 })
         .exec();
-      if (latestBalance) {
+
+      if (latestBalance !== null) {
         balance = latestBalance.balance;
       } else {
         latestBalance = await BankBalance.findOne({
           bank: bankId,
         }).exec();
-        balance = latestBalance.balance;
+        if (latestBalance !== null) {
+          balance = latestBalance.balance;
+        } else {
+          balance = 0;
+        }
       }
       const newBalance =
         type === "income"
@@ -100,9 +105,7 @@ module.exports = {
             headOfAccount
           ));
       }
-      let incomeHOF = await IncomeHeadOfAccount.findOne({
-        headOfAccount: headOfAccount,
-      }).exec();
+      let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
       const bankLedger = new BankLedger({
         date: paidDate,
         voucherNo: voucherNo,
@@ -124,10 +127,11 @@ module.exports = {
         challanNo: challanNo,
         updateId: update_id,
         previousBalance: balance,
-        bank: bankId,
+        bank: bank,
       });
       await bankLedger.save();
       console.log("Bank Ledger created successfully");
+      return bankLedger;
     } catch (err) {
       return res.status(500).json({ message: err });
     }
