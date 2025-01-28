@@ -68,7 +68,7 @@ module.exports = {
         profitMonth: profitMonth,
         paidDate: paidDate,
         headOfAccount: headOfAccount,
-        chequeNo: chequeNumber,
+        chequeNumber: chequeNumber,
         challanNo: challanNo,
       });
       const update_id = bankProfit._id;
@@ -127,7 +127,7 @@ module.exports = {
   },
   updateBankProfit: async (req, res) => {
     const id = req.query.id;
-    const { amount, bank, profitMonth, paidDate, challanNo, chequeNo } =
+    const { amount, bank, profitMonth, paidDate, challanNo, chequeNumber } =
       req.body;
     try {
       const bankProfit = await BankProfit.findById(id)
@@ -163,8 +163,8 @@ module.exports = {
       if (challanNo) {
         updateData.challanNo = challanNo;
       }
-      if (chequeNo) {
-        updateData.chequeNo = chequeNo;
+      if (chequeNumber) {
+        updateData.chequeNumber = chequeNumber;
       }
 
       updateData.headOfAccount = bankProfit.headOfAccount;

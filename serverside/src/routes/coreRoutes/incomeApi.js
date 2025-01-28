@@ -5,7 +5,6 @@ router.use(express.urlencoded({ extended: true }));
 const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
-const waterMaintenanceBill = require("../../controllers/incomeController/waterMaintenanceBill");
 const possessionFee = require("../../controllers/incomeController/possessionFee");
 const sellerPurchaserIncome = require("../../controllers/incomeController/sellerPurchaseIncome");
 const incomeHeadOfAccount = require("../../controllers/incomeHeadOfAccount/incomeHeadOfAccount");
@@ -49,25 +48,6 @@ router.get(
   authenticateJWT,
   checkRole(["admin", "employee"]),
   sellerPurchaserIncome.getSellerPurchaseIncome
-);
-
-router.post(
-  "/createWaterMaintenanceBill",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  waterMaintenanceBill.createWaterMaintenanceBill
-);
-router.get(
-  "/getWaterMaintenanceBill/",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  waterMaintenanceBill.getWaterMaintenanceBill
-);
-router.post(
-  "/updateWaterMaintenanceBill",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  waterMaintenanceBill.updateWaterMaintenanceBill
 );
 
 router.post(
