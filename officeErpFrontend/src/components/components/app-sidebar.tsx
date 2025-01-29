@@ -53,7 +53,7 @@ const data = {
       items: [
         { title: "Transfer Income", url: "#", icon: HandCoins },
         { title: "Bank Profit", url: "/bank-profit", icon: Landmark },
-        { title: "Water/Maintenance", url: "#", icon: Droplet },
+        { title: "Water/Maintenance", url: "/water-maintenance", icon: Droplet },
         { title: "Possession", url: "#", icon: LandPlot },
       ],
     },

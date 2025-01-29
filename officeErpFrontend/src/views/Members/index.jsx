@@ -76,7 +76,6 @@ export default function Members() {
   const handleCreateSubmit = async (data) => {
     try {
       const response = await createMember(data);
-      console.log("Create response:", response);
 
       if (response.status === 201) {
         setData((prev) => [response?.data?.data, ...prev]);
