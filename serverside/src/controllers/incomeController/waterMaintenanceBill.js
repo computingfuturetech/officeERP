@@ -10,195 +10,116 @@ const { stat } = require("fs");
 
 module.exports = {
   createWaterMaintenanceBill: async (req, res) => {
-    const {
-      msNo,
-      referenceNo,
-      billingMonth,
-      amount,
-      paidDate,
-      plotNo,
-      challanNo,
-      headOfAccount,
-    } = req.body;
-
+    const bills = req.body;
     try {
-      if (!paidDate) {
-        return res.status(400).json({
-          status: "error",
-          message: "Paid Date is required",
-        });
-      }
-
-      if (!msNo) {
-        return res.status(400).json({
-          status: "error",
-          message: "Member No is required",
-        });
-      }
-
-      if (!referenceNo) {
-        return res.status(400).json({
-          status: "error",
-          message: "Reference No is required",
-        });
-      }
-
-      if (!billingMonth) {
-        return res.status(400).json({
-          status: "error",
-          message: "Billing Month is required",
-        });
-      }
-
-      if (!amount) {
-        return res.status(400).json({
-          status: "error",
-          message: "Amount is required",
-        });
-      }
-
-      if (!plotNo) {
-        return res.status(400).json({
-          status: "error",
-          message: "Plot No is required",
-        });
-      }
-
-      const members = msNo.split(",").map((member) => member.trim());
-      const references = referenceNo
-        .split(",")
-        .map((reference) => parseInt(reference.trim()));
-      const paidDates = paidDate
-        .split(",")
-        .map((date) => new Date(date.trim()));
-      const billingMonths = billingMonth
-        .split(",")
-        .map((month) => month.trim());
-
-      const amounts = amount.split(",").map((amt) => parseFloat(amt.trim()));
-
-      const plotNos = plotNo.split(",").map((plot) => plot.trim());
-
-      const challanNos = challanNo.split(",").map((challan) => challan.trim());
-
-      const incomeHeadOfAccount = await IncomeHeadOfAccount.findById(
-        headOfAccount
-      ).exec();
-      if (!incomeHeadOfAccount) {
-        return res.status(404).json({
-          status: "error",
-          message: "Income head of account not found",
-        });
-      }
-
-      if (members.length !== references.length) {
+      if (!Array.isArray(bills) || bills.length === 0) {
         return res.status(400).json({
           status: "error",
           message:
-            "Invalid input: members and references must have the same length",
+            "Invalid input: Expected an array of water maintenance bills",
         });
       }
 
-      if (members.length !== paidDates.length) {
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Invalid input: members and paid dates must have the same length",
-        });
-      }
+      const promises = bills.map(async (bill) => {
+        const {
+          msNo,
+          referenceNo,
+          billingMonth,
+          amount,
+          paidDate,
+          plotNum,
+          challanNo,
+          headOfAccount,
+        } = bill;
 
-      if (members.length !== billingMonths.length) {
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Invalid input: members and billing months must have the same length",
-        });
-      }
-
-      if (members.length !== amounts.length) {
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Invalid input: members and amounts must have the same length",
-        });
-      }
-
-      if (members.length !== plotNos.length) {
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Invalid input: members and plot nos must have the same length",
-        });
-      }
-
-      if (members.length !== challanNos.length) {
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Invalid input: members and challan nos must have the same length",
-        });
-      }
-
-      const promises = members.map(async (member, index) => {
-        // const memberDoc = await Member.findOne({
-        //   $expr: { $eq: [{ $toString: "$msNo" }, `${member}`] },
-        // });
-        const memberDoc = await Member.findOne({ msNo: member });
-        if (!memberDoc) {
-          return res.status(404).json({
+        if (
+          !paidDate ||
+          !msNo ||
+          !referenceNo ||
+          !billingMonth ||
+          !amount ||
+          !plotNum ||
+          !headOfAccount
+        ) {
+          return {
             status: "error",
-            message: `Member with MS No ${member} not found`,
-          });
+            message: "Missing required fields in bill entry",
+          };
         }
+
+        const incomeHeadOfAccount = await IncomeHeadOfAccount.findById(
+          headOfAccount
+        ).exec();
+        if (!incomeHeadOfAccount) {
+          return {
+            status: "error",
+            message: "Income head of account not found",
+          };
+        }
+        const memberDoc = await Member.findOne({ msNo });
+        if (!memberDoc) {
+          return {
+            status: "error",
+            message: `Member with MS No ${msNo} not found`,
+          };
+        }
+
         const waterMaintenanceBill = new WaterMaintenancBill({
-          paidDate: paidDates[index],
+          paidDate: new Date(paidDate),
           msNo: memberDoc._id,
-          referenceNo: references[index],
-          billingMonth: billingMonths[index],
-          amount: amounts[index],
-          plotNo: plotNos[index],
+          referenceNo: parseInt(referenceNo),
+          billingMonth,
+          amount: parseFloat(amount),
+          plotNo: plotNum,
           incomeHeadOfAccount: incomeHeadOfAccount._id,
-          challanNo: challanNos[index],
+          challanNo,
         });
+
         const update_id = waterMaintenanceBill._id;
         const type = "income";
+
         const cashVoucherNo = await VoucherNo.generateCashVoucherNo(
           req,
           res,
           type
         );
+
         await CashBookLedger.createCashBookLedger(
           req,
           res,
           cashVoucherNo,
           type,
           headOfAccount,
-          billingMonths[index],
-          amounts[index],
-          paidDates[index],
+          billingMonth,
+          amount,
+          paidDate,
           update_id
         );
+
         await GeneralLedger.createGeneralLedger(
           req,
           res,
           cashVoucherNo,
           type,
           headOfAccount,
-          billingMonths[index],
-          amounts[index],
-          paidDates[index],
+          billingMonth,
+          amount,
+          paidDate,
           null,
-          challanNos[index],
+          challanNo,
           update_id,
           null
         );
+
         return waterMaintenanceBill.save();
       });
-      const createdWaterMaintenanceBills = await Promise.all(promises);
+
+      const createdBills = await Promise.all(promises);
+
       res.status(201).json({
         status: "success",
         message: "Water Maintenance Bills created successfully",
-        data: createdWaterMaintenanceBills,
+        data: createdBills,
       });
     } catch (err) {
       console.error(err);
