@@ -10,7 +10,7 @@
     "jsx": "react",
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "*.jsx"],
+  "include": ["src/**/*", "*.jsx", "src/services/.js"],
   "exclude": [
     "node_modules",
     "dist",

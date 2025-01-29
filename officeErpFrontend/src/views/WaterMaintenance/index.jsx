@@ -21,13 +21,20 @@ import {
   updateBankProfit,
 } from "../../services/bankProfit";
 import { months } from "../../assets/options";
+import {
+  createWaterMaintenance,
+  getWaterMaintenance,
+  updateWaterMaintenance,
+} from "../../services/waterMaintenance";
+import WaterMaintenanceForm from "../../components/components/add-mulitple";
+import AddMultiple from "../../components/components/add-mulitple";
 
-export default function BankProfit() {
+export default function WaterMaintenance() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingBankProfit, setEditingBankProfit] = useState(null);
-  const [viewingBankProfit, setViewingBankProfit] = useState(null);
+  const [editingWaterMaintenance, setEditingWaterMaintenance] = useState(null);
+  const [viewingWaterMaintenance, setViewingWaterMaintenance] = useState(null);
   const [originalFilters, setOriginalFilters] = useState({});
   const { toast, dismiss } = useToast();
   const [pagination, setPagination] = useState({
@@ -49,26 +56,30 @@ export default function BankProfit() {
   const handleEditSubmit = async (data) => {
     try {
       data.headOfAccount = (originalFilters?.headOfAccount ?? []).find(
-        (headOfAccount) => headOfAccount.headOfAccount === "Bank Profit"
+        (headOfAccount) =>
+          headOfAccount.headOfAccount === "Water/Maintenance Bill"
       )?._id;
-      const response = await updateBankProfit(editingBankProfit._id, data);
+      const response = await updateWaterMaintenance(
+        editingWaterMaintenance._id,
+        data
+      );
       if (response.status === 200) {
         setData((prev) =>
-          prev.map((bankProfit) =>
-            bankProfit._id === editingBankProfit._id
+          prev.map((waterMaintenance) =>
+            waterMaintenance._id === editingWaterMaintenance._id
               ? {
-                  ...bankProfit,
+                  ...waterMaintenance,
                   ...response?.data?.data,
                   paidDate: formatDate(response?.data?.data.paidDate),
                 }
-              : bankProfit
+              : waterMaintenance
           )
         );
         toast({
-          title: "Bank Profit updated",
-          description: "Bank Profit has been successfully updated.",
+          title: "Water Maintenance updated",
+          description: "Water Maintenance has been successfully updated.",
         });
-        setEditingBankProfit(null);
+        setEditingWaterMaintenance(null);
       } else {
         toast({
           title: "Edit Failed",
@@ -90,7 +101,8 @@ export default function BankProfit() {
   const handleCreateSubmit = async (data) => {
     try {
       data.headOfAccount = (originalFilters?.headOfAccount ?? []).find(
-        (headOfAccount) => headOfAccount.headOfAccount === "Bank Profit"
+        (headOfAccount) =>
+          headOfAccount.headOfAccount === "Water/Maintenance Bill"
       )?._id;
       const response = await createBankProfit(data);
 
@@ -98,13 +110,13 @@ export default function BankProfit() {
         setData((prev) => [
           {
             ...response?.data?.data,
-            paidDate: formatDate(response?.data?.data.paidDate),
+            paidDate: formatDate(response?.data?.data?.paidDate),
           },
           ...prev,
         ]);
         toast({
-          title: "Bank Profit created",
-          description: "Bank Profit has been successfully created.",
+          title: "Water Maintenance created",
+          description: "Water Maintenance has been successfully created.",
         });
         setIsCreateOpen(false);
         return true;
@@ -148,7 +160,7 @@ export default function BankProfit() {
   }, [pagination, filters]);
 
   useEffect(() => {
-    fetchBankProfitData();
+    fetchWaterMaintenance();
   }, [pagination.pageIndex, pagination.pageSize, filters]);
 
   const handleFilterChange = (newFilters) => {
@@ -167,47 +179,74 @@ export default function BankProfit() {
     }));
   };
 
-  const getFieldConfig = (bankProfit) => [
+  const getFieldConfig = (waterMaintenance) => [
     {
-      id: "bank",
-      label: "Bank Name",
-      type: "select",
-      value: bankProfit?.bank?._id || "",
-      options: originalFilters?.bankList?.map((bank) => ({
-        value: bank._id,
-        label: bank.bankName + " - " + bank.accountNo.slice(-4),
-      })),
+      id: "msNo",
+      label: "Member No",
+      type: "text",
+      value: waterMaintenance?.msNo?.msNo || "",
       required: true,
-      placeholder: "Enter bank name",
+      placeholder: "Enter member number",
+      readOnly: true,
+    },
+    {
+      id: "purchaseName",
+      label: "Member Name",
+      type: "text",
+      value: waterMaintenance?.msNo?.purchaseName || "",
+      placeholder: "Enter member name",
+      required: true,
+      readOnly: true,
     },
     {
       id: "challanNo",
       label: "Challan No",
       type: "text",
-      value: bankProfit?.challanNo || "",
+      value: waterMaintenance?.challanNo || "",
       placeholder: "Enter challan number",
       required: true,
     },
     {
-      id: "chequeNumber",
-      label: "Cheque No",
+      id: "referenceNo",
+      label: "Reference No",
       type: "text",
-      value: bankProfit?.chequeNumber || "",
-      placeholder: "Enter cheque number",
+      value: waterMaintenance?.referenceNo || "",
+      placeholder: "Enter reference number",
+      required: true,
+      readOnly: true,
+    },
+    {
+      id: "plotNo",
+      label: "Plot No",
+      type: "text",
+      value: waterMaintenance?.plotNo || "",
+      placeholder: "Enter plot number",
+      required: true,
+      readOnly: true,
+    },
+    {
+      id: "month",
+      label: "Month",
+      type: "select",
+      value: waterMaintenance?.billingMonth || "",
+      options: months,
+      required: true,
+      readOnly: true,
     },
     {
       id: "paidDate",
       label: "Paid Date",
       type: "date",
-      value: bankProfit?.paidDate || "",
+      value: waterMaintenance?.paidDate || "",
       placeholder: "Enter paid date",
       required: true,
+      readOnly: true,
     },
     {
       id: "amount",
       label: "Amount",
       type: "text",
-      value: bankProfit?.amount || "",
+      value: waterMaintenance?.amount || "",
       placeholder: "Enter amount",
       required: true,
     },
@@ -222,7 +261,7 @@ export default function BankProfit() {
     }).format(date);
   };
 
-  const fetchBankProfitData = async () => {
+  const fetchWaterMaintenance = async () => {
     try {
       setIsLoading(true);
       const queryParams = {
@@ -231,10 +270,10 @@ export default function BankProfit() {
         ...filters,
       };
 
-      const response = await getBankProfit(queryParams);
+      const response = await getWaterMaintenance(queryParams);
       const formattedData = response?.data?.data.map((item) => ({
         ...item,
-        paidDate: formatDate(item.paidDate),
+        paidDate: formatDate(item?.paidDate),
       }));
 
       setData(formattedData);
@@ -244,7 +283,7 @@ export default function BankProfit() {
       console.error("Error fetching bankProfit:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch bank profit data",
+        description: "Failed to fetch water maintenance data",
         variant: "destructive",
       });
     } finally {
@@ -254,12 +293,20 @@ export default function BankProfit() {
 
   const columns = [
     {
-      accessorKey: "bank.bankName",
-      header: "Bank Name",
+      accessorKey: "msNo.msNo",
+      header: "Member No",
     },
     {
-      accessorKey: "bank.accountNo",
-      header: "Account No",
+      accessorKey: "msNo.purchaseName",
+      header: "Member Name",
+    },
+    {
+      accessorKey: "plotNo",
+      header: "Plot No",
+    },
+    {
+      accessorKey: "billingMonth",
+      header: "Billing Month",
     },
     {
       accessorKey: "paidDate",
@@ -273,7 +320,7 @@ export default function BankProfit() {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const bankProfit = row.original;
+        const bankProfit = row?.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -285,12 +332,12 @@ export default function BankProfit() {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => setEditingBankProfit(bankProfit)}
+                onClick={() => setEditingWaterMaintenance(bankProfit)}
               >
-                Edit Bank Profit
+                Edit Water Maintenance
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setViewingBankProfit(bankProfit)}
+                onClick={() => setViewingWaterMaintenance(bankProfit)}
               >
                 View Details
               </DropdownMenuItem>
@@ -303,77 +350,151 @@ export default function BankProfit() {
 
   const filterConfig = [
     {
-      id: "bank",
-      label: "Bank Name",
+      id: "billingMonth",
+      label: "Billing Month",
       type: "select",
       mode: "single",
-      options:
-        originalFilters?.bankList?.map((bank) => ({
-          value: bank._id,
-          label: bank.bankName + " - " + bank.accountNo,
-        })) || [],
+      options: months,
     },
   ];
+  const handleSubmit = async (formData) => {
+    try {
+      formData?.map((data) => {
+        data.headOfAccount = (originalFilters?.headOfAccount ?? [])?.find(
+          (headOfAccount) =>
+            headOfAccount.headOfAccount === "Water/Maintenance Bill"
+        )?._id;
+      });
+      const response = await createWaterMaintenance(formData);
+      if (response?.status === 201) {
+        toast({
+          title: "Water Maintenance created",
+          description: "Water Maintenance has been successfully created.",
+        });
+        fetchWaterMaintenance();
+      } else {
+        toast({
+          title: "Creation Failed",
+          description:
+            response?.data?.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+      return response;
+    } catch (error) {
+      toast({
+        title: "Creation Failed",
+        description:
+          error?.response?.data?.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
 
+  const fields = [
+    {
+      id: "msNo",
+      label: "Member Num",
+      type: "text",
+      required: true,
+      placeholder: "Enter member number",
+    },
+    {
+      id: "challanNo",
+      label: "Challan No",
+      type: "text",
+      required: true,
+      placeholder: "Enter challan number",
+    },
+    {
+      id: "plotNum",
+      label: "Plot Num",
+      type: "text",
+      required: true,
+      placeholder: "Enter plot number",
+    },
+    {
+      id: "referenceNo",
+      label: "Reference Num",
+      type: "text",
+      required: true,
+      placeholder: "Enter reference number",
+    },
+    {
+      id: "billingMonth",
+      label: "Billing Month",
+      placeholder: "Select billing month",
+      type: "select",
+      required: true,
+      options: months,
+    },
+    {
+      id: "paidDate",
+      label: "Paid Date",
+      type: "date",
+      required: true,
+      placeholder: "Select paid date",
+    },
+    {
+      id: "amount",
+      label: "Amount",
+      type: "number",
+      required: true,
+      placeholder: "Enter amount",
+    },
+  ];
   return (
     <div>
+      <AddMultiple
+        title="Add Water Maintenance"
+        fields={fields}
+        onSubmit={handleSubmit}
+        gridCols="grid-cols-3 lg:grid-cols-4 xl:grid-cols-7"
+        enableMultiple={true}
+        submitButtonText="Save Bills"
+        addNewButtonText="+ Add New"
+      />{" "}
       <div className="mt-4">
         <DataTable
-          heading="Bank Profit"
+          heading="Water Maintenance"
           columns={columns}
           data={data}
-          enableFilters={false}
+          enableFilters={true}
+          filterableField="plotNo"
+          filterableFieldLabel="Plot No"
           enableColumnVisibility={true}
           filters={filterConfig}
           onFilterChange={handleFilterChange}
           pagination={pagination}
           pageCount={pageCount}
           onPaginationChange={setPagination}
-          createButton={{
-            onClick: () => {
-              dismiss();
-              setIsCreateOpen(true);
-            },
-            label: "Create",
-          }}
           resetFilters={{
             onClick: handleResetFilters,
             disabled: Object.keys(filters).length === 0,
           }}
         />
       </div>
-
-      <DynamicSheet
-        mode="create"
-        title="Create Bank Profit"
-        description="Add a new bak profit to the system."
-        fields={getFieldConfig()}
-        onSubmit={handleCreateSubmit}
-        open={isCreateOpen}
-        onOpenChange={setIsCreateOpen}
-      />
-
-      {editingBankProfit && (
+      {editingWaterMaintenance && (
         <DynamicSheet
           mode="edit"
-          title="Edit Bank Profit"
-          description="Make changes to the bank profit details."
-          fields={getFieldConfig(editingBankProfit)}
+          title="Edit Water Maintenance"
+          description="Make changes to the water maintenance details."
+          fields={getFieldConfig(editingWaterMaintenance)}
           onSubmit={handleEditSubmit}
-          open={!!editingBankProfit}
-          onOpenChange={(open) => !open && setEditingBankProfit(null)}
+          open={!!editingWaterMaintenance}
+          onOpenChange={(open) => !open && setEditingWaterMaintenance(null)}
         />
       )}
-
-      {viewingBankProfit && (
+      {viewingWaterMaintenance && (
         <DynamicSheet
           mode="view"
-          title="View Bank Profit"
-          description="View bank profit details."
-          fields={getFieldConfig(viewingBankProfit)}
+          title="View Water Maintenance"
+          description="View water maintenance details."
+          fields={getFieldConfig(viewingWaterMaintenance)}
           onSubmit={() => {}}
-          open={!!viewingBankProfit}
-          onOpenChange={(open) => !open && setViewingBankProfit(null)}
+          open={!!viewingWaterMaintenance}
+          onOpenChange={(open) => !open && setViewingWaterMaintenance(null)}
         />
       )}
     </div>
