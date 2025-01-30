@@ -6,7 +6,6 @@ const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
 const possessionFee = require("../../controllers/incomeController/possessionFee");
-const sellerPurchaserIncome = require("../../controllers/incomeController/sellerPurchaseIncome");
 const incomeHeadOfAccount = require("../../controllers/incomeHeadOfAccount/incomeHeadOfAccount");
 const getAllIncome = require("../../controllers/incomeController/getAllIncome");
 const typeOfHeadOfAccount = require("../../controllers/incomeHeadOfAccount/typeOfHeadOfAccount");
@@ -29,25 +28,6 @@ router.post(
   authenticateJWT,
   checkRole(["admin", "employee"]),
   possessionFee.updatePossessionFee
-);
-
-router.post(
-  "/createSellerPurchaseIncome",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  sellerPurchaserIncome.createSellerPurchaseIncome
-);
-router.post(
-  "/updateSellerPurchaseIncome",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  sellerPurchaserIncome.updateSellerPurchaseIncome
-);
-router.get(
-  "/getSellerPurchaseIncome/",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  sellerPurchaserIncome.getSellerPurchaseIncome
 );
 
 router.post(
