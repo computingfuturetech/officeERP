@@ -15,9 +15,6 @@ const miscellaneousExpense = require("../../controllers/expenseController/miscel
 const electricityWaterExpense = require("../../controllers/expenseController/electricityAndWaterConnectionExpense");
 const getAllExpense = require("../../controllers/expenseController/getAllExpense");
 const vehicleDisposal = require("../../controllers/expenseController/vehicleDisposalExpense");
-const createHeadOfAccount = require("../../controllers/expenseHeadOfAccountController/createMainHeadOfAccount");
-const createSubHeadOfAccount = require("../../controllers/expenseHeadOfAccountController/createSubHeadOfAccount");
-const listofHeadOfAccount = require("../../controllers/expenseHeadOfAccountController/listOfHeadOfAccount");
 const expense = require("../../controllers/expenseController/expense");
 
 router.post(
@@ -190,37 +187,6 @@ router.get(
   authenticateJWT,
   checkRole(["admin", "employee"]),
   getAllExpense.getExpenseByHeadOfAccount
-);
-
-router.post(
-  "/createMainExpenseHeadOfAccount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  createHeadOfAccount.createHeadOfAccount
-);
-router.post(
-  "/updateMainExpenseHeadOfAccount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  createHeadOfAccount.updateHeadOfAccount
-);
-router.post(
-  "/createSubExpenseHeadOfAccount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  createSubHeadOfAccount.createHeadOfAccount
-);
-router.post(
-  "/updateSubExpenseHeadOfAccount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  createSubHeadOfAccount.updateHeadOfAccount
-);
-router.get(
-  "/listOfHeadOfAccount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  listofHeadOfAccount.listOfHeadOfAccount
 );
 
 router.post(
