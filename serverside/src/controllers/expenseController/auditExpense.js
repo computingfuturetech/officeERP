@@ -7,6 +7,7 @@ const CashBookLedger = require("../../middleware/createCashBookLedger");
 const GeneralLedger = require("../../middleware/createGeneralLedger");
 const BankLedger = require("../../middleware/createBankLedger");
 const CheckBank = require("../../middleware/checkBank");
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
   createAuditFeeExpense: async (req, res) => {
@@ -61,12 +62,20 @@ module.exports = {
           ));
       }
 
-      const { bankId } = await CheckBank.checkBank(req, res, bank);
+      // const { bankId } = await CheckBank.checkBank(req, res, bank);
 
-      if (check === "Bank" && bankId === null) {
+      if (check === "Bank" && !bank) {
         return res.status(400).json({
           status: "error",
           message: "Bank is required",
+        });
+      }
+
+      const bankList = await BankList.findById(bank).exec();
+      if (!bankList) {
+        return res.status(404).json({
+          status: "error",
+          message: "Bank not found",
         });
       }
 
@@ -77,7 +86,7 @@ module.exports = {
         amount: amount,
         year: year,
         particular: particular,
-        bank: bankId ? bankId : null,
+        bank: bank ? bank : null,
         ...(check === "Bank"
           ? { chequeNumber: chequeNumber }
           : { chequeNumber: undefined }),
