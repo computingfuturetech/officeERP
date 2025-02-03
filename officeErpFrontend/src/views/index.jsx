@@ -5,4 +5,12 @@ const LoginPage = lazy(() => import("./LoginPage"));
 const Members = lazy(() => import("./Members"));
 const BankProfit = lazy(() => import("./BankProfit"));
 const WaterMaintenance = lazy(() => import("./WaterMaintenance"));
-export { Home, LoginPage, Members, BankProfit, WaterMaintenance };
+const TransferIncome = lazy(() => import("./TransferIncome"));
+export {
+  Home,
+  LoginPage,
+  Members,
+  BankProfit,
+  WaterMaintenance,
+  TransferIncome,
+};
