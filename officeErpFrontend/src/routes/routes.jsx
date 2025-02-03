@@ -4,6 +4,7 @@ import {
   Home,
   LoginPage,
   Members,
+  TransferIncome,
   WaterMaintenance,
 } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
@@ -29,6 +30,10 @@ const staticRoutes = [
   {
     path: "/water-maintenance",
     element: <ProtectedRoute element={<WaterMaintenance />} />,
+  },
+  {
+    path: "/transfer-income",
+    element: <ProtectedRoute element={<TransferIncome />} />,
   },
 ];
 

@@ -10,7 +10,7 @@
     "jsx": "react",
     "esModuleInterop": true
   },
-  "include": ["src/**/*", "*.jsx", "src/services/.js"],
+  "include": ["src/**/*", "*.jsx", "src/services/transferIncome.js"],
   "exclude": [
     "node_modules",
     "dist",
