@@ -1,80 +1,175 @@
-const Member = require("../../models/memberModels/memberList");
-const HeadOfAccount = require("../../models/headOfAccountModel/headOfAccount");
 const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/officeutilExpense");
-const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
-const GeneralLedger = require('../../middleware/createGeneralLedger');
-const BankLedger = require('../../middleware/createBankLedger');
-const VoucherNo = require('../../middleware/generateVoucherNo')
-const CashBookLedger = require('../../middleware/createCashBookLedger')
-const CheckBank = require('../../middleware/checkBank');
-
+const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
+const GeneralLedger = require("../../middleware/createGeneralLedger");
+const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../middleware/generateVoucherNo");
+const CashBookLedger = require("../../middleware/createCashBookLedger");
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
   createOfficeUtilExpense: async (req, res) => {
     const {
-      head_of_account,
-      billing_month,
+      headOfAccount,
+      billingMonth,
       amount,
-      bill_reference,
-      adv_tax,
-      paid_date,
+      billReference,
+      advTax,
+      paidDate,
       check,
-      bank_account,
-      cheque_no,
-      challan_no,
-
+      bank,
+      chequeNumber,
+      challanNo,
     } = req.body;
-    console.log(req.body)
     try {
-      if (
-        !paid_date ||
-        !billing_month ||
-        !head_of_account ||
-        !amount
-      ) {
-        return res.status(400).json({ message: "All fields are required" });
+      if (!paidDate) {
+        return res.status(400).json({
+          status: "error",
+          message: "Paid Date is required",
+        });
+      }
+      if (!billingMonth) {
+        return res.status(400).json({
+          status: "error",
+          message: "Billing Month is required",
+        });
+      }
+      if (!amount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Amount is required",
+        });
+      }
+      if (!headOfAccount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Head of Account is required",
+        });
       }
       let main_head_id;
       let sub_head_id;
-      if (req.body.head_of_account) {
-        ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+      if (req.body.headOfAccount) {
+        ({ main_head_id, sub_head_id } =
+          await CheckMainAndSubHeadOfAccount.checkHeadOfAccount(
+            req,
+            res,
+            headOfAccount
+          ));
       }
 
-      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+      // const { bankId } = await CheckBank.checkBank(req, res, bank);
+
+      if (check === "Bank" && !bank) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank is required",
+        });
+      }
+      let bankList;
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
+      }
 
       const officeUtilExpense = new OfficeUtilExpense({
-        paidDate: paid_date,
+        paidDate: paidDate,
         mainHeadOfAccount: main_head_id,
         subHeadOfAccount: sub_head_id,
-        billingMonth: billing_month,
+        billingMonth: billingMonth,
         amount: amount,
-        billReference: bill_reference,
-        advTax: adv_tax,
-        bank: bank_id?bank_id:null,
-        challanNo: challan_no,
-        ...(check === 'Bank' ? { chequeNumber: cheque_no, bankAccount: bank_account } : { chequeNumber: undefined, bankAccount: undefined }),
+        billReference: billReference,
+        advTax: advTax,
+        bank: bank ? bank : null,
+        challanNo: challanNo,
+        ...(check === "Bank"
+          ? { chequeNumber: chequeNumber, bankAccount: bank }
+          : { chequeNumber: undefined, bankAccount: undefined }),
         check: check,
       });
 
-      officeUtilExpense.updateOne({ $unset: { chequeNumber: "", bankAccount: "" } });
+      officeUtilExpense.updateOne({
+        $unset: { chequeNumber: "", bankAccount: "" },
+      });
 
       const update_id = officeUtilExpense._id;
 
       const type = "expense";
 
-      if(check == "Cash")
-        {
-          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
-          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,billing_month, amount, paid_date,update_id);
-          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, billing_month, amount, paid_date, null, challan_no,update_id,bank_account);
-        }else if(check == "Bank"){
-          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,billing_month, amount, paid_date,cheque_no, challan_no,update_id,bank_account);
-          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, billing_month, amount, paid_date, cheque_no, challan_no,update_id,bank_account);
-        }
+      if (check == "Cash") {
+        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(
+          req,
+          res,
+          type
+        );
+        await CashBookLedger.createCashBookLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          billingMonth,
+          amount,
+          paidDate,
+          update_id
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          billingMonth,
+          amount,
+          paidDate,
+          null,
+          challanNo,
+          update_id,
+          bank
+        );
+      } else if (check == "Bank") {
+        const bankVoucherNo = await VoucherNo.generateBankVoucherNo(
+          req,
+          res,
+          bank,
+          type
+        );
+        await BankLedger.createBankLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          billingMonth,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          billingMonth,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
+      }
 
       await officeUtilExpense.save();
       res.status(201).json({
+        status: "success",
         message: "OfficeUtility Expense created successfully",
         data: officeUtilExpense,
       });
@@ -84,39 +179,53 @@ module.exports = {
     }
   },
   updateOfficeUtilExpense: async (req, res) => {
-    const id = req.query.id;
+    const { id } = req.query;
+    const {
+      billingMonth,
+      amount,
+      billReference,
+      advTax,
+      paidDate,
+      check,
+      bank,
+      chequeNumber,
+      challanNo,
+    } = req.body;
     try {
       if (!id) {
-        return res.status(400).json({ message: "ID is required" });
+        return res.status(400).json({
+          status: "error",
+          message: "ID is required",
+        });
       }
       const officeUtilExpense = await OfficeUtilExpense.findById(id).exec();
       if (!officeUtilExpense) {
-        return res.status(404).json({ message: "Office Utility Expense not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Office Utility Expense not found",
+        });
       }
       const updateData = {};
-      if (req.body.paid_date) {
-        updateData.paidDate = req.body.paid_date;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (req.body.billing_month) {
-        updateData.billingMonth = req.body.billing_month;
+      if (billingMonth) {
+        updateData.billingMonth = billingMonth;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (req.body.adv_tax) {
-        updateData.advTax = req.body.adv_tax;
+      if (req.body.advTax) {
+        updateData.advTax = req.body.advTax;
       }
-      if (req.body.bill_reference) {
-        updateData.billReference = req.body.bill_reference;
+      if (billReference) {
+        updateData.billReference = billReference;
       }
-      if (req.body.challan_no) {
-        updateData.challanNo = req.body.challan_no;
+      if (challanNo) {
+        updateData.challanNo = challanNo;
       }
-      if (req.body.cheque_no) {
-        updateData.chequeNo = req.body.cheque_no;
-      }
-      if (req.body.head_of_account) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, OfficeUtilExpense);
+      if (chequeNumber) {
+        updateData.chequeNo = chequeNumber;
       }
 
       const type = "expense";
@@ -124,21 +233,21 @@ module.exports = {
       if (req.body.check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else if (req.body.check == "Bank") {
+      } else if (check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else {
-        console.log("Invalid Check")
+      } else {
+        console.log("Invalid Check");
       }
 
-      const updatedOfficeUtilExpense = await OfficeUtilExpense.findByIdAndUpdate(
-        id,
-        { $set: updateData },
-        { new: true }
-      ).exec();
+      const updatedOfficeUtilExpense =
+        await OfficeUtilExpense.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true }
+        ).exec();
       res.status(200).json({
+        status: "success",
         message: "Office Utility  Expense updated successfully",
         data: updatedOfficeUtilExpense,
       });
@@ -148,29 +257,33 @@ module.exports = {
     }
   },
   getOfficeUtilExpense: async (req, res) => {
-    const { billing_month } = req.query;
+    const { billingMonth } = req.query;
     try {
       let officeUtilExpense;
-
-      if (billing_month) {
+      if (billingMonth) {
         officeUtilExpense = await OfficeUtilExpense.find({
-          billingMonth: billing_month,
+          billingMonth: billingMonth,
         })
-          .populate("mainHeadOfAccount", "headOfAccount")
+          .populate("mainHeadOfAccount")
+          .populate("subHeadOfAccount")
+          .populate("bank", "bankName bankBranch accountNo")
           .exec();
-      } else {
-        officeUtilExpense = await OfficeUtilExpense.find()
-          .populate("subHeadOfAccount", "headOfAccount")
-          .exec();
+        return res.status(200).json({
+          status: "success",
+          message: "Office Utility Expense fetched successfully",
+          data: officeUtilExpense,
+        });
       }
-
-      if (officeUtilExpense.length === 0) {
-        return res
-          .status(404)
-          .json({ message: "Office Util Expense not found" });
-      }
-
-      res.status(200).json(officeUtilExpense);
+      officeUtilExpense = await OfficeUtilExpense.find()
+        .populate("mainHeadOfAccount")
+        .populate("subHeadOfAccount")
+        .populate("bank", "bankName bankBranch accountNo")
+        .exec();
+      return res.status(200).json({
+        status: "success",
+        message: "Office Utility Expense fetched successfully",
+        data: officeUtilExpense,
+      });
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
