@@ -5,6 +5,7 @@ const BankLedger = require("../../middleware/createBankLedger");
 const VoucherNo = require("../../middleware/generateVoucherNo");
 const CashBookLedger = require("../../middleware/createCashBookLedger");
 const BankList = require("../../models/bankModel/bank");
+const MainExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
 
 module.exports = {
   createOfficeUtilExpense: async (req, res) => {
@@ -257,35 +258,57 @@ module.exports = {
     }
   },
   getOfficeUtilExpense: async (req, res) => {
-    const { billingMonth } = req.query;
+    const { billingMonth, page = 1, limit = 10 } = req.query;
+
     try {
-      let officeUtilExpense;
+      let filter = {};
       if (billingMonth) {
-        officeUtilExpense = await OfficeUtilExpense.find({
-          billingMonth: billingMonth,
-        })
-          .populate("mainHeadOfAccount")
-          .populate("subHeadOfAccount")
-          .populate("bank", "bankName bankBranch accountNo")
-          .exec();
-        return res.status(200).json({
-          status: "success",
-          message: "Office Utility Expense fetched successfully",
-          data: officeUtilExpense,
-        });
+        filter.billingMonth = billingMonth;
       }
-      officeUtilExpense = await OfficeUtilExpense.find()
-        .populate("mainHeadOfAccount")
-        .populate("subHeadOfAccount")
-        .populate("bank", "bankName bankBranch accountNo")
+
+      const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        populate: [
+          { path: "mainHeadOfAccount", select: "headOfAccount" },
+          { path: "subHeadOfAccount", select: "headOfAccount" },
+          { path: "bank", select: "bankName bankBranch accountNo" },
+        ],
+        sort: { createdAt: -1 },
+      };
+
+      const officeUtilExpense = await OfficeUtilExpense.paginate(
+        filter,
+        options
+      );
+
+      const bankList = await BankList.find().select(
+        "bankName branchName, accountNo"
+      );
+
+      const listOfHeadOfAccount = await MainExpenseHeadOfAccount.find()
+        .select("headOfAccount")
         .exec();
+
       return res.status(200).json({
         status: "success",
         message: "Office Utility Expense fetched successfully",
-        data: officeUtilExpense,
+        data: officeUtilExpense.docs,
+        filters: {
+          bankList: bankList,
+          headOfAccount: listOfHeadOfAccount,
+        },
+        pagination: {
+          totalDocs: officeUtilExpense.totalDocs,
+          totalPages: officeUtilExpense.totalPages,
+          currentPage: officeUtilExpense.page,
+          limit: officeUtilExpense.limit,
+          hasNextPage: officeUtilExpense.hasNextPage,
+          hasPrevPage: officeUtilExpense.hasPrevPage,
+        },
       });
     } catch (err) {
-      res.status(500).json({ message: err.message });
+      res.status(500).json({ status: "error", message: err.message });
     }
   },
 };
