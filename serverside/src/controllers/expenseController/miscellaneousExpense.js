@@ -1,61 +1,157 @@
-const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExpense/miscellaneousExpense")
-const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
-const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
-const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
-const GeneralLedger = require('../../middleware/createGeneralLedger');
-const BankLedger = require('../../middleware/createBankLedger');
-const VoucherNo = require('../../middleware/generateVoucherNo')
-const CashBookLedger = require('../../middleware/createCashBookLedger')
-const CheckBank = require('../../middleware/checkBank');
-
+const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExpense/miscellaneousExpense");
+const SubExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
+const MainHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
+const GeneralLedger = require("../../middleware/createGeneralLedger");
+const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../middleware/generateVoucherNo");
+const CashBookLedger = require("../../middleware/createCashBookLedger");
+const CheckBank = require("../../middleware/checkBank");
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
   createMiscellaneousExpense: async (req, res) => {
-    const { head_of_account, amount, description, vendor_name,plot_number, paid_date,check,bank_account,cheque_no,challan_no } = req.body;
-    console.log(req.body);
+    const {
+      mainHeadOfAccount,
+      subHeadOfAccount,
+      amount,
+      description,
+      vendor,
+      plotNumber,
+      paidDate,
+      check,
+      bank,
+      chequeNumber,
+      challanNo,
+    } = req.body;
+
     try {
-      if (!paid_date || !head_of_account || !amount) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-      let main_head_id;
-      let sub_head_id;
-      if (req.body.head_of_account) {
-        ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+      if (!paidDate) {
+        return res.status(400).json({
+          status: "error",
+          message: "Paid Date is required",
+        });
       }
 
-      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+      if (!amount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Amount is required",
+        });
+      }
+
+      if (check === "Bank" && !bank) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank is required",
+        });
+      }
+      let bankList;
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
+      }
+
+      let headOfAccount = subHeadOfAccount
+        ? subHeadOfAccount
+        : mainHeadOfAccount;
 
       const miscellaneousExpense = new MiscellaneousExpense({
-        paidDate: paid_date,
-        mainHeadOfAccount: main_head_id,
-        subHeadOfAccount: sub_head_id,
+        paidDate: paidDate,
+        mainHeadOfAccount: mainHeadOfAccount,
+        subHeadOfAccount: subHeadOfAccount,
         amount: amount,
-        vendor: vendor_name,
-        plotNumber: plot_number,
+        vendor: vendor,
+        plotNumber: plotNumber,
         description: description,
-        bank: bank_id?bank_id:null,
-        ...(check === 'Bank' ? { chequeNumber: cheque_no } : { chequeNumber: undefined}),
+        bank: bank ? bank : null,
+        ...(check === "Bank"
+          ? { chequeNumber: chequeNumber }
+          : { chequeNumber: undefined }),
         check: check,
-        challanNo: challan_no,
+        challanNo: challanNo,
       });
 
       const update_id = miscellaneousExpense._id;
 
       const type = "expense";
 
-      if(check == "Cash")
-        {
-          const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res,type)
-          await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account,description, amount, paid_date,update_id);
-          await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, description, amount, paid_date, null, challan_no,update_id,bank_account);
-        }else if(check == "Bank"){
-          const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res,bank_account,type)
-          await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account,description, amount, paid_date,cheque_no, challan_no,update_id,bank_account);
-          await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, description, amount, paid_date, cheque_no, challan_no,update_id,bank_account);
-        }
+      if (check == "Cash") {
+        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(
+          req,
+          res,
+          type
+        );
+        await CashBookLedger.createCashBookLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          update_id
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          null,
+          challanNo,
+          update_id,
+          bank
+        );
+      } else if (check == "Bank") {
+        const bankVoucherNo = await VoucherNo.generateBankVoucherNo(
+          req,
+          res,
+          bank,
+          type
+        );
+        await BankLedger.createBankLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
+      }
 
       await miscellaneousExpense.save();
       res.status(201).json({
+        status: "success",
         message: "Miscellaneous Expense created successfully",
         data: miscellaneousExpense,
       });
@@ -65,15 +161,19 @@ module.exports = {
     }
   },
   getMiscellaneousExpense: async (req, res) => {
-    const { head_of_account } = req.query;
+    const { headOfAccount } = req.query;
 
     try {
       let query = {};
 
-      if (head_of_account) {
-        const mainHeadOfAccount = await MainHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-  
+      if (headOfAccount) {
+        const mainHeadOfAccount = await MainHeadOfAccount.findOne({
+          headOfAccount: headOfAccount,
+        }).exec();
+        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
+          headOfAccount: headOfAccount,
+        }).exec();
+
         if (mainHeadOfAccount) {
           query.mainHeadOfAccount = mainHeadOfAccount._id;
         } else if (subHeadOfAccount) {
@@ -89,7 +189,9 @@ module.exports = {
         .exec();
 
       if (miscellaneousExpense.length === 0) {
-        return res.status(404).json({ message: "Miscellaneous Expense not found" });
+        return res
+          .status(404)
+          .json({ message: "Miscellaneous Expense not found" });
       }
 
       res.status(200).json(miscellaneousExpense);
@@ -98,64 +200,77 @@ module.exports = {
     }
   },
   updateMiscellaneousExpense: async (req, res) => {
-    const id = req.query.id;
+    const { id } = req.query;
+    const {
+      amount,
+      description,
+      vendor,
+      plotNumber,
+      paidDate,
+      check,
+      bank,
+      chequeNumber,
+      challanNo,
+    } = req.body;
     try {
       if (!id) {
         return res.status(400).json({ message: "ID is required" });
       }
 
-      const miscellaneousExpense = await MiscellaneousExpense.findById(id).exec();
+      const miscellaneousExpense = await MiscellaneousExpense.findById(
+        id
+      ).exec();
       if (!miscellaneousExpense) {
-        return res.status(404).json({ message: "Miscellaneous Expense not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Miscellaneous Expense not found",
+        });
       }
 
       const updateData = {};
-      if (req.body.paid_date) {
-        updateData.paidDate = req.body.paid_date;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (req.body.vendor_name) {
-        updateData.vendor = req.body.vendor_name;
+      if (vendor) {
+        updateData.vendor = vendor;
       }
-      if (req.body.plot_number) {
-        updateData.plot_number = req.body.plot_number;
+      if (plotNumber) {
+        updateData.plotNumber = plotNumber;
       }
-      if (req.body.description) {
-        updateData.description = req.body.description;
+      if (description) {
+        updateData.description = description;
       }
-      if (req.body.challan_no) {
-        updateData.challanNo = req.body.challan_no;
+      if (challanNo) {
+        updateData.challanNo = challanNo;
       }
-      if (req.body.cheque_no) {
-        updateData.chequeNo = req.body.cheque_no;
-      }
-      if (req.body.head_of_account) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData,miscellaneousExpense);
+      if (chequeNumber) {
+        updateData.chequeNo = chequeNumber;
       }
 
       const type = "expense";
 
-      if (req.body.check == "Cash") {
+      if (check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else if (req.body.check == "Bank") {
+      } else if (check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else {
-        console.log("Invalid Check")
+      } else {
+        console.log("Invalid Check");
       }
 
-      const updatedmiscellaneousExpense = await MiscellaneousExpense.findByIdAndUpdate(
-        id,
-        { $set: updateData },
-        { new: true }
-      ).exec();
+      const updatedmiscellaneousExpense =
+        await MiscellaneousExpense.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true }
+        ).exec();
 
       res.status(200).json({
+        status: "success",
         message: "Miscellaneous Expense updated successfully",
         data: updatedmiscellaneousExpense,
       });
@@ -165,6 +280,3 @@ module.exports = {
     }
   },
 };
-
-
-

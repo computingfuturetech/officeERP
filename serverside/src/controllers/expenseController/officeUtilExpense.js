@@ -10,7 +10,8 @@ const MainExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadO
 module.exports = {
   createOfficeUtilExpense: async (req, res) => {
     const {
-      headOfAccount,
+      mainHeadOfAccount,
+      subHeadOfAccount,
       billingMonth,
       amount,
       billReference,
@@ -40,24 +41,10 @@ module.exports = {
           message: "Amount is required",
         });
       }
-      if (!headOfAccount) {
-        return res.status(400).json({
-          status: "error",
-          message: "Head of Account is required",
-        });
-      }
-      let main_head_id;
-      let sub_head_id;
-      if (req.body.headOfAccount) {
-        ({ main_head_id, sub_head_id } =
-          await CheckMainAndSubHeadOfAccount.checkHeadOfAccount(
-            req,
-            res,
-            headOfAccount
-          ));
-      }
 
-      // const { bankId } = await CheckBank.checkBank(req, res, bank);
+      let headOfAccount = subHeadOfAccount
+        ? subHeadOfAccount
+        : mainHeadOfAccount;
 
       if (check === "Bank" && !bank) {
         return res.status(400).json({
@@ -78,8 +65,8 @@ module.exports = {
 
       const officeUtilExpense = new OfficeUtilExpense({
         paidDate: paidDate,
-        mainHeadOfAccount: main_head_id,
-        subHeadOfAccount: sub_head_id,
+        mainHeadOfAccount: mainHeadOfAccount,
+        subHeadOfAccount: subHeadOfAccount,
         billingMonth: billingMonth,
         amount: amount,
         billReference: billReference,
@@ -216,8 +203,8 @@ module.exports = {
       if (amount) {
         updateData.amount = amount;
       }
-      if (req.body.advTax) {
-        updateData.advTax = req.body.advTax;
+      if (advTax) {
+        updateData.advTax = advTax;
       }
       if (billReference) {
         updateData.billReference = billReference;
@@ -228,10 +215,13 @@ module.exports = {
       if (chequeNumber) {
         updateData.chequeNo = chequeNumber;
       }
+      if (bank) {
+        updateData.bank = bank;
+      }
 
       const type = "expense";
 
-      if (req.body.check == "Cash") {
+      if (check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       } else if (check == "Bank") {

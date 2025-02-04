@@ -12,7 +12,8 @@ const BankList = require("../../models/bankModel/bank");
 module.exports = {
   createAuditFeeExpense: async (req, res) => {
     const {
-      headOfAccount,
+      mainHeadOfAccount,
+      subHeadOfAccount,
       amount,
       year,
       paidDate,
@@ -22,6 +23,7 @@ module.exports = {
       challanNo,
       bank,
     } = req.body;
+
     try {
       if (!paidDate) {
         return res.status(400).json({
@@ -37,13 +39,6 @@ module.exports = {
         });
       }
 
-      if (!headOfAccount) {
-        return res.status(400).json({
-          status: "error",
-          message: "Head of Account is required",
-        });
-      }
-
       if (!amount) {
         return res.status(400).json({
           status: "error",
@@ -51,18 +46,9 @@ module.exports = {
         });
       }
 
-      let main_head_id;
-      let sub_head_id;
-      if (req.body.headOfAccount) {
-        ({ main_head_id, sub_head_id } =
-          await CheckMainAndSubHeadOfAccount.checkHeadOfAccount(
-            req,
-            res,
-            headOfAccount
-          ));
-      }
-
-      // const { bankId } = await CheckBank.checkBank(req, res, bank);
+      let headOfAccount = subHeadOfAccount
+        ? subHeadOfAccount
+        : mainHeadOfAccount;
 
       if (check === "Bank" && !bank) {
         return res.status(400).json({
@@ -70,19 +56,21 @@ module.exports = {
           message: "Bank is required",
         });
       }
-
-      const bankList = await BankList.findById(bank).exec();
-      if (!bankList) {
-        return res.status(404).json({
-          status: "error",
-          message: "Bank not found",
-        });
+      let bankList;
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
       }
 
       const auditFeeExpense = new AuditFeeExpense({
         paidDate: paidDate,
-        mainHeadOfAccount: main_head_id,
-        subHeadOfAccount: sub_head_id,
+        mainHeadOfAccount: mainHeadOfAccount,
+        subHeadOfAccount: subHeadOfAccount,
         amount: amount,
         year: year,
         particular: particular,
@@ -226,6 +214,16 @@ module.exports = {
   },
   updateAuditFeeExpense: async (req, res) => {
     const id = req.query.id;
+    const {
+      amount,
+      year,
+      paidDate,
+      check,
+      particular,
+      chequeNumber,
+      challanNo,
+      bank,
+    } = req.body;
     try {
       if (!id) {
         return res.status(400).json({
@@ -243,31 +241,23 @@ module.exports = {
       }
 
       const updateData = {};
-      if (req.body.paidDate) {
-        updateData.paidDate = req.body.paidDate;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (req.body.year) {
-        updateData.year = req.body.year;
+      if (year) {
+        updateData.year = year;
       }
-      if (req.body.particular) {
-        updateData.particular = req.body.particular;
+      if (particular) {
+        updateData.particular = particular;
       }
-      if (req.body.challanNo) {
-        updateData.challanNo = req.body.challanNo;
+      if (challanNo) {
+        updateData.challanNo = challanNo;
       }
-      if (req.body.chequeNumber) {
-        updateData.chequeNo = req.body.chequeNumber;
-      }
-      if (req.body.headOfAccount) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(
-          req,
-          res,
-          updateData,
-          auditFeeExpense
-        );
+      if (chequeNumber) {
+        updateData.chequeNo = chequeNumber;
       }
       const updatedAuditFeeExpense = await AuditFeeExpense.findByIdAndUpdate(
         id,
@@ -277,10 +267,10 @@ module.exports = {
 
       const type = "expense";
 
-      if (req.body.check == "Cash") {
+      if (check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      } else if (req.body.check == "Bank") {
+      } else if (check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
       } else {
