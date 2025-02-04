@@ -2,17 +2,20 @@ const SalaryType = require("../../models/expenseModel/salaries/salaryType");
 
 module.exports = {
   createSalaryType: async (req, res) => {
-    const { salary_type } = req.body;
-    console.log(req.body);
+    const { salaryType } = req.body;
     try {
-      if (!salary_type) {
-        return res.status(400).json({ message: "Salary_type is required" });
+      if (!salaryType) {
+        return res.status(400).json({
+          status: "error",
+          message: "Salary Type is required",
+        });
       }
       const newSalaryType = new SalaryType({
-        salaryType: salary_type,
+        salaryType: salaryType,
       });
       await newSalaryType.save();
       res.status(201).json({
+        status: "success",
         message: "Salary type created successfully",
         data: newSalaryType,
       });

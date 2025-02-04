@@ -12,13 +12,15 @@ const CheckBank = require("../../middleware/checkBank");
 module.exports = {
   createBankChargesExpense: async (req, res) => {
     const {
-      headOfAccount,
+      mainHeadOfAccount,
+      subHeadOfAccount,
       amount,
       paidDate,
       particular,
       challanNo,
       chequeNumber,
       bank,
+      check = "Bank",
     } = req.body;
     try {
       if (!amount) {
@@ -35,56 +37,33 @@ module.exports = {
         });
       }
 
-      if (!headOfAccount) {
-        return res.status(400).json({
-          status: "error",
-          message: "Head of Account is required",
-        });
-      }
-
-      if (!bank) {
+      if (check === "Bank" && !bank) {
         return res.status(400).json({
           status: "error",
           message: "Bank is required",
         });
       }
-
-      const bankFound = await BankList.findOne({
-        accountNo: bank,
-      });
-      if (!bankFound) {
-        return res.status(400).json({
-          status: "error",
-          message: "Invalid Bank Account Number",
-        });
+      let bankList;
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
       }
 
-      let main_head_id;
-      let sub_head_id;
-      if (req.body.headOfAccount) {
-        ({ main_head_id, sub_head_id } =
-          await CheckMainAndSubHeadOfAccount.checkHeadOfAccount(
-            req,
-            res,
-            headOfAccount
-          ));
-      }
-
-      const { bankId } = await CheckBank.checkBank(req, res, bank);
-
-      if (bankId === null) {
-        return res.status(400).json({
-          status: "error",
-          message: "Bank not found",
-        });
-      }
+      let headOfAccount = subHeadOfAccount
+        ? subHeadOfAccount
+        : mainHeadOfAccount;
 
       const bankChargesExpense = new BankChargesExpense({
         paidDate: paidDate,
-        mainHeadOfAccount: main_head_id,
-        subHeadOfAccount: sub_head_id,
+        mainHeadOfAccount: mainHeadOfAccount,
+        subHeadOfAccount: subHeadOfAccount ? subHeadOfAccount : null,
         amount: amount,
-        bank: bankId ? bankId : null,
+        bank: bank ? bank : null,
         particular: particular,
         chequeNumber: chequeNumber,
       });
@@ -183,6 +162,15 @@ module.exports = {
   },
   updateBankChargesExpense: async (req, res) => {
     const id = req.query.id;
+    const {
+      amount,
+      paidDate,
+      particular,
+      challanNo,
+      chequeNumber,
+      bank,
+      check = "Bank",
+    } = req.body;
     try {
       if (!id) {
         return res.status(400).json({
@@ -198,22 +186,22 @@ module.exports = {
         });
       }
       const updateData = {};
-      if (req.body.paidDate) {
-        updateData.paidDate = req.body.paidDate;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (req.body.particular) {
-        updateData.particular = req.body.particular;
+      if (particular) {
+        updateData.particular = particular;
       }
-      if (req.body.challanNo) {
-        updateData.challanNo = req.body.challanNo;
+      if (challanNo) {
+        updateData.challanNo = challanNo;
       }
-      if (req.body.chequeNumber) {
-        updateData.chequeNumber = req.body.chequeNumber;
+      if (chequeNumber) {
+        updateData.chequeNumber = chequeNumber;
       }
-      if (req.body.bank) {
+      if (bank) {
         const bankFound = await BankList.findOne({
           accountNo: req.body.bank,
         });
@@ -224,14 +212,6 @@ module.exports = {
           });
         }
         updateData.bank = bankFound._id;
-      }
-      if (req.body.headOfAccount) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(
-          req,
-          res,
-          updateData,
-          bankChargesExpense
-        );
       }
 
       const type = "expense";
