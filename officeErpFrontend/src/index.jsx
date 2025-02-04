@@ -14,6 +14,7 @@ import store from "./redux/store";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import "./index.scss";
 import AppRoutes from "./routes";
+import DisableNumInputScroll from "./components/DisableNumberScroll";
 
 let persistor = persistStore(store);
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -50,6 +51,7 @@ const initializeApp = async () => {
       <Provider store={store}>
         <PersistGate loading={<div>Loading...</div>} persistor={persistor}>
           <QueryClientProvider client={queryClient}>
+            <DisableNumInputScroll />
             <BrowserRouter>
               <Routes>
                 <Route path="/*" element={<AppRoutes />} />

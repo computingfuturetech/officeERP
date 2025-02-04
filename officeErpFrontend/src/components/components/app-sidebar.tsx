@@ -54,14 +54,13 @@ const data = {
         { title: "Transfer Income", url: "/transfer-income", icon: HandCoins },
         { title: "Bank Profit", url: "/bank-profit", icon: Landmark },
         { title: "Water/Maintenance", url: "/water-maintenance", icon: Droplet },
-        { title: "Possession", url: "#", icon: LandPlot },
       ],
     },
     {
       title: "Expense",
       icon: CircleDollarSign,
       items: [
-        { title: "Office Expense", url: "#", icon: Building },
+        { title: "Office Expense", url: "/office-expense", icon: Building },
         { title: "Site Expense", url: "#", icon: Factory },
       ],
     },
