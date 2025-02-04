@@ -4,6 +4,7 @@ import {
   Home,
   LoginPage,
   Members,
+  OfficeExpense,
   TransferIncome,
   WaterMaintenance,
 } from "../views";
@@ -34,6 +35,10 @@ const staticRoutes = [
   {
     path: "/transfer-income",
     element: <ProtectedRoute element={<TransferIncome />} />,
+  },
+  {
+    path: "/office-expense",
+    element: <ProtectedRoute element={<OfficeExpense />} />,
   },
 ];
 

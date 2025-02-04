@@ -183,7 +183,7 @@ export function DynamicSheet({
             case "date":
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id} className="text-left">
+                        <Label htmlFor={field.id} className="text-left capitalize">
                             {field.label}
                             {field.required && <span className="text-destructive ml-1">*</span>}
                         </Label>
@@ -198,7 +198,7 @@ export function DynamicSheet({
             case "select":
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id} className="text-left">
+                        <Label htmlFor={field.id} className="text-left capitalize">
                             {field.label}
                             {field.required && <span className="text-destructive ml-1">*</span>}
                         </Label>
@@ -224,7 +224,7 @@ export function DynamicSheet({
             default:
                 return (
                     <div key={field.id} className="space-y-1">
-                        <Label htmlFor={field.id}>
+                        <Label htmlFor={field.id} className="capitalize">
                             {field.label}
                             {field.required && <span className="text-destructive ml-1">*</span>}
                         </Label>
