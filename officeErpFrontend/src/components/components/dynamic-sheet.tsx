@@ -20,6 +20,7 @@ import {
     SelectValue,
 } from "./ui/select";
 import { DatePicker } from "./date-picker";
+import { Textarea } from "./ui/textarea";
 
 export type SelectOption = {
     value: string;
@@ -29,7 +30,7 @@ export type SelectOption = {
 export type FieldConfig = {
     id: string;
     label: string;
-    type?: "text" | "email" | "number" | "date" | "select" | "cnic";
+    type?: "text" | "email" | "number" | "date" | "select" | "cnic" | "textarea";
     value: string | number | Date | undefined;
     required?: boolean;
     placeholder?: string;
@@ -218,6 +219,27 @@ export function DynamicSheet({
                                 ))}
                             </SelectContent>
                         </Select>
+                        {error && <p className="text-red-500 text-sm">{error}</p>}
+                    </div>
+                );
+            case "textarea":
+                return (
+                    <div key={field.id} className="space-y-1">
+                        <Label htmlFor={field.id} className="capitalize">
+                            {field.label}
+                            {field.required && <span className="text-destructive ml-1">*</span>}
+                        </Label>
+                        <Textarea
+                            id={field.id}
+                            name={field.id}
+                            value={value}
+                            onChange={(e) => handleValueChange(field.id, e.target.value)}
+                            className={`col-span-3 ${error ? "border-red-500" : ""}`}
+                            required={field.required}
+                            placeholder={field.placeholder}
+                            readOnly={isReadOnly}
+                            disabled={isReadOnly || isViewMode}
+                        />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
                     </div>
                 );

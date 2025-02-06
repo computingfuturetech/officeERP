@@ -97,6 +97,10 @@ export default function OfficeExpense() {
       const selectedEndPoint = headOfAccounts.find(
         (head) => head._id === formData.mainHeadOfAccount
       ).endPoints;
+      if (formData.check === "Cash") {
+        delete formData.bank;
+        delete formData.chequeNumber;
+      }
       const response = await createOfficeExpense(selectedEndPoint, formData);
 
       if (response.status === 201) {
@@ -215,7 +219,8 @@ export default function OfficeExpense() {
       description: expense.description || "",
       plotNumber: expense.plotNumber || "",
       paidDate: expense.paidDate
-        ? new Date(expense.paidDate).toISOString().split("T")[0]
+        ? // ? new Date(expense.paidDate).toISOString().split("T")[0]
+          new Date(expense.paidDate)
         : "",
       bank: expense.bank || "",
       chequeNumber: expense.chequeNumber || "",
@@ -232,9 +237,6 @@ export default function OfficeExpense() {
     return initialValues;
   };
 
-  useEffect(() => {
-    console.log("headOfAccounts", headOfAccounts);
-  }, [headOfAccounts]);
   const transformFieldsForSheet = () => {
     const fields = [
       {
@@ -257,6 +259,9 @@ export default function OfficeExpense() {
       );
 
       if (selectedHead) {
+        const selectedSubHead = selectedHead.subHeadOfAccount.find(
+          (sub) => sub._id === formValues.subHeadOfAccount
+        );
         if (selectedHead.subHeadOfAccount?.length > 0) {
           fields.push({
             id: "subHeadOfAccount",
@@ -290,6 +295,27 @@ export default function OfficeExpense() {
                     { value: "Bank", label: "Bank" },
                     { value: "Cash", label: "Cash" },
                   ],
+                });
+              } else if (field.name === "advTax") {
+                if (
+                  selectedSubHead.headOfAccount !== "Water" &&
+                  selectedSubHead.headOfAccount !== "Gas"
+                ) {
+                  fields.push({
+                    id: field.name,
+                    label: field.label || field.name,
+                    type: field.type,
+                    required: field.required || false,
+                    placeholder: `Enter ${field.label || field.name}`,
+                  });
+                }
+              } else if (field.name === "description") {
+                fields.push({
+                  id: field.name,
+                  label: field.label || field.name,
+                  type: "textarea",
+                  required: field.required || false,
+                  placeholder: `Enter ${field.label || field.name}`,
                 });
               } else if (field.name === "year") {
                 const currentYear = new Date().getFullYear();
@@ -369,6 +395,9 @@ export default function OfficeExpense() {
           const hasCheckField = selectedHead.fields?.some(
             (field) => field.name === "check"
           );
+          const selectedSubHead = selectedHead.subHeadOfAccount.find(
+            (sub) => sub._id === formValues.subHeadOfAccount
+          );
 
           selectedHead.fields?.forEach((field) => {
             if (field.name === "check") {
@@ -377,11 +406,33 @@ export default function OfficeExpense() {
                 label: field.label || field.name,
                 type: "select",
                 required: field.required || false,
+                readOnly: true,
                 placeholder: `Select ${field.label || field.name}`,
                 options: [
                   { value: "Bank", label: "Bank" },
                   { value: "Cash", label: "Cash" },
                 ],
+              });
+            } else if (field.name === "advTax") {
+              if (
+                selectedSubHead.headOfAccount !== "Water" &&
+                selectedSubHead.headOfAccount !== "Gas"
+              ) {
+                fields.push({
+                  id: field.name,
+                  label: field.label || field.name,
+                  type: field.type,
+                  required: field.required || false,
+                  placeholder: `Enter ${field.label || field.name}`,
+                });
+              }
+            } else if (field.name === "description") {
+              fields.push({
+                id: field.name,
+                label: field.label || field.name,
+                type: "textarea",
+                required: field.required || false,
+                placeholder: `Enter ${field.label || field.name}`,
               });
             } else if (field.name === "year") {
               const currentYear = new Date().getFullYear();
@@ -544,17 +595,17 @@ export default function OfficeExpense() {
     },
   ];
   const filterConfig = [
-    {
-      id: "bank",
-      label: "Bank Name",
-      type: "select",
-      mode: "single",
-      options:
-        originalFilters?.bankList?.map((bank) => ({
-          value: bank._id,
-          label: bank.bankName + " - " + bank.accountNo,
-        })) || [],
-    },
+    // {
+    //   id: "bank",
+    //   label: "Bank Name",
+    //   type: "select",
+    //   mode: "single",
+    //   options:
+    //     originalFilters?.bankList?.map((bank) => ({
+    //       value: bank._id,
+    //       label: bank.bankName + " - " + bank.accountNo,
+    //     })) || [],
+    // },
   ];
   const [selectedHeadOfAccount, setSelectedHeadOfAccount] = useState(null);
   const handleFormValueChange = (values) => {
