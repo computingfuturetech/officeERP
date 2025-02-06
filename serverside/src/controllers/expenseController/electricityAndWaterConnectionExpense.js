@@ -1,59 +1,158 @@
-const ElectricityAndWaterConnectionExpense = require("../../models/expenseModel/electricityAndWaterConnectionExpense/electricityAndWaterConnectionExpense")
-const SubExpenseHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount');
-const MainHeadOfAccount = require('../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount');
-const CheckMainAndSubHeadOfAccount = require('../../middleware/checkMainAndSubHeadOfAccount')
-const GeneralLedger = require('../../middleware/createGeneralLedger');
-const BankLedger = require('../../middleware/createBankLedger');
-const VoucherNo = require('../../middleware/generateVoucherNo')
-const CashBookLedger = require('../../middleware/createCashBookLedger')
-const CheckBank = require('../../middleware/checkBank');
+const ElectricityAndWaterConnectionExpense = require("../../models/expenseModel/electricityAndWaterConnectionExpense/electricityAndWaterConnectionExpense");
+const SubExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
+const MainHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
+const GeneralLedger = require("../../middleware/createGeneralLedger");
+const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../middleware/generateVoucherNo");
+const CashBookLedger = require("../../middleware/createCashBookLedger");
+const CheckBank = require("../../middleware/checkBank");
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
   createElectricityAndWaterConnectionExpense: async (req, res) => {
-    const { head_of_account, amount, vendor, description, paid_date, cheque_no, challan_no, check, bank_account } = req.body;
-    console.log(req.body);
+    const {
+      mainHeadOfAccount,
+      subHeadOfAccount,
+      amount,
+      vendor,
+      description,
+      paidDate,
+      chequeNumber,
+      challanNo,
+      check,
+      bank,
+    } = req.body;
+
     try {
-      if (!paid_date || !head_of_account || !amount) {
-        return res.status(400).json({ message: "All fields are required" });
-      }
-      let main_head_id;
-      let sub_head_id;
-      if (req.body.head_of_account) {
-        ({ main_head_id, sub_head_id } = await CheckMainAndSubHeadOfAccount.createHeadOfAccount(req, res));
+      if (!paidDate) {
+        return res.status(400).json({
+          status: "error",
+          message: "Paid Date is required",
+        });
       }
 
-      const { bank_id } = await CheckBank.checkBank(req, res, bank_account);
+      if (!amount) {
+        return res.status(400).json({
+          status: "error",
+          message: "Amount is required",
+        });
+      }
 
-      const electricityAndWaterConnectionExpense = new ElectricityAndWaterConnectionExpense({
-        paidDate: paid_date,
-        mainHeadOfAccount: main_head_id,
-        subHeadOfAccount: sub_head_id,
-        amount: amount,
-        vendor: vendor,
-        description: description,
-        bank: bank_id?bank_id:null,
-        ...(check === 'Bank' ? { chequeNumber: cheque_no } : { chequeNumber: undefined}),
-        check: check,
-        challanNo: challan_no
-      });
+      let headOfAccount = subHeadOfAccount
+        ? subHeadOfAccount
+        : mainHeadOfAccount;
+
+      if (check === "Bank" && !bank) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank is required",
+        });
+      }
+      let bankList;
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
+      }
+
+      const electricityAndWaterConnectionExpense =
+        new ElectricityAndWaterConnectionExpense({
+          paidDate: paidDate,
+          mainHeadOfAccount: mainHeadOfAccount,
+          subHeadOfAccount: subHeadOfAccount,
+          amount: amount,
+          vendor: vendor,
+          description: description,
+          bank: bank ? bank : null,
+          ...(check === "Bank"
+            ? { chequeNumber: chequeNumber }
+            : { chequeNumber: undefined }),
+          check: check,
+          challanNo: challanNo,
+        });
 
       const update_id = electricityAndWaterConnectionExpense._id;
 
       const type = "expense";
 
       if (check == "Cash") {
-        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(req, res, type)
-        await CashBookLedger.createCashBookLedger(req, res, cashVoucherNo, type, head_of_account, description, amount, paid_date, update_id);
-        await GeneralLedger.createGeneralLedger(req, res, cashVoucherNo, type, head_of_account, description, amount, paid_date, null, challan_no, update_id,bank_account);
+        const cashVoucherNo = await VoucherNo.generateCashVoucherNo(
+          req,
+          res,
+          type
+        );
+        await CashBookLedger.createCashBookLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          update_id
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          cashVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          null,
+          challanNo,
+          update_id,
+          bank
+        );
       } else if (check == "Bank") {
-        const bankVoucherNo = await VoucherNo.generateBankVoucherNo(req, res, bank_account, type)
-        await BankLedger.createBankLedger(req, res, bankVoucherNo, type, head_of_account, description, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
-        await GeneralLedger.createGeneralLedger(req, res, bankVoucherNo, type, head_of_account, description, amount, paid_date, cheque_no, challan_no, update_id,bank_account);
+        const bankVoucherNo = await VoucherNo.generateBankVoucherNo(
+          req,
+          res,
+          bank,
+          type
+        );
+        await BankLedger.createBankLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
+        await GeneralLedger.createGeneralLedger(
+          req,
+          res,
+          bankVoucherNo,
+          type,
+          headOfAccount,
+          description,
+          amount,
+          paidDate,
+          chequeNumber,
+          challanNo,
+          update_id,
+          bank
+        );
       }
 
       await electricityAndWaterConnectionExpense.save();
       res.status(201).json({
-        message: "Electricity and Water connection Expense created successfully",
+        status: "success",
+        message:
+          "Electricity and Water connection Expense created successfully",
         data: electricityAndWaterConnectionExpense,
       });
     } catch (err) {
@@ -68,8 +167,12 @@ module.exports = {
       let query = {};
 
       if (head_of_account) {
-        const mainHeadOfAccount = await MainHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
-        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({ headOfAccount: head_of_account }).exec();
+        const mainHeadOfAccount = await MainHeadOfAccount.findOne({
+          headOfAccount: head_of_account,
+        }).exec();
+        const subHeadOfAccount = await SubExpenseHeadOfAccount.findOne({
+          headOfAccount: head_of_account,
+        }).exec();
 
         if (mainHeadOfAccount) {
           query.mainHeadOfAccount = mainHeadOfAccount._id;
@@ -80,13 +183,16 @@ module.exports = {
         }
       }
 
-      const electricityAndWaterConnectionExpense = await ElectricityAndWaterConnectionExpense.find(query)
-        .populate("mainHeadOfAccount", "headOfAccount")
-        .populate("subHeadOfAccount", "headOfAccount")
-        .exec();
+      const electricityAndWaterConnectionExpense =
+        await ElectricityAndWaterConnectionExpense.find(query)
+          .populate("mainHeadOfAccount", "headOfAccount")
+          .populate("subHeadOfAccount", "headOfAccount")
+          .exec();
 
       if (electricityAndWaterConnectionExpense.length === 0) {
-        return res.status(404).json({ message: "Electricity and Water Expense not found" });
+        return res
+          .status(404)
+          .json({ message: "Electricity and Water Expense not found" });
       }
 
       res.status(200).json(electricityAndWaterConnectionExpense);
@@ -95,38 +201,63 @@ module.exports = {
     }
   },
   updateElectricityAndWaterConnectionExpense: async (req, res) => {
-    const id = req.query.id;
+    const { id } = req.query;
+    const {
+      amount,
+      vendor,
+      description,
+      paidDate,
+      chequeNumber,
+      challanNo,
+      check,
+      bank,
+    } = req.body;
     try {
       if (!id) {
-        return res.status(400).json({ message: "ID is required" });
+        return res.status(400).json({
+          status: "error",
+          message: "ID is required",
+        });
       }
 
-      const electricityAndWaterConnectionExpense = await ElectricityAndWaterConnectionExpense.findById(id).exec();
+      const electricityAndWaterConnectionExpense =
+        await ElectricityAndWaterConnectionExpense.findById(id).exec();
       if (!electricityAndWaterConnectionExpense) {
-        return res.status(404).json({ message: "Electricity and Water connection Expense not found" });
+        return res.status(404).json({
+          status: "error",
+          message: "Electricity and Water connection Expense not found",
+        });
       }
 
       const updateData = {};
-      if (req.body.paid_date) {
-        updateData.paidDate = req.body.paid_date;
+      if (paidDate) {
+        updateData.paidDate = paidDate;
       }
-      if (req.body.amount) {
-        updateData.amount = req.body.amount;
+      if (amount) {
+        updateData.amount = amount;
       }
-      if (req.body.vendor) {
-        updateData.vendor = req.body.vendor;
+      if (vendor) {
+        updateData.vendor = vendor;
       }
-      if (req.body.description) {
-        updateData.description = req.body.description;
+      if (description) {
+        updateData.description = description;
       }
-      if (req.body.challan_no) {
-        updateData.challanNo = req.body.challan_no;
+      if (challanNo) {
+        updateData.challanNo = challanNo;
       }
-      if (req.body.cheque_no) {
-        updateData.chequeNo = req.body.cheque_no;
+      if (chequeNumber) {
+        updateData.chequeNo = chequeNumber;
       }
-      if (req.body.head_of_account) {
-        await CheckMainAndSubHeadOfAccount.getHeadOfAccount(req, res, updateData, electricityAndWaterConnectionExpense);
+
+      if (bank) {
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank not found",
+          });
+        }
+        updateData.bank = bank;
       }
 
       const type = "expense";
@@ -134,23 +265,24 @@ module.exports = {
       if (req.body.check == "Cash") {
         await CashBookLedger.updateCashLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else if (req.body.check == "Bank") {
+      } else if (req.body.check == "Bank") {
         await BankLedger.updateBankLedger(req, res, id, updateData, type);
         await GeneralLedger.updateGeneralLedger(req, res, id, updateData, type);
-      }
-      else {
-        console.log("Invalid Check")
+      } else {
+        console.log("Invalid Check");
       }
 
-      const updatedelectricityAndWaterConnectionExpense = await ElectricityAndWaterConnectionExpense.findByIdAndUpdate(
-        id,
-        { $set: updateData },
-        { new: true }
-      ).exec();
+      const updatedelectricityAndWaterConnectionExpense =
+        await ElectricityAndWaterConnectionExpense.findByIdAndUpdate(
+          id,
+          { $set: updateData },
+          { new: true }
+        ).exec();
 
       res.status(200).json({
-        message: "Electricity and Water connection Expense updated successfully",
+        status: "success",
+        message:
+          "Electricity and Water connection Expense updated successfully",
         data: updatedelectricityAndWaterConnectionExpense,
       });
     } catch (err) {
@@ -159,6 +291,3 @@ module.exports = {
     }
   },
 };
-
-
-

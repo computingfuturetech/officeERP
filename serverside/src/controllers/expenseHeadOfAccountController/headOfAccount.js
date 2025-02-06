@@ -8,6 +8,9 @@ const legalProfessionalExpense = require("../../models/expenseModel/legalProfess
 const AuditFeeExpense = require("../../models/expenseModel/auditFeeExpense/auditFeeExpense");
 const MiscellaneousExpense = require("../../models/expenseModel/miscellaneousExpense/miscellaneousExpense");
 const BankChargesExpense = require("../../models/expenseModel/bankChargesExpense/bankChargesExpense");
+const VehicleDisposalExpense = require("../../models/expenseModel/vehicleDisposalExpense/vehicleDisposalExpense");
+const ElectricityAndWaterConnectionExpense = require("../../models/expenseModel/electricityAndWaterConnectionExpense/electricityAndWaterConnectionExpense");
+const SiteExpense = require("../../models/expenseModel/siteExpense/siteExpense");
 
 module.exports = {
   createMainHeadOfAccount: async (req, res) => {
@@ -195,6 +198,12 @@ module.exports = {
       const miscellaneousExpenseSchemaFields =
         MiscellaneousExpense.schema.paths;
       const bankChargesSchemaFields = BankChargesExpense.schema.paths;
+
+      const vehicleDisposalExpenseSchemaFields =
+        VehicleDisposalExpense.schema.paths;
+      const electricityWaterExpenseSchemaFields =
+        ElectricityAndWaterConnectionExpense.schema.paths;
+      const siteExpenseSchemaFields = SiteExpense.schema.paths;
 
       const salaryFormFields = Object.keys(salarySchemaFields)
         .filter(
@@ -410,6 +419,103 @@ module.exports = {
           };
         });
 
+      const vehicleDisposalExpenseFormFields = Object.keys(
+        vehicleDisposalExpenseSchemaFields
+      )
+        .filter(
+          (field) =>
+            field !== "createdAt" &&
+            field !== "updatedAt" &&
+            field !== "vehicleDisposalId" &&
+            field !== "check" &&
+            field !== "mainHeadOfAccount" &&
+            field !== "subHeadOfAccount" &&
+            field !== "_id" &&
+            field !== "__v"
+        )
+        .map((field) => {
+          let fieldType = "text";
+
+          if (vehicleDisposalExpenseSchemaFields[field].instance === "Number")
+            fieldType = "number";
+          if (vehicleDisposalExpenseSchemaFields[field].instance === "Date")
+            fieldType = "date";
+          if (vehicleDisposalExpenseSchemaFields[field].instance === "ObjectID")
+            fieldType = "select";
+
+          return {
+            name: field,
+            type: fieldType,
+            label: field.replace(/([A-Z])/g, " $1").trim(), // Convert camelCase to readable label
+            required:
+              vehicleDisposalExpenseSchemaFields[field].isRequired || false,
+          };
+        });
+
+      const electricityWaterExpenseFormFields = Object.keys(
+        electricityWaterExpenseSchemaFields
+      )
+
+        .filter(
+          (field) =>
+            field !== "createdAt" &&
+            field !== "updatedAt" &&
+            field !== "electricityWaterExpenseId" &&
+            field !== "mainHeadOfAccount" &&
+            field !== "subHeadOfAccount" &&
+            field !== "_id" &&
+            field !== "__v"
+        )
+        .map((field) => {
+          let fieldType = "text";
+
+          if (electricityWaterExpenseSchemaFields[field].instance === "Number")
+            fieldType = "number";
+          if (electricityWaterExpenseSchemaFields[field].instance === "Date")
+            fieldType = "date";
+          if (
+            electricityWaterExpenseSchemaFields[field].instance === "ObjectID"
+          )
+            fieldType = "select";
+
+          return {
+            name: field,
+            type: fieldType,
+            label: field.replace(/([A-Z])/g, " $1").trim(), // Convert camelCase to readable label
+            required:
+              electricityWaterExpenseSchemaFields[field].isRequired || false,
+          };
+        });
+
+      const siteExpenseFormFields = Object.keys(siteExpenseSchemaFields)
+        .filter(
+          (field) =>
+            field !== "createdAt" &&
+            field !== "updatedAt" &&
+            field !== "siteExpenseId" &&
+            field !== "mainHeadOfAccount" &&
+            field !== "subHeadOfAccount" &&
+            field !== "_id" &&
+            field !== "__v"
+        )
+        .map((field) => {
+          let fieldType = "text";
+
+          if (siteExpenseSchemaFields[field].instance === "Number")
+            fieldType = "number";
+          if (siteExpenseSchemaFields[field].instance === "Date")
+            fieldType = "date";
+          if (siteExpenseSchemaFields[field].instance === "ObjectID")
+            fieldType = "select";
+
+          return {
+            name: field,
+            type: fieldType,
+            label: field.replace(/([A-Z])/g, " $1").trim(), // Convert camelCase to readable label
+            required: siteExpenseSchemaFields[field].isRequired || false,
+          };
+        });
+
       return res.status(200).json({
         status: "success",
         message: "List of Head of Account",
@@ -428,6 +534,15 @@ module.exports = {
           Audit: auditFeeFormFields,
           "Miscellaneous Office": miscellaneousExpenseFormFields,
           "Bank Charges": bankChargesFormFields,
+
+          "Salaries Site Employees": salaryFormFields,
+          "Lesco Site": officeUtilityFormFields,
+          "Disposal/Vehicle Expense": vehicleDisposalExpenseFormFields,
+          "Electricity/Water Connection": electricityWaterExpenseFormFields,
+          Miscellaneous: miscellaneousExpenseFormFields,
+          "Purchase of Land": siteExpenseFormFields,
+          "Development Expenditure": siteExpenseFormFields,
+          "Repair/Maintenance": siteExpenseFormFields,
         },
         endPoints: {
           "Salaries Office Employees": "salary/",
@@ -443,6 +558,15 @@ module.exports = {
           Audit: "auditExpense/",
           "Miscellaneous Office": "miscellaneousExpense/",
           "Bank Charges": "bankChargesExpense/",
+
+          "Salaries Site Employees": "salary/",
+          "Lesco Site": "officeUtilExpense/",
+          "Disposal/Vehicle Expense": "vehicleDisposalExpense/",
+          "Electricity/Water Connection": "electricityWaterExpense/",
+          Miscellaneous: "miscellaneousExpense/",
+          "Purchase of Land": "siteExpense/",
+          "Development Expenditure": "siteExpense/",
+          "Repair/Maintenance": "siteExpense/",
         },
       });
     } catch (err) {

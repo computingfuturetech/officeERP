@@ -20,6 +20,8 @@ const incomeHeadOfAccountRouter = require("./src/routes/incomeHeadOfAccountRoute
 const officeUtilExpenseRouter = require("./src/routes/officeUtilExpenseRoutes/officeUtilExpense");
 const salaryRouter = require("./src/routes/salaryRoutes/salary");
 const expenseHeadOfAccountRouter = require("./src/routes/expenseHeadOfAccountRoutes/expenseHeadOfAccount");
+const vehicleDisposalExpenseRouter = require("./src/routes/vehicleDisposalExpenseRoutes/vehicleDisposalExpense");
+const siteExpenseRouter = require("./src/routes/siteExpenseRoutes/siteExpense");
 
 dotenv.config();
 
@@ -33,6 +35,7 @@ const ledgerRouter = require("./src/routes/coreRoutes/ledgerApi");
 const officeExpenseRouter = require("./src/routes/officeExpenseRoutes/officeExpense");
 const legalProfessionalExpenseRouter = require("./src/routes/legalProfessionalExpenseRoutes/legalProfessionalExpense");
 const miscellaneousExpenseRouter = require("./src/routes/miscellaneousExpenseRoutes/miscellaneousExpense");
+const electricityAndWaterConnectionExpenseRouter = require("./src/routes/electricityWaterRoutes/electricityWater");
 
 app.use(express.json());
 app.use(cors());
@@ -70,6 +73,9 @@ app.use("/expenseHeadOfAccount", expenseHeadOfAccountRouter);
 app.use("/officeExpense", officeExpenseRouter);
 app.use("/legalProfessionalExpense", legalProfessionalExpenseRouter);
 app.use("/miscellaneousExpense", miscellaneousExpenseRouter);
+app.use("/vehicleDisposalExpense", vehicleDisposalExpenseRouter);
+app.use("/electricityWaterExpense", electricityAndWaterConnectionExpenseRouter);
+app.use("/siteExpense", siteExpenseRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

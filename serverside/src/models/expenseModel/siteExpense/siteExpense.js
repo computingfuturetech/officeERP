@@ -2,28 +2,28 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 const mongoosePaginate = require("mongoose-paginate-v2");
 
-const electricityWaterExpenseCountersSchema = new Schema({
-  _id: { type: String, required: true },
+const siteExpenseCounterSchema = new Schema({
+  _id: { type: String },
   seq: { type: Number, default: 0 },
 });
 
-const electricityWaterExpenseCounters = mongoose.model(
-  "electricityWaterExpenseCounters",
-  electricityWaterExpenseCountersSchema
+const siteExpenseCounter = mongoose.model(
+  "siteExpenseCounter",
+  siteExpenseCounterSchema
 );
 
-async function getNextElectricityWaterExpenseId() {
-  const result = await electricityWaterExpenseCounters.findByIdAndUpdate(
-    "electricityWaterExpense",
+async function getNextSiteExpenseId() {
+  const result = await siteExpenseCounter.findByIdAndUpdate(
+    "siteExpense",
     { $inc: { seq: 1 } },
     { new: true, upsert: true, setDefaultsOnInsert: true }
   );
   return result.seq;
 }
 
-const electricityWaterExpenseSchema = new Schema(
+const siteExpenseSchema = new Schema(
   {
-    electricityWaterExpenseId: {
+    siteExpenseId: {
       type: Number,
       unique: true,
       index: true,
@@ -42,7 +42,7 @@ const electricityWaterExpenseSchema = new Schema(
     amount: {
       type: Number,
     },
-    description: {
+    particular: {
       type: String,
     },
     vendor: {
@@ -67,17 +67,14 @@ const electricityWaterExpenseSchema = new Schema(
   }
 );
 
-electricityWaterExpenseSchema.plugin(mongoosePaginate);
+siteExpenseSchema.plugin(mongoosePaginate);
 
-electricityWaterExpenseSchema.pre("save", async function (next) {
-  if (!this.electricityWaterExpenseId) {
-    this.electricityWaterExpenseId = await getNextElectricityWaterExpenseId();
+siteExpenseSchema.pre("save", async function (next) {
+  if (this.isNew) {
+    this.siteExpenseId = await getNextSiteExpenseId();
   }
   next();
 });
 
-const ElectricityWaterExpenseSchema = mongoose.model(
-  "ElectricityWaterExpenseSchema",
-  electricityWaterExpenseSchema
-);
-module.exports = ElectricityWaterExpenseSchema;
+const SiteExpense = mongoose.model("SiteExpense", siteExpenseSchema);
+module.exports = SiteExpense;
