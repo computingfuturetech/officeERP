@@ -10,6 +10,7 @@ const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/o
 const Salaries = require("../../models/expenseModel/salaries/salaries");
 const VechicleDisposal = require("../../models/expenseModel/vehicleDisposalExpense/vehicleDisposalExpense");
 const BankList = require("../../models/bankModel/bank");
+const SiteExpense = require("../../models/expenseModel/siteExpense/siteExpense");
 
 module.exports = {
   getAllExpense: async (req, res) => {
@@ -90,6 +91,11 @@ module.exports = {
           .sort({ createdAt: -1 })
           .exec(),
         VechicleDisposal.find(query)
+          .populate("mainHeadOfAccount", "headOfAccount")
+          .populate("subHeadOfAccount", "headOfAccount")
+          .sort({ createdAt: -1 })
+          .exec(),
+        SiteExpense.find(query)
           .populate("mainHeadOfAccount", "headOfAccount")
           .populate("subHeadOfAccount", "headOfAccount")
           .sort({ createdAt: -1 })
