@@ -8,6 +8,7 @@ import {
   TransferIncome,
   WaterMaintenance,
   SiteExpense,
+  Reports,
 } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
 import path from "path";
@@ -44,6 +45,10 @@ const staticRoutes = [
   {
     path: "/site-expense",
     element: <ProtectedRoute element={<SiteExpense />} />,
+  },
+  {
+    path: "/reports",
+    element: <ProtectedRoute element={<Reports />} />,
   },
 ];
 
