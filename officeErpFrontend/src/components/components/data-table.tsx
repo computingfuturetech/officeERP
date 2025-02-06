@@ -219,7 +219,7 @@ export function DataTable<TData, TValue>({
                         </div>
                     ))}
 
-                    {resetFilters && (
+                    {/* {resetFilters && (
                         <Button
                             variant="outline"
                             onClick={handleCompleteReset}
@@ -228,7 +228,7 @@ export function DataTable<TData, TValue>({
                             <RefreshCw className="h-4 w-4 mr-2" />
                             Reset Filters
                         </Button>
-                    )}
+                    )} */}
 
 
                     {enableColumnVisibility && (
