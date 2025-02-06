@@ -13,20 +13,20 @@ import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { useToast } from "@/components/hooks/use-toast";
 import { useSearchParams } from "react-router-dom";
 import {
-  createOfficeExpense,
+  createSiteExpense,
   getExpenseHead,
-  getOfficeExpense,
-  updateOfficeExpense,
-} from "../../services/officeExpense";
+  getSiteExpense,
+  updateSiteExpense,
+} from "../../services/siteExpense";
 import { set } from "react-hook-form";
 import { months } from "../../assets/options";
 
-export default function OfficeExpense() {
+export default function SiteExpense() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingOfficeExpense, setEditingOfficeExpense] = useState(null);
-  const [viewingOfficeExpense, setViewingOfficeExpense] = useState(null);
+  const [editingSiteExpense, setEditingSiteExpense] = useState(null);
+  const [viewingSiteExpense, setViewingSiteExpense] = useState(null);
   const [originalFilters, setOriginalFilters] = useState({});
   const { toast, dismiss } = useToast();
   const [pagination, setPagination] = useState({
@@ -54,18 +54,18 @@ export default function OfficeExpense() {
       const selectedEndPoint = headOfAccounts.find(
         (head) => head._id === data.mainHeadOfAccount
       ).endPoints;
-      const response = await updateOfficeExpense(
+      const response = await updateSiteExpense(
         selectedEndPoint,
-        editingOfficeExpense._id,
+        editingSiteExpense._id,
         data
       );
       if (response.status === 200) {
-        fetchOfficeExpense();
+        fetchSiteExpense();
         toast({
-          title: "Office Expense updated",
-          description: "Office Expense has been successfully updated.",
+          title: "Site Expense updated",
+          description: "Site Expense has been successfully updated.",
         });
-        setEditingOfficeExpense(null);
+        setEditingSiteExpense(null);
       } else {
         toast({
           title: "Edit Failed",
@@ -101,13 +101,13 @@ export default function OfficeExpense() {
         delete formData.bank;
         delete formData.chequeNumber;
       }
-      const response = await createOfficeExpense(selectedEndPoint, formData);
+      const response = await createSiteExpense(selectedEndPoint, formData);
 
       if (response.status === 201) {
-        fetchOfficeExpense();
+        fetchSiteExpense();
         toast({
-          title: "Office Expense created",
-          description: "Office Expense has been successfully created.",
+          title: "Site Expense created",
+          description: "Site Expense has been successfully created.",
         });
         setIsCreateOpen(false);
         return true;
@@ -176,7 +176,7 @@ export default function OfficeExpense() {
 
   useEffect(() => {
     expenseHead();
-    fetchOfficeExpense();
+    fetchSiteExpense();
   }, [pagination.pageIndex, pagination.pageSize, filters]);
 
   const handleFilterChange = (newFilters) => {
@@ -195,8 +195,8 @@ export default function OfficeExpense() {
     }));
   };
   useEffect(() => {
-    if (editingOfficeExpense || viewingOfficeExpense) {
-      const expense = editingOfficeExpense || viewingOfficeExpense;
+    if (editingSiteExpense || viewingSiteExpense) {
+      const expense = editingSiteExpense || viewingSiteExpense;
       const selectedHead = headOfAccounts.find(
         (head) => head._id === expense.mainHeadOfAccount?._id
       );
@@ -204,7 +204,7 @@ export default function OfficeExpense() {
       setFormValues(prepareInitialValues(expense));
       setFormKey((prev) => prev + 1);
     }
-  }, [editingOfficeExpense, viewingOfficeExpense, headOfAccounts]);
+  }, [editingSiteExpense, viewingSiteExpense, headOfAccounts]);
 
   const prepareInitialValues = (expense) => {
     if (!expense) return {};
@@ -218,6 +218,9 @@ export default function OfficeExpense() {
       vendor: expense.vendor || "",
       description: expense.description || "",
       plotNumber: expense.plotNumber || "",
+      fuelLitre: expense.fuelLitre || "",
+      vehicleNumber: expense.vehicleNumber || "",
+      vehicleType: expense.vehicleType || "",
       paidDate: expense.paidDate
         ? // ? new Date(expense.paidDate).toISOString().split("T")[0]
           new Date(expense.paidDate)
@@ -296,11 +299,45 @@ export default function OfficeExpense() {
                     { value: "Cash", label: "Cash" },
                   ],
                 });
-              } else if (field.name === "advTax") {
+              } else if (field.name === "vendor") {
                 if (
-                  selectedSubHead?.headOfAccount !== "Water" &&
-                  selectedSubHead?.headOfAccount !== "Gas"
+                  selectedHead.headOfAccount === "Purchase of Land" ||
+                  selectedHead.headOfAccount === "Development Expenditure"
                 ) {
+                } else {
+                  fields.push({
+                    id: field.name,
+                    label: field.label || field.name,
+                    type: field.type,
+                    required: field.required || false,
+                    placeholder: `Enter ${field.label || field.name}`,
+                  });
+                }
+              } else if (
+                field.name === "vehicleNumber" ||
+                field.name === "vehicleType"
+              ) {
+                if (selectedSubHead?.headOfAccount !== "Disposal") {
+                  fields.push({
+                    id: field.name,
+                    label: field.label || field.name,
+                    type: field.type,
+                    required: field.required || false,
+                    placeholder: `Enter ${field.label || field.name}`,
+                  });
+                }
+              } else if (field.name === "plotNumber") {
+                if (selectedHead?.headOfAccount === "Miscellaneous") {
+                  if (selectedSubHead?.headOfAccount === "Demarcation") {
+                    fields.push({
+                      id: field.name,
+                      label: field.label || field.name,
+                      type: field.type,
+                      required: field.required || false,
+                      placeholder: `Enter ${field.label || field.name}`,
+                    });
+                  }
+                } else {
                   fields.push({
                     id: field.name,
                     label: field.label || field.name,
@@ -413,11 +450,45 @@ export default function OfficeExpense() {
                   { value: "Cash", label: "Cash" },
                 ],
               });
-            } else if (field.name === "advTax") {
+            } else if (field.name === "vendor") {
               if (
-                selectedSubHead?.headOfAccount !== "Water" &&
-                selectedSubHead?.headOfAccount !== "Gas"
+                selectedHead.headOfAccount === "Purchase of Land" ||
+                selectedHead.headOfAccount === "Development Expenditure"
               ) {
+              } else {
+                fields.push({
+                  id: field.name,
+                  label: field.label || field.name,
+                  type: field.type,
+                  required: field.required || false,
+                  placeholder: `Enter ${field.label || field.name}`,
+                });
+              }
+            } else if (
+              field.name === "vehicleNumber" ||
+              field.name === "vehicleType"
+            ) {
+              if (selectedSubHead?.headOfAccount !== "Disposal") {
+                fields.push({
+                  id: field.name,
+                  label: field.label || field.name,
+                  type: field.type,
+                  required: field.required || false,
+                  placeholder: `Enter ${field.label || field.name}`,
+                });
+              }
+            } else if (field.name === "plotNumber") {
+              if (selectedHead?.headOfAccount === "Miscellaneous") {
+                if (selectedSubHead?.headOfAccount === "Demarcation") {
+                  fields.push({
+                    id: field.name,
+                    label: field.label || field.name,
+                    type: field.type,
+                    required: field.required || false,
+                    placeholder: `Enter ${field.label || field.name}`,
+                  });
+                }
+              } else {
                 fields.push({
                   id: field.name,
                   label: field.label || field.name,
@@ -512,7 +583,7 @@ export default function OfficeExpense() {
 
     return fields;
   };
-  const fetchOfficeExpense = async () => {
+  const fetchSiteExpense = async () => {
     try {
       setIsLoading(true);
       const queryParams = {
@@ -520,7 +591,7 @@ export default function OfficeExpense() {
         limit: pagination.pageSize,
         ...filters,
       };
-      const response = await getOfficeExpense(queryParams);
+      const response = await getSiteExpense(queryParams);
       const formattedData = response?.data?.data.map((item) => ({
         ...item,
         paidDate: formatDate(item.paidDate),
@@ -530,10 +601,10 @@ export default function OfficeExpense() {
       setOriginalFilters(response?.data?.filters);
       setPageCount(response?.data?.pagination?.totalPages);
     } catch (error) {
-      console.error("Error fetching office expense:", error);
+      console.error("Error fetching site expense:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch office expense data",
+        description: "Failed to fetch site expense data",
         variant: "destructive",
       });
     } finally {
@@ -578,13 +649,13 @@ export default function OfficeExpense() {
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
                 onClick={() => {
-                  setEditingOfficeExpense(bankProfit);
+                  setEditingSiteExpense(bankProfit);
                 }}
               >
-                Edit Office Expense
+                Edit Site Expense
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => setViewingOfficeExpense(bankProfit)}
+                onClick={() => setViewingSiteExpense(bankProfit)}
               >
                 View Details
               </DropdownMenuItem>
@@ -635,7 +706,7 @@ export default function OfficeExpense() {
     <div>
       <div className="mt-4">
         <DataTable
-          heading="Office Expense"
+          heading="Site Expense"
           columns={columns}
           data={data}
           enableFilters={false}
@@ -663,8 +734,8 @@ export default function OfficeExpense() {
 
       <DynamicSheet
         mode="create"
-        title="Create Office Expense"
-        description="Add a new office expense to the system."
+        title="Create Site Expense"
+        description="Add a new site expense to the system."
         fields={transformFieldsForSheet(selectedHeadOfAccount)}
         onSubmit={handleCreateSubmit}
         open={isCreateOpen}
@@ -673,17 +744,17 @@ export default function OfficeExpense() {
         initialValues={formValues}
       />
 
-      {editingOfficeExpense && selectedHeadOfAccount && (
+      {editingSiteExpense && selectedHeadOfAccount && (
         <DynamicSheet
           mode="edit"
-          title="Edit Office Expense"
-          description="Make changes to the office expense details."
+          title="Edit Site Expense"
+          description="Make changes to the site expense details."
           fields={transformFieldsForSheet()}
           onSubmit={handleEditSubmit}
-          open={!!editingOfficeExpense}
+          open={!!editingSiteExpense}
           onOpenChange={(open) => {
             if (!open) {
-              setEditingOfficeExpense(null);
+              setEditingSiteExpense(null);
               setFormValues({});
               setSelectedHeadOfAccount(null);
             }
@@ -694,17 +765,17 @@ export default function OfficeExpense() {
         />
       )}
 
-      {viewingOfficeExpense && selectedHeadOfAccount && (
+      {viewingSiteExpense && selectedHeadOfAccount && (
         <DynamicSheet
           mode="view"
-          title="View Office Expense"
-          description="View office expense details."
+          title="View Site Expense"
+          description="View site expense details."
           fields={transformFieldsForSheet()}
           onSubmit={() => {}}
-          open={!!viewingOfficeExpense}
+          open={!!viewingSiteExpense}
           onOpenChange={(open) => {
             if (!open) {
-              setViewingOfficeExpense(null);
+              setViewingSiteExpense(null);
               setFormValues({});
               setSelectedHeadOfAccount(null);
             }

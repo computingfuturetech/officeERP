@@ -61,7 +61,7 @@ const data = {
       icon: CircleDollarSign,
       items: [
         { title: "Office Expense", url: "/office-expense", icon: Building },
-        { title: "Site Expense", url: "#", icon: Factory },
+        { title: "Site Expense", url: "/site-expense", icon: Factory },
       ],
     },
     {
