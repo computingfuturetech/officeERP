@@ -7,6 +7,7 @@ const BankProfit = lazy(() => import("./BankProfit"));
 const WaterMaintenance = lazy(() => import("./WaterMaintenance"));
 const TransferIncome = lazy(() => import("./TransferIncome"));
 const OfficeExpense = lazy(() => import("./OfficeExpense"));
+const SiteExpense = lazy(() => import("./SiteExpense"));
 export {
   Home,
   LoginPage,
@@ -15,4 +16,5 @@ export {
   WaterMaintenance,
   TransferIncome,
   OfficeExpense,
+  SiteExpense,
 };
