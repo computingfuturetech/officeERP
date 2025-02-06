@@ -65,6 +65,7 @@ module.exports = {
         amount: amount,
         bank: bank ? bank : null,
         particular: particular,
+        challanNo: challanNo,
         chequeNumber: chequeNumber,
       });
 
@@ -202,16 +203,14 @@ module.exports = {
         updateData.chequeNumber = chequeNumber;
       }
       if (bank) {
-        const bankFound = await BankList.findOne({
-          accountNo: req.body.bank,
-        });
-        if (!bankFound) {
-          return res.status(400).json({
+        bankList = await BankList.findById(bank).exec();
+        if (!bankList) {
+          return res.status(404).json({
             status: "error",
-            message: "Invalid Bank Account Number",
+            message: "Bank not found",
           });
         }
-        updateData.bank = bankFound._id;
+        updateData.bank = bank;
       }
 
       const type = "expense";

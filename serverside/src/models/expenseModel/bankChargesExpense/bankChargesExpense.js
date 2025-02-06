@@ -55,6 +55,10 @@ const bankChargesExpenseSchema = new Schema(
     challanNo: {
       type: Number,
     },
+    check: {
+      type: String,
+      default: "Bank",
+    },
   },
   {
     timestamps: true,

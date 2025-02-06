@@ -386,6 +386,7 @@ module.exports = {
             field !== "bankChargesExpenseId" &&
             field !== "mainHeadOfAccount" &&
             field !== "subHeadOfAccount" &&
+            field !== "check" &&
             field !== "_id" &&
             field !== "__v"
         )
