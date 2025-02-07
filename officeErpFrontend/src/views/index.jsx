@@ -9,6 +9,7 @@ const TransferIncome = lazy(() => import("./TransferIncome"));
 const OfficeExpense = lazy(() => import("./OfficeExpense"));
 const SiteExpense = lazy(() => import("./SiteExpense"));
 const Reports = lazy(() => import("./Reports"));
+const ApiTester = lazy(() => import("./ApiTester"));
 export {
   Home,
   LoginPage,
@@ -19,4 +20,5 @@ export {
   OfficeExpense,
   SiteExpense,
   Reports,
+  ApiTester,
 };
