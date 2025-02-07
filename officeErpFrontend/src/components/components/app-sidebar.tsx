@@ -67,16 +67,7 @@ const data = {
     {
       title: "Reports",
       icon: ChartNoAxesCombined,
-      items: [
-        {
-          title: "Transaction Report",
-          icon: Map,
-          items: [
-            { title: "Profit", url: "#", icon: ChevronRight },
-            { title: "Loss", url: "#", icon: ChevronRight },
-          ],
-        },
-      ],
+      url: "/reports",
     },
   ],
   logout: [
