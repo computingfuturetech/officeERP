@@ -1,5 +1,5 @@
 const BankBalance = require("../../models/bankModel/bankBalance");
-const CheckBank = require("../../middleware/checkBank");
+const BankList = require("../../models/bankModel/bank");
 
 module.exports = {
   createBankBalance: async (req, res) => {
@@ -16,21 +16,22 @@ module.exports = {
       if (!bank) {
         return res.status(400).json({
           status: "error",
-          message: "Bank Account is Required",
+          message: "Bank is Required",
         });
       }
 
-      const { bankId } = await CheckBank.checkBank(req, res, bank);
-
-      if (bankId === null) {
-        return res.status(404).json({
-          status: "error",
-          message: "Bank Account not found",
-        });
+      if (bank) {
+        const foundBank = await BankList.findById(bank);
+        if (!foundBank) {
+          return res.status(404).json({
+            status: "error",
+            message: "Bank Account not found",
+          });
+        }
       }
 
       const createOrUpdateBankBalance = await BankBalance.findOneAndUpdate(
-        { bank: bankId },
+        { bank: bank },
         {
           $set: { balance: balance },
         },
