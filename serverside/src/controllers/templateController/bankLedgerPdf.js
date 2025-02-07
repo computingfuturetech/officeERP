@@ -1,169 +1,263 @@
-const PDFDocument = require('pdfkit');
-const fs = require('fs');
-const BankLedger = require('../../models/ledgerModels/bankLedger');
-const FixedAmount = require('../../models/fixedAmountModel/fixedAmount');
-const CheckBank = require('../../middleware/checkBank');
-const BankBalance = require('../../models/bankModel/bankBalance');
+const fs = require("fs");
+const BankLedger = require("../../models/ledgerModels/bankLedger");
+const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
+const CheckBank = require("../../middleware/checkBank");
+const BankBalance = require("../../models/bankModel/bankBalance");
+const puppeteer = require("puppeteer");
+const path = require("path");
+const ledgerTemplatePath = path.join(
+  __dirname,
+  "../../views/ledgerTemplate.html"
+);
+let ledgerTemplateHtml = fs.readFileSync(ledgerTemplatePath, "utf-8");
 
 module.exports = {
-    generatePDF: async (req, res) => {
-        try {
-            const { bank_account } = req.body;
-            const { startDate, endDate } = req.query;
+  generatePDF: async (req, res) => {
+    try {
+      let { startDate, endDate, bank_account } = req.query;
+      startDate = new Date(startDate);
+      endDate = new Date(endDate);
 
-            if (!startDate || !endDate) {
-                return res.status(400).json({ message: "Start Date and EndDate are Required" });
+      let bankLedgerData;
+      let latestBalanceDoc;
+      let balance;
+      let totalBalance;
+      let actualBalance;
+      let bank_id;
+      let bankName;
+
+      if (bank_account) {
+        let bankDetails = await CheckBank.checkBank(
+          req,
+          res,
+          bank_account
+        );
+        bank_id = bankDetails.bank_id;
+        bankName = bankDetails.bankName;
+        bankLedgerData = await BankLedger.find({
+          ...(!isNaN(startDate) || !isNaN(endDate)
+            ? {
+                date: {
+                  ...(!isNaN(startDate)
+                    ? {
+                        $gte: startDate,
+                      }
+                    : {}),
+                  ...(!isNaN(endDate)
+                    ? {
+                        $lte: endDate,
+                      }
+                    : {}),
+                },
               }
-
-            let bankLedgerData;
-            let latestBalanceDoc;
-            let balance;
-            let totalBalance;
-            let actualBalance;
-
-            if (bank_account) {
-                let { bank_id, bank_name, bank_account_number } = await CheckBank.checkBank(req, res, bank_account);
-                bankLedgerData = await BankLedger.find({
-                    date: {
-                        $gte: new Date(startDate),
-                        $lte: new Date(endDate)
-                    },
-                    bank: bank_id
-                });
-                totalBalance = await BankBalance.aggregate([
-                    {
-                        $group: {
-                            _id: null,
-                            totalBalance: { $sum: "$balance" }
-                        }
-                    }
-                ]);
-                if (totalBalance.length > 0) {
-                    latestBalanceDoc = await BankBalance.findOne({ bank: bank_id }).exec();
-                    balance = latestBalanceDoc ? latestBalanceDoc.balance : 0;
-                }
-            } else {
-                return res.status(400).json({ message: "Provide Bank Account Number" });
-            }
-
-            const lastEntry = bankLedgerData[bankLedgerData.length - 1];
-            if (!lastEntry) {
-                return res.status(400).json({ message: "No data found" });
-            }
-
-            const monthEnding = new Date(endDate).toLocaleString('default', { month: 'long', year: 'numeric' });
-
-            const doc = new PDFDocument();
-            doc.pipe(fs.createWriteStream('bankLedgerPdf.pdf'));
-            const containerWidth = 500;
-            const pageMargin = 50;
-            let headerOffsetY = 50; 
-
-            doc.font('Helvetica');
-
-            doc.fontSize(11).text('STARTING BALANCE', pageMargin, 110);
-            doc.rect(pageMargin, 130, 140, 20).stroke();
-            doc.text(balance.toString(), pageMargin + 10, 135);
-
-            doc.fontSize(11).text('ACCOUNT NUMBER', pageMargin, 50);
-            doc.rect(pageMargin, 70, 140, 20).stroke();
-            doc.text(bank_account, pageMargin + 10, 75);
-
-            doc.fontSize(11).text('MONTH ENDING', 200, 50);
-            doc.rect(200, 70, 140, 20).stroke();
-            doc.text(monthEnding, 210, 75);
-
-            doc.fontSize(11).text('TOTAL ADJUSTED BALANCE', 200, 110);
-            doc.rect(200, 130, 140, 20).stroke();
-            doc.text(lastEntry.balance, 210, 135);
-
-            headerOffsetY = 170; 
-            doc.fontSize(8).fillColor('white').rect(pageMargin, headerOffsetY, containerWidth, 20).fill('#3f4d61');
-            doc.fillColor('white').text('Date', pageMargin + 3, headerOffsetY + 5, { width: 40, align: 'center' });
-            doc.text('Head of Account', pageMargin + 43, headerOffsetY + 5, { width: 70, align: 'center' });
-            doc.text('Particulars', pageMargin + 113, headerOffsetY + 5, { width: 70, align: 'center' });
-            doc.text('Cheque No.', pageMargin + 183, headerOffsetY + 5, { width: 60, align: 'center' });
-            doc.text('Challan No.', pageMargin + 243, headerOffsetY + 5, { width: 60, align: 'center' });
-            doc.text('Voucher No.', pageMargin + 303, headerOffsetY + 5, { width: 60, align: 'center' });
-            doc.text('Debit', pageMargin + 363, headerOffsetY + 5, { width: 45, align: 'center' });
-            doc.text('Credit', pageMargin + 408, headerOffsetY + 5, { width: 45, align: 'center' });
-            doc.text('Balance', pageMargin + 453, headerOffsetY + 5, { width: 45, align: 'center' });
-
-            const startY = headerOffsetY + 20;
-            let rowHeight = 20;
-            let currentY = startY;
-
-            bankLedgerData.forEach((entry, rowIndex) => {
-                const rowFill = rowIndex % 2 === 0 ? '#f9f9f9' : '#ffffff';
-                doc.fillColor(rowFill).rect(pageMargin, currentY, containerWidth, rowHeight).fill();
-
-                doc.fillColor('black').fontSize(6);
-                const row = [
-                    entry.date.toISOString().split('T')[0],  
-                    entry.headOfAccount,
-                    entry.particular,
-                    entry.chequeNo || '',
-                    entry.challanNo || '',
-                    entry.voucherNo || '',
-                    entry.debit || '0',
-                    entry.credit || '0',
-                    entry.balance || '0'
-                ];
-
-                row.forEach((cell, cellIndex) => {
-                    let cellWidth;
-                    let cellX;
-
-                    switch (cellIndex) {
-                        case 0:
-                            cellWidth = 40;
-                            cellX = pageMargin + 3;
-                            break;
-                        case 1:
-                            cellWidth = 70;
-                            cellX = pageMargin + 43;
-                            break;
-                        case 2:
-                            cellWidth = 70;
-                            cellX = pageMargin + 113;
-                            break;
-                        case 3:
-                            cellWidth = 60;
-                            cellX = pageMargin + 183;
-                            break;
-                        case 4:
-                            cellWidth = 60;
-                            cellX = pageMargin + 243;
-                            break;
-                        case 5:
-                            cellWidth = 60;
-                            cellX = pageMargin + 303;
-                            break;
-                        case 6:
-                            cellWidth = 45;
-                            cellX = pageMargin + 363;
-                            break;
-                        case 7:
-                            cellWidth = 45;
-                            cellX = pageMargin + 408;
-                            break;
-                        case 8:
-                            cellWidth = 45;
-                            cellX = pageMargin + 453;
-                            break;
-                    }
-
-                    doc.text(cell, cellX, currentY + 5, { width: cellWidth, align: 'center' });
-                });
-
-                currentY += rowHeight;
-            });
-
-            doc.end();
-            doc.pipe(res);
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            res.status(500).send('Failed to generate PDF');
+            : {}),
+          bank: bank_id,
+        });
+        totalBalance = await BankBalance.aggregate([
+          {
+            $group: {
+              _id: null,
+              totalBalance: { $sum: "$balance" },
+            },
+          },
+        ]);
+        if (totalBalance.length > 0) {
+          latestBalanceDoc = await BankBalance.findOne({
+            bank: bank_id,
+          }).exec();
+          balance = latestBalanceDoc ? latestBalanceDoc.balance : 0;
         }
+      } else {
+        return res.status(400).json({ message: "Provide Bank Account Number" });
+      }
+
+      const lastEntry = bankLedgerData[bankLedgerData.length - 1];
+      if (!lastEntry) {
+        return res.status(400).json({ message: "No data found" });
+      }
+
+      const monthEnding = new Date(endDate).toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      });
+
+      bankLedgerData = bankLedgerData.map(document => ({ ...document.toObject(), date: document.date.toISOString().split("T")[0] }));
+
+      ledgerTemplateHtml = ledgerTemplateHtml.replace(
+        "{{ledgerHeading}}",
+        "Bank Ledger"
+      );
+      ledgerTemplateHtml = ledgerTemplateHtml.replace(
+        "{{ledgerDetail}}",
+        getLedgerDetailHtml({
+          "BANK NAME": bankName,
+          "ACCOUNT NUMBER": bank_account,
+          "START DATE": startDate.toISOString().split("T")[0],
+          "END DATE": endDate.toISOString().split("T")[0],
+          "STARTING BALANCE": balance.toString(),
+          "CLOSING BALANCE": lastEntry.balance,
+        })
+      );
+      ledgerTemplateHtml = ledgerTemplateHtml.replace(
+        "{{ledgerTable}}",
+        getLedgerTableHtml({
+          columns: [
+            {
+              label: "Date",
+              key: "date",
+            },
+            {
+              label: "Head of Account",
+              key: "headOfAccount",
+            },
+            {
+              label: "Particulars",
+              key: "particular",
+            },
+            {
+              label: "Cheque No.",
+              key: "chequeNo",
+            },
+            {
+              label: "Challan No.",
+              key: "challanNo",
+            },
+            {
+              label: "Voucher No.",
+              key: "voucherNo",
+            },
+            {
+              label: "Debit",
+              key: "debit",
+            },
+            {
+              label: "Credit",
+              key: "credit",
+            },
+            {
+              label: "Balance",
+              key: "balance",
+            },
+          ],
+          data: bankLedgerData,
+        })
+      );
+      const pdfBuffer = await generatePdf(ledgerTemplateHtml);
+
+      res.writeHead(200, {
+        "Content-Type": "application/pdf",
+        "Content-Length": pdfBuffer.length,
+        "Content-Disposition": 'attachment; filename="bank-ledger.pdf"',
+      });
+      return res.end(pdfBuffer);
+    } catch (error) {
+      console.error("Error generating PDF:", error);
+      res.status(500).send("Failed to generate PDF");
     }
+  },
+};
+
+async function generatePdf(html) {
+  try {
+    // Launch browser with specific arguments to handle PDF generation
+    const browser = await puppeteer.launch({
+      headless: "new",
+      args: ["--no-sandbox", "--disable-setuid-sandbox"],
+    });
+
+    // Create new page
+    const page = await browser.newPage();
+
+    // Set content with proper encoding
+    await page.setContent(html, {
+      waitUntil: "networkidle0",
+      encoding: "utf-8",
+    });
+
+    // Generate PDF with buffer
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+      margin: {
+        top: "20px",
+        right: "20px",
+        bottom: "20px",
+        left: "20px",
+      },
+      preferCSSPageSize: true,
+    });
+
+    // Close browser
+    await browser.close();
+
+    // returning the pdfBuffer
+    return pdfBuffer;
+  } catch (error) {
+    console.error("PDF Generation Error:", error);
+    throw new Error("Error while generating pdf");
+  }
+}
+
+function getLedgerDetailHtml(data) {
+  let html = "";
+  Object.keys(data).forEach((key) => {
+    if (data[key]) {
+      let value = data[key];
+      html += `
+        <div> ${key} </div>
+        <div> ${value} </div>
+      `;
+    }
+  });
+  return html;
+}
+
+function getLedgerTableHtml({ columns, data }) {
+  let html = `
+    <table>
+      <thead> 
+        <tr>
+          ${getTableHeaderCells()}
+        </tr>
+      </thead>
+      <tbody>
+        ${getTableBodyRows()}
+      </tbody>
+    </table>
+  `;
+
+  function getTableHeaderCells() {
+    let html = ``;
+    for (const column of columns) {
+      html += `<th>${column.label}</th>`
+    }
+    return html;
+  }
+
+  function getTableBodyRows() {
+    let html = ``;
+    for (const document of data) {
+      html += `
+        <tr>
+          ${getTableBodyRowCells(document)}
+        </tr>
+      `;
+    }
+
+    function getTableBodyRowCells(document) {
+      let html = ``;
+      for (const column of columns) {
+        html += `
+          <td>
+            ${document[column.key] || ""}
+          </td>
+        `;
+      }
+      return html;
+    }
+
+    return html;
+  }
+
+  return html;
 }

@@ -5,7 +5,6 @@ router.use(express.urlencoded({ extended: true }));
 const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
-const incomeRecordController = require("../../controllers/templateController/incomeRecord");
 const coreController = require("../../controllers/userController/create");
 const loginController = require("../../controllers/userController/login");
 const forgetPassword = require("../../controllers/userController/forgetPassword");
@@ -14,18 +13,11 @@ const newPasswordSet = require("../../controllers/userController/newPasswordSet"
 
 const createPayableVoucher = require("../../controllers/payableVoucherController/createPayableVoucher");
 
-const singleTierchallanController = require("../../controllers/templateController/singleTierChallan");
 const threeTierchallanController = require("../../controllers/templateController/threeTierChallan");
-
-const bankLedger = require("../../controllers/templateController/bankLedgerPdf");
-const generalLedger = require("../../controllers/templateController/generalLedgerPdf");
-const cashLedger = require("../../controllers/templateController/cashLedgerPdf");
 
 const fixedAmountController = require("../../controllers/fixedAmountController/fixedAmount");
 
 const operatingFixedAmountController = require("../../controllers/operatingFixedAssetsController/operatingFixedAssets");
-
-const balanceSheet = require("../../controllers/templateController/balanceSheet");
 
 const incomeStatement = require("../../controllers/incomeStatementController/incomeStatement");
 
@@ -48,25 +40,6 @@ router.post(
   createPayableVoucher.createPayableVoucher
 );
 router.get("/", threeTierchallanController.renderTemplate);
-
-router.get(
-  "/stc-generate-pdf",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  singleTierchallanController.generatePDF
-);
-router.get(
-  "/ttc-generate-pdf",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  threeTierchallanController.generatePDF
-);
-
-router.get("/bankLedgerPdf", bankLedger.generatePDF);
-router.get("/generalLedgerPdf", generalLedger.generatePDF);
-router.get("/cashLedgerPdf", cashLedger.generatePDF);
-router.get("/incomeRecordPdf", incomeRecordController.generatePDF);
-router.get("/balanceSheetPdf", balanceSheet.generatePDF);
 
 router.post(
   "/addFixedAmount",
