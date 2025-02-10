@@ -7,7 +7,6 @@ export const getMembers = async (params) => {
         );
 
         const queryString = new URLSearchParams(cleanParams).toString();
-        console.log("Query string:", queryString);
 
         const response = api.get(`/member/getMemberList?${queryString}`);
         return response;
