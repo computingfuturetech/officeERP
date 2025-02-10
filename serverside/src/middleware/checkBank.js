@@ -3,7 +3,7 @@ const BankList = require("../models/bankModel/bank");
 module.exports = {
   checkBank: async (req, res, bank_account) => {
     if (!bank_account) {
-      return { bank_id: null };
+      return { bankId: null };
     }
     const bank = await BankList.findOne({
       accountNo: bank_account,

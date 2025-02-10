@@ -1,10 +1,11 @@
 const fs = require("fs");
 const BankLedger = require("../../models/ledgerModels/bankLedger");
-const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
 const CheckBank = require("../../middleware/checkBank");
 const BankBalance = require("../../models/bankModel/bankBalance");
-const puppeteer = require("puppeteer");
 const path = require("path");
+const getLedgerDetailHtml = require("../../utils/getLedgerDetailHtml");
+const getLedgerTableHtml = require("../../utils/getLedgerTableHtml");
+const generatePdf = require("../../utils/generatePdf");
 const ledgerTemplatePath = path.join(
   __dirname,
   "../../views/ledgerTemplate.html"
@@ -22,17 +23,16 @@ module.exports = {
       let latestBalanceDoc;
       let balance;
       let totalBalance;
-      let actualBalance;
       let bank_id;
       let bankName;
 
       if (bank_account) {
-        let bankDetails = await CheckBank.checkBank(
-          req,
-          res,
-          bank_account
-        );
-        bank_id = bankDetails.bank_id;
+        let bankDetails = await CheckBank.checkBank(req, res, bank_account);
+
+        if (!bankDetails.bankId)
+          return res.status(400).json({ message: "Bank not found" });
+
+        bank_id = bankDetails.bankId;
         bankName = bankDetails.bankName;
         bankLedgerData = await BankLedger.find({
           ...(!isNaN(startDate) || !isNaN(endDate)
@@ -52,7 +52,10 @@ module.exports = {
               }
             : {}),
           bank: bank_id,
-        });
+        })
+          .populate("mainHeadOfAccount", "headOfAccount")
+          .populate("subHeadOfAccount", "headOfAccount")
+          .populate("incomeHeadOfAccount", "headOfAccount");
         totalBalance = await BankBalance.aggregate([
           {
             $group: {
@@ -76,12 +79,14 @@ module.exports = {
         return res.status(400).json({ message: "No data found" });
       }
 
-      const monthEnding = new Date(endDate).toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-
-      bankLedgerData = bankLedgerData.map(document => ({ ...document.toObject(), date: document.date.toISOString().split("T")[0] }));
+      bankLedgerData = bankLedgerData.map((document) => ({
+        ...document.toObject(),
+        date: document.date.toLocaleDateString("en-GB").replace(/\//g, "-"),
+        _headOfAccount:
+          document.credit === undefined
+            ? document.mainHeadOfAccount?.headOfAccount
+            : document.incomeHeadOfAccount?.headOfAccount,
+      }));
 
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerHeading}}",
@@ -92,8 +97,20 @@ module.exports = {
         getLedgerDetailHtml({
           "BANK NAME": bankName,
           "ACCOUNT NUMBER": bank_account,
-          "START DATE": startDate.toISOString().split("T")[0],
-          "END DATE": endDate.toISOString().split("T")[0],
+          ...(!isNaN(startDate)
+            ? {
+                "START DATE": startDate
+                  .toLocaleDateString("en-GB")
+                  .replace(/\//g, "-"),
+              }
+            : {}),
+          ...(!isNaN(endDate)
+            ? {
+                "END DATE": endDate
+                  .toLocaleDateString("en-GB")
+                  .replace(/\//g, "-"),
+              }
+            : {}),
           "STARTING BALANCE": balance.toString(),
           "CLOSING BALANCE": lastEntry.balance,
         })
@@ -105,10 +122,11 @@ module.exports = {
             {
               label: "Date",
               key: "date",
+              inSingleLine: true,
             },
             {
               label: "Head of Account",
-              key: "headOfAccount",
+              key: "_headOfAccount",
             },
             {
               label: "Particulars",
@@ -125,6 +143,7 @@ module.exports = {
             {
               label: "Voucher No.",
               key: "voucherNo",
+              inSingleLine: true,
             },
             {
               label: "Debit",
@@ -156,108 +175,3 @@ module.exports = {
     }
   },
 };
-
-async function generatePdf(html) {
-  try {
-    // Launch browser with specific arguments to handle PDF generation
-    const browser = await puppeteer.launch({
-      headless: "new",
-      args: ["--no-sandbox", "--disable-setuid-sandbox"],
-    });
-
-    // Create new page
-    const page = await browser.newPage();
-
-    // Set content with proper encoding
-    await page.setContent(html, {
-      waitUntil: "networkidle0",
-      encoding: "utf-8",
-    });
-
-    // Generate PDF with buffer
-    const pdfBuffer = await page.pdf({
-      format: "A4",
-      printBackground: true,
-      margin: {
-        top: "20px",
-        right: "20px",
-        bottom: "20px",
-        left: "20px",
-      },
-      preferCSSPageSize: true,
-    });
-
-    // Close browser
-    await browser.close();
-
-    // returning the pdfBuffer
-    return pdfBuffer;
-  } catch (error) {
-    console.error("PDF Generation Error:", error);
-    throw new Error("Error while generating pdf");
-  }
-}
-
-function getLedgerDetailHtml(data) {
-  let html = "";
-  Object.keys(data).forEach((key) => {
-    if (data[key]) {
-      let value = data[key];
-      html += `
-        <div> ${key} </div>
-        <div> ${value} </div>
-      `;
-    }
-  });
-  return html;
-}
-
-function getLedgerTableHtml({ columns, data }) {
-  let html = `
-    <table>
-      <thead> 
-        <tr>
-          ${getTableHeaderCells()}
-        </tr>
-      </thead>
-      <tbody>
-        ${getTableBodyRows()}
-      </tbody>
-    </table>
-  `;
-
-  function getTableHeaderCells() {
-    let html = ``;
-    for (const column of columns) {
-      html += `<th>${column.label}</th>`
-    }
-    return html;
-  }
-
-  function getTableBodyRows() {
-    let html = ``;
-    for (const document of data) {
-      html += `
-        <tr>
-          ${getTableBodyRowCells(document)}
-        </tr>
-      `;
-    }
-
-    function getTableBodyRowCells(document) {
-      let html = ``;
-      for (const column of columns) {
-        html += `
-          <td>
-            ${document[column.key] || ""}
-          </td>
-        `;
-      }
-      return html;
-    }
-
-    return html;
-  }
-
-  return html;
-}
