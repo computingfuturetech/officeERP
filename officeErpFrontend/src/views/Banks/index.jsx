@@ -201,7 +201,7 @@ export default function Banks() {
       id: "bankBalance",
       label: "Balance",
       type: "number",
-      value: bank?.balance || "",
+      value: bank?.bankBalance?.balance || "",
       placeholder: "Enter balance",
       required: true,
     },
