@@ -44,7 +44,8 @@ module.exports = {
       })
         .populate("mainHeadOfAccount", "headOfAccount")
         .populate("subHeadOfAccount", "headOfAccount")
-        .populate("incomeHeadOfAccount", "headOfAccount");
+        .populate("incomeHeadOfAccount", "headOfAccount")
+        .sort({ date: 1});
 
       totalBalance = await BankBalance.aggregate([
         {
@@ -63,8 +64,13 @@ module.exports = {
         parseInt(totalBalance[0].totalBalance) +
         parseInt(latestBalanceCash.cashOpeningBalance);
 
+      const firstEntry = generalLedgerData[0];
       const lastEntry = generalLedgerData[generalLedgerData.length - 1];
       balance = lastEntry?.balance || 0;
+
+      if (!lastEntry) {
+        return res.status(400).json({ message: "No data found" });
+      }
 
       generalLedgerData = generalLedgerData.map((document) => ({
         ...document.toObject(),
@@ -96,7 +102,8 @@ module.exports = {
                   .replace(/\//g, "-"),
               }
             : {}),
-          "STARTING BALANCE": actualBalance.toString(),
+          // "STARTING BALANCE": actualBalance.toString(),
+          "STARTING BALANCE": firstEntry.previousBalance,
           "CLOSING BALANCE": balance.toString(),
         })
       );

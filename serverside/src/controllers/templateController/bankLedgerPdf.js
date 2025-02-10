@@ -55,7 +55,8 @@ module.exports = {
         })
           .populate("mainHeadOfAccount", "headOfAccount")
           .populate("subHeadOfAccount", "headOfAccount")
-          .populate("incomeHeadOfAccount", "headOfAccount");
+          .populate("incomeHeadOfAccount", "headOfAccount")
+          .sort({ date: 1});
         totalBalance = await BankBalance.aggregate([
           {
             $group: {
@@ -74,6 +75,7 @@ module.exports = {
         return res.status(400).json({ message: "Provide Bank Account Number" });
       }
 
+      const firstEntry = bankLedgerData[0];
       const lastEntry = bankLedgerData[bankLedgerData.length - 1];
       if (!lastEntry) {
         return res.status(400).json({ message: "No data found" });
@@ -111,7 +113,8 @@ module.exports = {
                   .replace(/\//g, "-"),
               }
             : {}),
-          "STARTING BALANCE": balance.toString(),
+          // "STARTING BALANCE": balance.toString(),
+          "STARTING BALANCE": firstEntry.previousBalance,
           "CLOSING BALANCE": lastEntry.balance,
         })
       );
