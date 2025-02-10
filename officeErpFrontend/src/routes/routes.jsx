@@ -11,6 +11,7 @@ import {
   Reports,
   Banks,
   ApiTester,
+  FixedAmount,
 } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
 import path from "path";
@@ -59,6 +60,10 @@ const staticRoutes = [
   {
     path: "/api-tester",
     element: <ProtectedRoute element={<ApiTester />} />,
+  },
+  {
+    path: "/fixed-amount",
+    element: <ProtectedRoute element={<FixedAmount />} />,
   },
 ];
 

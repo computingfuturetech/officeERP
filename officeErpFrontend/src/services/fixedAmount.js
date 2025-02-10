@@ -1,0 +1,34 @@
+import api from "../core/api"
+
+export const getFixedAmount = async (params) => {
+    try {
+        const cleanParams = Object.fromEntries(
+            Object.entries(params).filter(([_, v]) => v != null)
+        );
+
+        const queryString = new URLSearchParams(cleanParams).toString();
+
+        const response = api.get(`/fixedAmount/get?${queryString}`);
+        return response;
+    } catch (error) {
+        console.error("Error fetching members:", error);
+    }
+}
+
+export const createFixedAmount = async (data) => {
+    try {
+        const response = api.post("/fixedAmount/create", data);
+        return response;
+    } catch (error) {
+        console.error("Error creating member:", error);
+    }
+}
+
+export const updateFixedAmount = async (id, data) => {
+    try {
+        const response = api.post(`/fixedAmount/create?id=${id}`, data);
+        return response;
+    } catch (error) {
+        console.error("Error updating member:", error);
+    }
+}

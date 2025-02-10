@@ -54,6 +54,12 @@ const data = {
       icon: Building2Icon,
     },
     {
+      title: "Fixed Amount",
+      url: "/fixed-amount",
+      icon: Frame,
+
+    },
+    {
       title: "Income",
       icon: Banknote,
       items: [

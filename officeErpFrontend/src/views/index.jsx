@@ -11,6 +11,7 @@ const OfficeExpense = lazy(() => import("./OfficeExpense"));
 const SiteExpense = lazy(() => import("./SiteExpense"));
 const Reports = lazy(() => import("./Reports"));
 const ApiTester = lazy(() => import("./ApiTester"));
+const FixedAmount = lazy(() => import("./FixedAmount"));
 export {
   Home,
   LoginPage,
@@ -23,4 +24,5 @@ export {
   SiteExpense,
   Reports,
   ApiTester,
+  FixedAmount,
 };
