@@ -1,4 +1,5 @@
 const BankList = require("../../models/bankModel/bank");
+const BankBalance = require("../../models/bankModel/bankBalance");
 
 module.exports = {
   createBank: async (req, res) => {
@@ -9,6 +10,7 @@ module.exports = {
       branchCode,
       accountName,
       accountType,
+      bankBalance,
     } = req.body;
 
     try {
@@ -54,9 +56,15 @@ module.exports = {
         });
       }
 
+      if (!bankBalance) {
+        return res.status(400).json({
+          status: "error",
+          message: "Bank Balance is Required",
+        });
+      }
+
       const foundBank = await BankList.findOne({
         accountNo: accountNo,
-        branchName: branchName,
       });
       if (foundBank) {
         return res.status(409).json({
@@ -76,6 +84,17 @@ module.exports = {
 
       await bank.save();
 
+      const bankBalanceData = new BankBalance({
+        balance: parseInt(bankBalance),
+        bank: bank._id,
+      });
+
+      await bankBalanceData.save();
+
+      bank.bankBalance = bankBalanceData._id;
+
+      await bank.save();
+
       res.status(201).json({
         status: "success",
         message: "Bank created successfully",
@@ -85,13 +104,98 @@ module.exports = {
       res.status(500).json({ message: err });
     }
   },
+  updateBank: async (req, res) => {
+    const { id } = req.query;
+    const {
+      bankName,
+      accountNo,
+      branchName,
+      branchCode,
+      accountName,
+      accountType,
+      bankBalance,
+    } = req.body;
+
+    try {
+      const bank = await BankList.findById(id).populate("bankBalance");
+      if (!bank) {
+        return res.status(404).json({
+          status: "error",
+          message: "Bank not found",
+        });
+      }
+
+      if (bankName) {
+        bank.bankName = bankName;
+      }
+
+      if (accountNo) {
+        const foundBank = await BankList.findOne({
+          accountNo: accountNo,
+          _id: { $ne: bank._id },
+        });
+
+        if (foundBank) {
+          return res.status(409).json({
+            status: "error",
+            message: "Bank Account No already exists",
+          });
+        }
+
+        bank.accountNo = accountNo;
+      }
+
+      if (branchName) {
+        bank.branchName = branchName;
+      }
+
+      if (branchCode) {
+        bank.branchCode = branchCode;
+      }
+
+      if (accountName) {
+        bank.accountName = accountName;
+      }
+
+      if (accountType) {
+        bank.accountType = accountType;
+      }
+
+      if (bankBalance) {
+        let bankBalanceData = await BankBalance.findOne({ bank: id });
+        if (!bankBalanceData) {
+          bankBalanceData = new BankBalance({
+            bank: id,
+            balance: bankBalance,
+          });
+        } else {
+          bankBalanceData.balance = bankBalance;
+        }
+        await bankBalanceData.save();
+        bank.bankBalance = bankBalanceData._id;
+      }
+
+      await bank.save();
+
+      res.status(200).json({
+        status: "success",
+        message: "Bank updated successfully",
+        data: bank,
+      });
+    } catch (err) {
+      console.log(err.message);
+      res.status(500).json({ message: err });
+    }
+  },
   getBankList: async (req, res) => {
     try {
-      const { id } = req.query;
-      let bankList;
+      const { id, page = 1, limit = 20 } = req.query;
+
       if (id) {
-        bankList = await BankList.findById(id);
-        if (!bankList) {
+        const bank = await BankList.findById(id)
+          .populate("bankBalance", "balance")
+          .exec();
+        if (!bank) {
           return res.status(404).json({
             status: "error",
             message: "Bank not found",
@@ -100,19 +204,33 @@ module.exports = {
         return res.status(200).json({
           status: "success",
           message: "Bank found",
-          data: [bankList],
+          data: [bank],
         });
       }
 
-      bankList = await BankList.find();
+      const options = {
+        page: parseInt(page, 10),
+        limit: parseInt(limit, 10),
+        populate: [{ path: "bankBalance", select: "bank balance" }],
+        sort: { createdAt: -1 },
+      };
+
+      const bankList = await BankList.paginate({}, options);
 
       res.status(200).json({
         status: "success",
-        message: "Bank found",
-        data: bankList,
+        message: "Banks found",
+        data: bankList.docs,
+        pagination: {
+          totalDocs: bankList.totalDocs,
+          totalPages: bankList.totalPages,
+          currentPage: bankList.page,
+          hasNextPage: bankList.hasNextPage,
+          hasPrevPage: bankList.hasPrevPage,
+        },
       });
     } catch (err) {
-      return res.status(500).json({ message: err });
+      return res.status(500).json({ status: "error", message: err.message });
     }
   },
 };
