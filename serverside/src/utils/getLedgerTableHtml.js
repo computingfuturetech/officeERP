@@ -39,7 +39,7 @@ module.exports = function getLedgerTableHtml({ columns, data }) {
           <td style="white-space: ${
             column.inSingleLine === true ? "nowrap" : "unset"
           }">
-            ${document[column.key] || "-"}
+            ${document[column.key] || document[column.key] === 0 ? document[column.key] : "-"}
           </td>
         `;
       }

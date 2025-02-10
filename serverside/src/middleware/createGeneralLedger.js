@@ -5,6 +5,8 @@ const CheckMainAndSubHeadOfAccount = require("../middleware/checkMainAndSubHeadO
 const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 const CheckBank = require("../middleware/checkBank");
 const BankBalance = require("../models/bankModel/bankBalance");
+const MainExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const SubExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
 
 async function updateAddNextGeneralLedger(nextIds, type, difference) {
   try {
@@ -119,6 +121,18 @@ module.exports = {
       }
 
       let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
+      let mainHOF;
+      let subHOF;
+
+      if (type === "income") {
+        headOfAccount = incomeHOF.headOfAccount;
+      } else {
+        mainHOF = await MainExpenseHeadOfAccount.findById(headOfAccount);
+        if (!mainHOF) {
+          subHOF = await SubExpenseHeadOfAccount.findById(headOfAccount);
+          headOfAccount = subHOF.headOfAccount;
+        } else headOfAccount = mainHOF.headOfAccount;
+      }
 
       const generalLedger = new GeneralLedger({
         date: paidDate,

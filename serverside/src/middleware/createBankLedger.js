@@ -118,8 +118,7 @@ module.exports = {
         if (!mainHOF) {
           subHOF = await SubExpenseHeadOfAccount.findById(headOfAccount);
           headOfAccount = subHOF.headOfAccount;
-        }
-        headOfAccount = mainHOF.headOfAccount;
+        } else headOfAccount = mainHOF.headOfAccount;
       }
 
       const bankLedger = new BankLedger({
