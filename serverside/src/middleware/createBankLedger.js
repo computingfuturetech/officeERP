@@ -5,6 +5,8 @@ const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/
 const CheckMainAndSubHeadOfAccount = require("../middleware/checkMainAndSubHeadOfAccount");
 const CheckBank = require("../middleware/checkBank");
 const BankBalance = require("../models/bankModel/bankBalance");
+const MainExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const SubExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
 
 async function updateAddNextBankLedger(nextIds, type, difference) {
   try {
@@ -105,7 +107,21 @@ module.exports = {
             headOfAccount
           ));
       }
+      let mainHOF;
+      let subHOF;
       let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
+
+      if (type === "income") {
+        headOfAccount = incomeHOF.headOfAccount;
+      } else {
+        mainHOF = await MainExpenseHeadOfAccount.findById(headOfAccount);
+        if (!mainHOF) {
+          subHOF = await SubExpenseHeadOfAccount.findById(headOfAccount);
+          headOfAccount = subHOF.headOfAccount;
+        }
+        headOfAccount = mainHOF.headOfAccount;
+      }
+
       const bankLedger = new BankLedger({
         date: paidDate,
         voucherNo: voucherNo,
@@ -133,6 +149,7 @@ module.exports = {
       console.log("Bank Ledger created successfully");
       return bankLedger;
     } catch (err) {
+      console.log(err);
       return res.status(500).json({ message: err });
     }
   },

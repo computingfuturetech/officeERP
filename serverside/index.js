@@ -22,6 +22,7 @@ const salaryRouter = require("./src/routes/salaryRoutes/salary");
 const expenseHeadOfAccountRouter = require("./src/routes/expenseHeadOfAccountRoutes/expenseHeadOfAccount");
 const vehicleDisposalExpenseRouter = require("./src/routes/vehicleDisposalExpenseRoutes/vehicleDisposalExpense");
 const siteExpenseRouter = require("./src/routes/siteExpenseRoutes/siteExpense");
+const pdfRouter = require("./src/routes/pdfRoutes/pdf");
 
 dotenv.config();
 
@@ -76,6 +77,7 @@ app.use("/miscellaneousExpense", miscellaneousExpenseRouter);
 app.use("/vehicleDisposalExpense", vehicleDisposalExpenseRouter);
 app.use("/electricityWaterExpense", electricityAndWaterConnectionExpenseRouter);
 app.use("/siteExpense", siteExpenseRouter);
+app.use("/pdf", pdfRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;
