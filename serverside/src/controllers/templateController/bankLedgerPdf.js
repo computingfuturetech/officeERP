@@ -81,10 +81,10 @@ module.exports = {
 
       bankLedgerData = bankLedgerData.map((document) => ({
         ...document.toObject(),
-        date: document.date.toLocaleDateString("en-GB").replace(/\//g, "-"),
+        date: document.date?.toLocaleDateString("en-GB").replace(/\//g, "-"),
         _headOfAccount:
           document.credit === undefined
-            ? document.mainHeadOfAccount?.headOfAccount
+            ? document.mainHeadOfAccount?.headOfAccount || document.subHeadOfAccount?.headOfAccount
             : document.incomeHeadOfAccount?.headOfAccount,
       }));
 
