@@ -38,15 +38,21 @@ module.exports = {
       })
         .populate("mainHeadOfAccount", "headOfAccount")
         .populate("subHeadOfAccount", "headOfAccount")
-        .populate("incomeHeadOfAccount", "headOfAccount");
+        .populate("incomeHeadOfAccount", "headOfAccount")
+        .sort({ date: 1});
 
       let latestBalanceCash = await FixedAmount.findOne({})
         .sort({ cashOpeningBalance: -1 })
         .exec();
 
       const startingBalance = latestBalanceCash?.cashOpeningBalance || 0;
+      const firstEntry = cashLedgerData[0];
       const lastEntry = cashLedgerData[cashLedgerData.length - 1];
       const balance = lastEntry?.balance || 0;
+
+      if (!lastEntry) {
+        return res.status(400).json({ message: "No data found" });
+      }
 
       cashLedgerData = cashLedgerData.map((document) => ({
         ...document.toObject(),
@@ -64,7 +70,8 @@ module.exports = {
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerDetail}}",
         getLedgerDetailHtml({
-          "STARTING BALANCE": startingBalance.toString(),
+          // "STARTING BALANCE": startingBalance.toString(),
+          "STARTING BALANCE": firstEntry.previousBalance,
           "CLOSING BALANCE": balance.toString(),
           ...(!isNaN(startDate)
             ? {
