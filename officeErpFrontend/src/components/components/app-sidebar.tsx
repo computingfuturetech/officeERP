@@ -3,6 +3,7 @@ import {
   AudioWaveform,
   Banknote,
   Building,
+  Building2Icon,
   ChartNoAxesCombined,
   ChevronRight,
   CircleDollarSign,
@@ -46,6 +47,11 @@ const data = {
       title: "Members",
       url: "/members",
       icon: Users,
+    },
+    {
+      title: "Banks",
+      url: "/banks",
+      icon: Building2Icon,
     },
     {
       title: "Income",
