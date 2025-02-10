@@ -9,13 +9,13 @@ const bank = require("../../controllers/bankController/bank");
 const bankBalance = require("../../controllers/bankController/bankBalance");
 
 router.post(
-  "/addNewBank",
+  "/create",
   authenticateJWT,
-  checkRole(["admin"]),
+  checkRole(["admin", "employee"]),
   bank.createBank
 );
 router.get(
-  "/bankList",
+  "/get",
   authenticateJWT,
   checkRole(["admin", "employee"]),
   bank.getBankList
@@ -25,6 +25,12 @@ router.post(
   authenticateJWT,
   checkRole(["admin", "employee"]),
   bankBalance.createBankBalance
+);
+router.post(
+  "/update",
+  authenticateJWT,
+  checkRole(["admin", "employee"]),
+  bank.updateBank
 );
 
 module.exports = router;
