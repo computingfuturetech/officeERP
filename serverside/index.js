@@ -23,6 +23,7 @@ const expenseHeadOfAccountRouter = require("./src/routes/expenseHeadOfAccountRou
 const vehicleDisposalExpenseRouter = require("./src/routes/vehicleDisposalExpenseRoutes/vehicleDisposalExpense");
 const siteExpenseRouter = require("./src/routes/siteExpenseRoutes/siteExpense");
 const reportRouter = require("./src/routes/reportRoutes/report");
+const fixedAmountRouter = require("./src/routes/fixedAmountRoutes/fixedAmount");
 
 dotenv.config();
 
@@ -30,7 +31,6 @@ const coreRouter = require("./src/routes/coreRoutes/coreApi");
 const incomeRouter = require("./src/routes/coreRoutes/incomeApi");
 const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
 // const memberRouter = require("./src/routes/coreRoutes/memberApi");
-const fixedAmountRouter = require("./src/routes/coreRoutes/fixedAmountApi");
 const liabilityRouter = require("./src/routes/coreRoutes/liability");
 const ledgerRouter = require("./src/routes/coreRoutes/ledgerApi");
 const officeExpenseRouter = require("./src/routes/officeExpenseRoutes/officeExpense");
@@ -78,6 +78,7 @@ app.use("/vehicleDisposalExpense", vehicleDisposalExpenseRouter);
 app.use("/electricityWaterExpense", electricityAndWaterConnectionExpenseRouter);
 app.use("/siteExpense", siteExpenseRouter);
 app.use("/report", reportRouter);
+app.use("/fixedAmount", fixedAmountRouter);
 
 const port = process.env.PORT;
 const ip = process.env.IP;

@@ -1,23 +1,56 @@
-const FixedAmount=require('../../models/fixedAmountModel/fixedAmount');
+const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
 
-module.exports={
-    addFixedAmount: async (req, res) => {
-        const {
-            share_capital,bank_opening_balance,cash_opening_balance
-        } = req.body;
-        try {
-            
-            const fixedAmount = new FixedAmount({
-              shareCapital: share_capital,
-              cashOpeningBalance: cash_opening_balance,
-              bankOpeningBalance: bank_opening_balance,
-            });
-            await fixedAmount.save();
-            res.status(200).json({
-              message: "Fixed amount added successfully",
-            });
-          } catch (err) {
-            res.status(500).json({ message: err });
-          }
-    },
-}
+module.exports = {
+  addFixedAmountOrUpdate: async (req, res) => {
+    const { shareCapital, bankOpeningBalance, cashOpeningBalance } = req.body;
+
+    try {
+      let fixedAmount = await FixedAmount.findOne();
+
+      if (fixedAmount) {
+        if (shareCapital) fixedAmount.shareCapital = shareCapital;
+        if (bankOpeningBalance)
+          fixedAmount.bankOpeningBalance = bankOpeningBalance;
+        if (cashOpeningBalance)
+          fixedAmount.cashOpeningBalance = cashOpeningBalance;
+
+        await fixedAmount.save();
+        return res.status(200).json({
+          status: "success",
+          message: "Fixed amount updated successfully",
+          data: fixedAmount,
+        });
+      }
+
+      fixedAmount = new FixedAmount({
+        shareCapital,
+        bankOpeningBalance,
+        cashOpeningBalance,
+      });
+
+      await fixedAmount.save();
+      return res.status(201).json({
+        status: "success",
+        message: "Fixed amount created successfully",
+        data: fixedAmount,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      return res.status(500).json({ status: "error", message: err.message });
+    }
+  },
+
+  getFixedAmount: async (req, res) => {
+    try {
+      const fixedAmount = await FixedAmount.findOne();
+
+      return res.status(200).json({
+        status: "success",
+        data: fixedAmount,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      return res.status(500).json({ status: "error", message: err.message });
+    }
+  },
+};

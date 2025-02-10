@@ -41,12 +41,12 @@ router.post(
 );
 router.get("/", threeTierchallanController.renderTemplate);
 
-router.post(
-  "/addFixedAmount",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  fixedAmountController.addFixedAmount
-);
+// router.post(
+//   "/addFixedAmount",
+//   authenticateJWT,
+//   checkRole(["admin", "employee"]),
+//   fixedAmountController.addFixedAmount
+// );
 
 router.post(
   "/addOperatingFixedAssets",
