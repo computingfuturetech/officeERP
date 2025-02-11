@@ -10,7 +10,6 @@ const { stat } = require("fs");
 
 module.exports = {
   createWaterMaintenanceBill: async (req, res) => {
-    console.log(req.headers["content-type"]);
     const bills = req.body;
     try {
       if (!Array.isArray(bills) || bills.length === 0) {
