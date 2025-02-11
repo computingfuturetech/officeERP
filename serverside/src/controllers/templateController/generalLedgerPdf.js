@@ -10,7 +10,7 @@ const ledgerTemplatePath = path.join(
   __dirname,
   "../../views/ledgerTemplate.html"
 );
-let ledgerTemplateHtml = fs.readFileSync(ledgerTemplatePath, "utf-8");
+const _ledgerTemplateHtml = fs.readFileSync(ledgerTemplatePath, "utf-8");
 
 module.exports = {
   generatePDF: async (req, res) => {
@@ -62,7 +62,7 @@ module.exports = {
 
       actualBalance =
         parseInt(totalBalance[0].totalBalance) +
-        parseInt(latestBalanceCash.cashOpeningBalance);
+        parseInt(latestBalanceCash?.cashOpeningBalance || 0);
 
       const firstEntry = generalLedgerData[0];
       const lastEntry = generalLedgerData[generalLedgerData.length - 1];
@@ -81,6 +81,8 @@ module.exports = {
             : document.incomeHeadOfAccount?.headOfAccount,
       }));
 
+      let ledgerTemplateHtml = _ledgerTemplateHtml;
+
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerHeading}}",
         "General Ledger"
@@ -88,20 +90,12 @@ module.exports = {
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerDetail}}",
         getLedgerDetailHtml({
-          ...(!isNaN(startDate)
-            ? {
-                "START DATE": startDate
-                  .toLocaleDateString("en-GB")
-                  .replace(/\//g, "-"),
-              }
-            : {}),
-          ...(!isNaN(endDate)
-            ? {
-                "END DATE": endDate
-                  .toLocaleDateString("en-GB")
-                  .replace(/\//g, "-"),
-              }
-            : {}),
+          "START DATE": (!isNaN(startDate) ? startDate : firstEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
+          "END DATE": (!isNaN(endDate) ? endDate : lastEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
           // "STARTING BALANCE": actualBalance.toString(),
           "STARTING BALANCE": firstEntry.previousBalance,
           "CLOSING BALANCE": balance.toString(),

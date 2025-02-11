@@ -52,6 +52,26 @@ async function updateSubNextCashLedger(nextIds, type, difference) {
   }
 }
 
+async function updateNextCashBookLedgers(nextIds, previousBalance) {
+  try {
+    for (const id of nextIds) {
+      const cashBookLedger = await CashBookLedger.findOne({ _id: id }).exec();
+      const type = cashBookLedger.credit === undefined ? "debit" : "credit";
+      if (type === "credit") {
+        cashBookLedger.previousBalance = previousBalance;
+        cashBookLedger.balance = previousBalance + cashBookLedger.credit;
+      } else {
+        cashBookLedger.previousBalance = previousBalance;
+        cashBookLedger.balance = previousBalance - cashBookLedger.debit;
+      }
+      await cashBookLedger.save();
+      previousBalance = cashBookLedger.balance;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   createCashBookLedger: async (
     req,
@@ -66,12 +86,14 @@ module.exports = {
   ) => {
     try {
       let balance;
+
       let latestBalance = await CashBookLedger.findOne({
         balance: { $exists: true },
+        date: {
+          $lte: new Date(date),
+        },
       })
-        .sort({
-          $natural: -1,
-        })
+        .sort({ date: -1, createdAt: -1 })
         .exec();
 
       if (latestBalance) {
@@ -121,77 +143,135 @@ module.exports = {
         updateId: update_id,
         previousBalance: balance,
       });
-      await cashLedger.save();
+      const savedCashBookLedger = await cashLedger.save();
       console.log("Cash Ledger created successfully");
+
+      const nextCashBookLedgers = await CashBookLedger.find({
+        _id: { $ne: savedCashBookLedger._id },
+        date: {
+          $gt: new Date(date),
+        },
+      })
+        .sort({ date: 1 })
+        .exec();
+
+      let nextIds = nextCashBookLedgers.map((gl) => gl._id);
+
+      updateNextCashBookLedgers(nextIds, savedCashBookLedger.balance);
+
     } catch (err) {
       return res.status(500).json({ message: err });
     }
   },
   updateCashLedger: async (req, res, updateId, updates, type) => {
     try {
+
       const updateFields = { ...updates };
       delete updateFields.amount;
-      const cashLedger = await CashBookLedger.findOneAndUpdate(
-        { updateId: updateId },
-        { $set: updateFields },
-        { new: true }
-      ).exec();
-      if (!cashLedger) {
-        return res.status(404).json({ message: "Cash Ledger not found" });
-      }
-      if (type == "expense") {
-        if (updates.amount) {
-          if (updates.amount == cashLedger.debit) {
-            cashLedger.debit = updates.amount;
-            await cashLedger.save();
-          } else {
-            const { debit: previous_amount } = cashLedger;
-            cashLedger.debit = updates.amount;
-            cashLedger.balance =
-              parseInt(cashLedger.previousBalance) - parseInt(updates.amount);
-            const nextCashLedgers = await CashBookLedger.find({
-              _id: { $gt: cashLedger._id },
-            }).exec();
-            const nextIds = nextCashLedgers.map((gl) => gl._id);
-            if (updates.amount > previous_amount) {
-              const difference = updates.amount - previous_amount;
-              await updateAddNextCashLedger(nextIds, "expense", difference);
-            } else if (updates.amount < previous_amount) {
-              const difference = previous_amount - updates.amount;
-              await updateSubNextCashLedger(nextIds, "expense", difference);
-            }
+      const cashBookLedger = await CashBookLedger.findOne({ updateId: updateId });
 
-            await cashLedger.save();
-          }
-          console.log("Cash Ledger A updated successfully");
-        }
-      } else if (type == "income") {
-        if (updates.amount) {
-          if (updates.amount == cashLedger.credit) {
-            cashLedger.credit = updates.amount;
-            await cashLedger.save();
-          } else {
-            const { credit: previous_amount } = cashLedger;
-            cashLedger.credit = updates.amount;
-            cashLedger.balance =
-              parseInt(cashLedger.previousBalance) + parseInt(updates.amount);
-            const nextCashLedgers = await CashBookLedger.find({
-              _id: { $gt: cashLedger._id },
-            }).exec();
-            const nextIds = nextCashLedgers.map((gl) => gl._id);
-            if (updates.amount > previous_amount) {
-              const difference = updates.amount - previous_amount;
-              await updateAddNextCashLedger(nextIds, "income", difference);
-            } else if (updates.amount < previous_amount) {
-              const difference = previous_amount - updates.amount;
-              await updateSubNextCashLedger(nextIds, "income", difference);
-            }
-
-            await cashLedger.save();
-          }
-          console.log("Cash Ledger updated successfully");
-        }
+      if (!cashBookLedger) {
+        return res.status(404).json({ message: "Cash Book Ledger not found" });
       }
+
+      if (type === "income") {
+        cashBookLedger.credit = updates.amount;
+        cashBookLedger.balance = cashBookLedger.previousBalance + Number(updates.amount);
+      }
+
+      else if (type === "expense") {
+        cashBookLedger.debit = updates.amount;
+        cashBookLedger.balance = cashBookLedger.previousBalance - Number(updates.amount);
+      }
+
+      for (const key of Object.keys(updateFields)) {
+        cashBookLedger[key] = updateFields[key];
+      }
+
+      const savedCashBookLedger = await cashBookLedger.save();
+
+      const nextcashBookLedgers = await CashBookLedger.find({
+        _id: { $ne: savedCashBookLedger._id },
+        date: {
+          $gte: savedCashBookLedger.date,
+        },
+        createdAt: { $gt: savedCashBookLedger.createdAt }
+      })
+        .sort({ date: 1 })
+        .exec();
+
+      let nextIds = nextcashBookLedgers.map((gl) => gl._id);
+
+      nextIds = nextIds.filter(
+        (gl) => cashBookLedger._id.toString() !== gl._id.toString()
+      );
+
+      updateNextCashBookLedgers(nextIds, cashBookLedger.balance);
+
+      // const updateFields = { ...updates };
+      // delete updateFields.amount;
+      // const cashLedger = await CashBookLedger.findOneAndUpdate(
+      //   { updateId: updateId },
+      //   { $set: updateFields },
+      //   { new: true }
+      // ).exec();
+      // if (!cashLedger) {
+      //   return res.status(404).json({ message: "Cash Ledger not found" });
+      // }
+      // if (type == "expense") {
+      //   if (updates.amount) {
+      //     if (updates.amount == cashLedger.debit) {
+      //       cashLedger.debit = updates.amount;
+      //       await cashLedger.save();
+      //     } else {
+      //       const { debit: previous_amount } = cashLedger;
+      //       cashLedger.debit = updates.amount;
+      //       cashLedger.balance =
+      //         parseInt(cashLedger.previousBalance) - parseInt(updates.amount);
+      //       const nextCashLedgers = await CashBookLedger.find({
+      //         _id: { $gt: cashLedger._id },
+      //       }).exec();
+      //       const nextIds = nextCashLedgers.map((gl) => gl._id);
+      //       if (updates.amount > previous_amount) {
+      //         const difference = updates.amount - previous_amount;
+      //         await updateAddNextCashLedger(nextIds, "expense", difference);
+      //       } else if (updates.amount < previous_amount) {
+      //         const difference = previous_amount - updates.amount;
+      //         await updateSubNextCashLedger(nextIds, "expense", difference);
+      //       }
+
+      //       await cashLedger.save();
+      //     }
+      //     console.log("Cash Ledger A updated successfully");
+      //   }
+      // } else if (type == "income") {
+      //   if (updates.amount) {
+      //     if (updates.amount == cashLedger.credit) {
+      //       cashLedger.credit = updates.amount;
+      //       await cashLedger.save();
+      //     } else {
+      //       const { credit: previous_amount } = cashLedger;
+      //       cashLedger.credit = updates.amount;
+      //       cashLedger.balance =
+      //         parseInt(cashLedger.previousBalance) + parseInt(updates.amount);
+      //       const nextCashLedgers = await CashBookLedger.find({
+      //         _id: { $gt: cashLedger._id },
+      //       }).exec();
+      //       const nextIds = nextCashLedgers.map((gl) => gl._id);
+      //       if (updates.amount > previous_amount) {
+      //         const difference = updates.amount - previous_amount;
+      //         await updateAddNextCashLedger(nextIds, "income", difference);
+      //       } else if (updates.amount < previous_amount) {
+      //         const difference = previous_amount - updates.amount;
+      //         await updateSubNextCashLedger(nextIds, "income", difference);
+      //       }
+
+      //       await cashLedger.save();
+      //     }
+      //     console.log("Cash Ledger updated successfully");
+      //   }
+      // }
+
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Internal server error" });
