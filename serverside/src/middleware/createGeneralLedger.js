@@ -57,6 +57,26 @@ async function updateSubNextGeneralLedger(nextIds, type, difference) {
   }
 }
 
+async function updateNextGeneralLedgers(nextIds, previousBalance) {
+  try {
+    for (const id of nextIds) {
+      const generalLedger = await GeneralLedger.findOne({ _id: id }).exec();
+      const type = generalLedger.type;
+      if (type === "income") {
+        generalLedger.previousBalance = previousBalance;
+        generalLedger.balance = previousBalance + generalLedger.credit;
+      } else {
+        generalLedger.previousBalance = previousBalance;
+        generalLedger.balance = previousBalance - generalLedger.debit;
+      }
+      await generalLedger.save();
+      previousBalance = generalLedger.balance;
+    }
+  } catch (error) {
+    console.log(error);
+  }
+}
+
 module.exports = {
   createGeneralLedger: async (
     req,
@@ -78,10 +98,11 @@ module.exports = {
       let balance;
       let latestBalance = await GeneralLedger.findOne({
         balance: { $exists: true },
+        date: {
+          $lte: new Date(paidDate),
+        },
       })
-        .sort({
-          $natural: -1,
-        })
+        .sort({ date: -1, createdAt: -1 })
         .exec();
 
       if (latestBalance) {
@@ -100,7 +121,7 @@ module.exports = {
           .exec();
 
         balance =
-          parseInt(latestBalanceCash.cashOpeningBalance) +
+          parseInt(latestBalanceCash?.cashOpeningBalance || 0) +
           parseInt(totalBalance[0].totalBalance);
       }
 
@@ -155,10 +176,23 @@ module.exports = {
         balance: newBalance,
         updateId: update_id,
         previousBalance: balance,
-        bank: bankId,
+        bank: bank,
       });
-      await generalLedger.save();
+      const savedGeneralLedger = await generalLedger.save();
       console.log("General Ledger created successfully");
+
+      const nextGeneralLedgers = await GeneralLedger.find({
+        _id: { $ne: savedGeneralLedger._id },
+        date: {
+          $gt: new Date(paidDate),
+        },
+      })
+        .sort({ date: 1 })
+        .exec();
+
+      let nextIds = nextGeneralLedgers.map((gl) => gl._id);
+
+      updateNextGeneralLedgers(nextIds, savedGeneralLedger.balance);
     } catch (err) {
       console.log("General Ledger not created");
       return res.status(500).json({ message: err });
@@ -168,69 +202,42 @@ module.exports = {
     try {
       const updateFields = { ...updates };
       delete updateFields.amount;
-      const generalLedger = await GeneralLedger.findOneAndUpdate(
-        { updateId: updateId },
-        { $set: updateFields },
-        { new: true }
-      ).exec();
+      const generalLedger = await GeneralLedger.findOne({ updateId: updateId });
+
       if (!generalLedger) {
         return res.status(404).json({ message: "General Ledger not found" });
       }
-      if (type == "expense") {
-        if (updates.amount) {
-          if (updates.amount == generalLedger.debit) {
-            generalLedger.debit = updates.amount;
-            await generalLedger.save();
-          } else {
-            const { debit: previous_amount } = generalLedger;
-            generalLedger.debit = updates.amount;
-            generalLedger.balance =
-              parseInt(generalLedger.previousBalance) -
-              parseInt(updates.amount);
-            const nextGeneralLedgers = await GeneralLedger.find({
-              _id: { $gt: generalLedger._id },
-            }).exec();
-            const nextIds = nextGeneralLedgers.map((gl) => gl._id);
-            if (updates.amount > previous_amount) {
-              const difference = updates.amount - previous_amount;
-              await updateAddNextGeneralLedger(nextIds, "expense", difference);
-            } else if (updates.amount < previous_amount) {
-              const difference = previous_amount - updates.amount;
-              await updateSubNextGeneralLedger(nextIds, "expense", difference);
-            }
 
-            await generalLedger.save();
-          }
-          console.log("General Ledger A updated successfully");
-        }
-      } else if (type == "income") {
-        if (updates.amount) {
-          if (updates.amount == generalLedger.credit) {
-            generalLedger.credit = updates.amount;
-            await generalLedger.save();
-          } else {
-            const { credit: previous_amount } = generalLedger;
-            generalLedger.credit = updates.amount;
-            generalLedger.balance =
-              parseInt(generalLedger.previousBalance) +
-              parseInt(updates.amount);
-            const nextGeneralLedgers = await GeneralLedger.find({
-              _id: { $gt: generalLedger._id },
-            }).exec();
-            const nextIds = nextGeneralLedgers.map((gl) => gl._id);
-            if (updates.amount > previous_amount) {
-              const difference = updates.amount - previous_amount;
-              await updateAddNextGeneralLedger(nextIds, "income", difference);
-            } else if (updates.amount < previous_amount) {
-              const difference = previous_amount - updates.amount;
-              await updateSubNextGeneralLedger(nextIds, "income", difference);
-            }
-
-            await generalLedger.save();
-          }
-          console.log("General Ledger A updated successfully");
-        }
+      if (type === "income") {
+        generalLedger.credit = updates.amount;
+        generalLedger.balance = generalLedger.previousBalance + Number(updates.amount);
       }
+
+      else if (type === "expense") {
+        generalLedger.debit = updates.amount;
+        generalLedger.balance = generalLedger.previousBalance - Number(updates.amount);
+      }
+
+      for (const key of Object.keys(updateFields)) {
+        generalLedger[key] = updateFields[key];
+      }
+
+      const savedGeneralLedger = await generalLedger.save();
+
+      const nextGeneralLedgers = await GeneralLedger.find({
+        _id: { $ne: savedGeneralLedger._id },
+        date: {
+          $gte: savedGeneralLedger.date,
+        },
+        createdAt: { $gt: savedGeneralLedger.createdAt }
+      })
+        .sort({ date: 1 })
+        .exec();
+
+      let nextIds = nextGeneralLedgers.map((gl) => gl._id);
+
+      updateNextGeneralLedgers(nextIds, generalLedger.balance);
+
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: "Internal server error" });

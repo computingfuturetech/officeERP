@@ -93,7 +93,7 @@ module.exports = {
           $lte: new Date(date),
         },
       })
-        .sort({ date: -1 })
+        .sort({ date: -1, createdAt: -1 })
         .exec();
 
       if (latestBalance) {
@@ -147,18 +147,15 @@ module.exports = {
       console.log("Cash Ledger created successfully");
 
       const nextCashBookLedgers = await CashBookLedger.find({
+        _id: { $ne: savedCashBookLedger._id },
         date: {
-          $gte: new Date(date),
+          $gt: new Date(date),
         },
       })
         .sort({ date: 1 })
         .exec();
 
       let nextIds = nextCashBookLedgers.map((gl) => gl._id);
-
-      nextIds = nextIds.filter(
-        (gl) => savedCashBookLedger._id.toString() !== gl._id.toString()
-      );
 
       updateNextCashBookLedgers(nextIds, savedCashBookLedger.balance);
 
@@ -191,12 +188,14 @@ module.exports = {
         cashBookLedger[key] = updateFields[key];
       }
 
-      await cashBookLedger.save();
+      const savedCashBookLedger = await cashBookLedger.save();
 
       const nextcashBookLedgers = await CashBookLedger.find({
+        _id: { $ne: savedCashBookLedger._id },
         date: {
-          $gte: new Date(cashBookLedger.date),
+          $gte: savedCashBookLedger.date,
         },
+        createdAt: { $gt: savedCashBookLedger.createdAt }
       })
         .sort({ date: 1 })
         .exec();

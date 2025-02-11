@@ -48,6 +48,6 @@ module.exports = function getLedgerTableHtml({ columns, data }) {
 
     return html;
   }
-
+  
   return html;
 };

@@ -10,7 +10,7 @@ const ledgerTemplatePath = path.join(
   __dirname,
   "../../views/ledgerTemplate.html"
 );
-let ledgerTemplateHtml = fs.readFileSync(ledgerTemplatePath, "utf-8");
+const _ledgerTemplateHtml = fs.readFileSync(ledgerTemplatePath, "utf-8");
 
 module.exports = {
   generatePDF: async (req, res) => {
@@ -56,7 +56,7 @@ module.exports = {
           .populate("mainHeadOfAccount", "headOfAccount")
           .populate("subHeadOfAccount", "headOfAccount")
           .populate("incomeHeadOfAccount", "headOfAccount")
-          .sort({ date: 1});
+          .sort({ date: 1 });
         totalBalance = await BankBalance.aggregate([
           {
             $group: {
@@ -86,10 +86,12 @@ module.exports = {
         date: document.date?.toLocaleDateString("en-GB").replace(/\//g, "-"),
         _headOfAccount:
           document.credit === undefined
-            ? document.mainHeadOfAccount?.headOfAccount || document.subHeadOfAccount?.headOfAccount
+            ? document.mainHeadOfAccount?.headOfAccount ||
+              document.subHeadOfAccount?.headOfAccount
             : document.incomeHeadOfAccount?.headOfAccount,
       }));
 
+      let ledgerTemplateHtml = _ledgerTemplateHtml;
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerHeading}}",
         "Bank Ledger"
@@ -97,22 +99,14 @@ module.exports = {
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerDetail}}",
         getLedgerDetailHtml({
+          "START DATE": (!isNaN(startDate) ? startDate : firstEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
+          "END DATE": (!isNaN(endDate) ? endDate : lastEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
           "BANK NAME": bankName,
           "ACCOUNT NUMBER": bank_account,
-          ...(!isNaN(startDate)
-            ? {
-                "START DATE": startDate
-                  .toLocaleDateString("en-GB")
-                  .replace(/\//g, "-"),
-              }
-            : {}),
-          ...(!isNaN(endDate)
-            ? {
-                "END DATE": endDate
-                  .toLocaleDateString("en-GB")
-                  .replace(/\//g, "-"),
-              }
-            : {}),
           // "STARTING BALANCE": balance.toString(),
           "STARTING BALANCE": firstEntry.previousBalance,
           "CLOSING BALANCE": lastEntry.balance,

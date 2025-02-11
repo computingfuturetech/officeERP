@@ -101,7 +101,7 @@ module.exports = {
           $lte: new Date(paidDate),
         },
       })
-        .sort({ date: -1 })
+        .sort({ date: -1, createdAt: -1 })
         .exec();
 
       if (latestBalance !== null) {
@@ -172,18 +172,15 @@ module.exports = {
       console.log("Bank Ledger created successfully");
 
       const nextBankLedgers = await BankLedger.find({
+        _id: { $ne: savedBankLedger._id },
         date: {
-          $gte: new Date(paidDate),
+          $gt: new Date(paidDate),
         },
       })
         .sort({ date: 1 })
         .exec();
 
       let nextIds = nextBankLedgers.map((gl) => gl._id);
-
-      nextIds = nextIds.filter(
-        (gl) => savedBankLedger._id.toString() !== gl._id.toString()
-      );
 
       updateNextBankLedgers(nextIds, savedBankLedger.balance);
 
@@ -203,38 +200,33 @@ module.exports = {
         return res.status(404).json({ message: "Bank Ledger not found" });
       }
 
-      console.log(typeof bankLedger.previousBalance)
-      console.log(typeof updates.amount)
-
       if (type === "income") {
         bankLedger.credit = updates.amount;
-        bankLedger.balance = bankLedger.previousBalance + Number(updates.amount);
-      }
-
-      else if (type === "expense") {
+        bankLedger.balance =
+          bankLedger.previousBalance + Number(updates.amount);
+      } else if (type === "expense") {
         bankLedger.debit = updates.amount;
-        bankLedger.balance = bankLedger.previousBalance - Number(updates.amount);
+        bankLedger.balance =
+          bankLedger.previousBalance - Number(updates.amount);
       }
 
       for (const key of Object.keys(updateFields)) {
         bankLedger[key] = updateFields[key];
       }
 
-      await bankLedger.save();
+      const savedBankLedger = await bankLedger.save();
 
       const nextBankLedgers = await BankLedger.find({
+        _id: { $ne: savedBankLedger._id },
         date: {
-          $gte: new Date(bankLedger.date),
+          $gte: savedBankLedger.date,
         },
+        createdAt: { $gt: savedBankLedger.createdAt }
       })
         .sort({ date: 1 })
         .exec();
 
       let nextIds = nextBankLedgers.map((gl) => gl._id);
-
-      nextIds = nextIds.filter(
-        (gl) => bankLedger._id.toString() !== gl._id.toString()
-      );
 
       updateNextBankLedgers(nextIds, bankLedger.balance);
 
