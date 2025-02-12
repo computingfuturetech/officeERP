@@ -31,9 +31,6 @@ const sellerPurchaseIncomeSchema = new Schema(
       unique: true,
       index: true,
     },
-    paidDate: {
-      type: Date,
-    },
     msNo: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "MemberList",
@@ -54,6 +51,9 @@ const sellerPurchaseIncomeSchema = new Schema(
           type: mongoose.Schema.Types.ObjectId,
           ref: "IncomeHeadOfAccount",
         },
+        paidDate: {
+          type: Date,
+        },
         amount: {
           type: Number,
         },
@@ -66,6 +66,7 @@ const sellerPurchaseIncomeSchema = new Schema(
         bank: {
           type: mongoose.Schema.Types.ObjectId,
           ref: "BankListSchema",
+          default: null,
         },
         chequeNumber: {
           type: Number,
