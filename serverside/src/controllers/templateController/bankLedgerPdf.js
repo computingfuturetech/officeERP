@@ -3,8 +3,8 @@ const BankLedger = require("../../models/ledgerModels/bankLedger");
 const CheckBank = require("../../middleware/checkBank");
 const BankBalance = require("../../models/bankModel/bankBalance");
 const path = require("path");
-const getLedgerDetailHtml = require("../../utils/getLedgerDetailHtml");
-const getLedgerTableHtml = require("../../utils/getLedgerTableHtml");
+const getDynamicGridHtml = require("../../utils/getDynamicGridHtml");
+const getDynamicTableHtml = require("../../utils/getDynamicTableHtml");
 const generatePdf = require("../../utils/generatePdf");
 const ledgerTemplatePath = path.join(
   __dirname,
@@ -98,7 +98,7 @@ module.exports = {
       );
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerDetail}}",
-        getLedgerDetailHtml({
+        getDynamicGridHtml({
           "START DATE": (!isNaN(startDate) ? startDate : firstEntry.date)
             .toLocaleDateString("en-GB")
             .replace(/\//g, "-"),
@@ -114,7 +114,7 @@ module.exports = {
       );
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerTable}}",
-        getLedgerTableHtml({
+        getDynamicTableHtml({
           columns: [
             {
               label: "Date",

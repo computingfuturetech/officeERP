@@ -2,8 +2,8 @@ const fs = require("fs");
 const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
 const CashLedger = require("../../models/ledgerModels/cashBookLedger");
 const path = require("path");
-const getLedgerDetailHtml = require("../../utils/getLedgerDetailHtml");
-const getLedgerTableHtml = require("../../utils/getLedgerTableHtml");
+const getDynamicGridHtml = require("../../utils/getDynamicGridHtml");
+const getDynamicTableHtml = require("../../utils/getDynamicTableHtml");
 const generatePdf = require("../../utils/generatePdf");
 const ledgerTemplatePath = path.join(
   __dirname,
@@ -71,7 +71,7 @@ module.exports = {
       );
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerDetail}}",
-        getLedgerDetailHtml({
+        getDynamicGridHtml({
           "START DATE": (!isNaN(startDate) ? startDate : firstEntry.date)
             .toLocaleDateString("en-GB")
             .replace(/\//g, "-"),
@@ -85,7 +85,7 @@ module.exports = {
       );
       ledgerTemplateHtml = ledgerTemplateHtml.replace(
         "{{ledgerTable}}",
-        getLedgerTableHtml({
+        getDynamicTableHtml({
           columns: [
             {
               label: "Date",

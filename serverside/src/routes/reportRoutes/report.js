@@ -26,10 +26,10 @@ router.get(
   threeTierchallanController.generatePDF
 );
 
-router.get("/bankLedgerPdf", bankLedger.generatePDF);
-router.get("/generalLedgerPdf", generalLedger.generatePDF);
-router.get("/cashLedgerPdf", cashLedger.generatePDF);
-router.get("/incomeRecordPdf", incomeRecordController.generatePDF);
-router.get("/balanceSheetPdf", balanceSheet.generatePDF);
+router.get("/bank-ledger", bankLedger.generatePDF);
+router.get("/general-ledger", generalLedger.generatePDF);
+router.get("/cash-ledger", cashLedger.generatePDF);
+router.get("/income-record", incomeRecordController.generatePDF);
+router.get("/balance-sheet", balanceSheet.generatePDF);
 
 module.exports = router;

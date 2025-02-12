@@ -1,7 +1,7 @@
-module.exports = function getLedgerTableHtml({ columns, data }) {
+module.exports = function getDynamicTableHtml({ columns, data }) {
   let html = `
-    <table>
-      <thead> 
+    <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+      <thead style="background-color: #f3f1f1;"> 
         <tr>
           ${getTableHeaderCells()}
         </tr>
@@ -15,8 +15,8 @@ module.exports = function getLedgerTableHtml({ columns, data }) {
   function getTableHeaderCells() {
     let html = ``;
     for (const column of columns) {
-      html += `<th style="white-space: ${
-        column.inSingleLine === true ? "nowrap" : "unset"
+      html += `<th style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; white-space: ${
+        column.inSingleLine === true ? "nowrap;" : "unset;"
       }">${column.label}</th>`;
     }
     return html;
@@ -36,8 +36,8 @@ module.exports = function getLedgerTableHtml({ columns, data }) {
       let html = ``;
       for (const column of columns) {
         html += `
-          <td style="white-space: ${
-            column.inSingleLine === true ? "nowrap" : "unset"
+          <td style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; white-space: ${
+            column.inSingleLine === true ? "nowrap;" : "unset;"
           }">
             ${document[column.key] || document[column.key] === 0 ? document[column.key] : "-"}
           </td>
