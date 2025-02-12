@@ -202,6 +202,7 @@ export default function BankProfit() {
       value: bankProfit?.paidDate || "",
       placeholder: "Enter paid date",
       required: true,
+      readOnly: true,
     },
     {
       id: "amount",
