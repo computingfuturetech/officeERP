@@ -162,9 +162,9 @@ export default function TransferIncome() {
       challanNo: transferIncome.challanNo || "",
       type: transferIncome.type || "",
       address: transferIncome.address || "",
-      paidDate: transferIncome.paidDate
-        ? new Date(transferIncome.paidDate).toISOString().split("T")[0]
-        : "",
+      // paidDate: transferIncome.paidDate
+      //   ? new Date(transferIncome.paidDate).toISOString().split("T")[0]
+      //   : "",
       paymentDetail: {},
     };
 
@@ -177,6 +177,7 @@ export default function TransferIncome() {
 
         if (hoaId) {
           initialValues.paymentDetail[hoaId] = {
+            paidDate: detail.paidDate,
             incomeHeadOfAccount: hoaId,
             amount: detail.amount,
             check: detail.check,
@@ -241,14 +242,14 @@ export default function TransferIncome() {
         value: currentValues?.address || transferIncome?.address || "",
         placeholder: "Enter address",
       },
-      {
-        id: "paidDate",
-        label: "Paid Date",
-        type: "date",
-        value: currentValues?.paidDate || formattedDate || "",
-        required: true,
-        placeholder: "Select paid date",
-      },
+      // {
+      //   id: "paidDate",
+      //   label: "Paid Date",
+      //   type: "date",
+      //   value: currentValues?.paidDate || formattedDate || "",
+      //   required: true,
+      //   placeholder: "Select paid date",
+      // },
     ];
 
     const paymentDetailFields =
@@ -261,19 +262,27 @@ export default function TransferIncome() {
         );
 
         const currentPayment = {
+          paidDate: currentValues?.[`paymentDetail.${hoaId}.paidDate`],
           amount: currentValues?.[`paymentDetail.${hoaId}.amount`],
           check: currentValues?.[`paymentDetail.${hoaId}.check`],
           particular: currentValues?.[`paymentDetail.${hoaId}.particular`],
           bank: currentValues?.[`paymentDetail.${hoaId}.bank`],
           chequeNumber: currentValues?.[`paymentDetail.${hoaId}.chequeNumber`],
         };
-
         const fields = [
           {
             id: `paymentDetail.${hoaId}.incomeHeadOfAccount`,
             label: head.headOfAccount,
             type: "hidden",
             value: hoaId,
+          },
+          {
+            id: `paymentDetail.${hoaId}.paidDate`,
+            label: `Paid Date for ${head.headOfAccount}`,
+            type: "date",
+            value: currentPayment?.paidDate || existingPayment?.paidDate || "",
+            readOnly: existingPayment?.paidDate,
+            placeholder: "Select paid date",
           },
           {
             id: `paymentDetail.${hoaId}.amount`,
@@ -348,7 +357,7 @@ export default function TransferIncome() {
       challanNo: formData.challanNo,
       type: formData.type,
       address: formData.address,
-      paidDate: formData.paidDate,
+      // paidDate: formData.paidDate,
       paymentDetail: [],
     };
 
@@ -370,6 +379,7 @@ export default function TransferIncome() {
             particular: null,
             bank: null,
             chequeNumber: null,
+            paidDate: null,
           };
         }
 
@@ -383,12 +393,14 @@ export default function TransferIncome() {
           detail.amount &&
           detail.check &&
           detail.incomeHeadOfAccount &&
-          detail.bank &&
-          detail.chequeNumber &&
-          detail.particular
+          // detail.bank &&
+          // detail.chequeNumber &&
+          // detail.particular &&
+          detail.paidDate
         );
       })
       .map((detail) => ({
+        paidDate: detail.paidDate || "",
         incomeHeadOfAccount: detail.incomeHeadOfAccount || "",
         amount: Number(detail.amount) || 0,
         check: detail.check,
@@ -402,6 +414,7 @@ export default function TransferIncome() {
         if (key === "paymentDetail" && typeof value === "object") {
           Object.entries(value).forEach(([_, paymentDetail]) => {
             transformedData.paymentDetail.push({
+              paidDate: paymentDetail.paidDate,
               incomeHeadOfAccount: paymentDetail.incomeHeadOfAccount,
               amount: paymentDetail.amount,
               check: paymentDetail.check,
@@ -428,7 +441,7 @@ export default function TransferIncome() {
       const response = await getTransferIncome(queryParams);
       const formattedData = response?.data?.data.map((item) => ({
         ...item,
-        paidDate: formatDate(item.paidDate),
+        // paidDate: formatDate(item.paidDate),
       }));
 
       setData(formattedData);
@@ -462,10 +475,10 @@ export default function TransferIncome() {
       accessorKey: "type",
       header: "Type",
     },
-    {
-      accessorKey: "paidDate",
-      header: "Paid Date",
-    },
+    // {
+    //   accessorKey: "paidDate",
+    //   header: "Paid Date",
+    // },
     {
       id: "actions",
       header: "Actions",

@@ -384,6 +384,7 @@ export default function OfficeExpense() {
                       : field.type === "date"
                       ? "date"
                       : "text",
+                  readOnly: field.type === "date",
                   required: field.required || false,
                   placeholder: `Enter ${field.label || field.name}`,
                 });
@@ -501,6 +502,7 @@ export default function OfficeExpense() {
                     : field.type === "date"
                     ? "date"
                     : "text",
+                readOnly: field.type === "date",
                 required: field.required || false,
                 placeholder: `Enter ${field.label || field.name}`,
               });
