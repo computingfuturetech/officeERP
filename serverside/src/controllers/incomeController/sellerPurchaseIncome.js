@@ -15,8 +15,7 @@ async function getIncomeType() {
 
 module.exports = {
   createSellerPurchaseIncome: async (req, res) => {
-    const { msNo, challanNo, paidDate, type, paymentDetail, address } =
-      req.body;
+    const { msNo, challanNo, type, paymentDetail, address } = req.body;
 
     try {
       if (!msNo || !type || !paymentDetail || !Array.isArray(paymentDetail)) {
@@ -50,7 +49,6 @@ module.exports = {
       if (!sellerPurchaseRecord) {
         // If no record exists, create a new one
         sellerPurchaseRecord = new SellerPurchaseIncome({
-          paidDate,
           msNo: member._id,
           address: member.address,
           type,
@@ -63,6 +61,7 @@ module.exports = {
       for (const payment of paymentDetail) {
         const {
           incomeHeadOfAccount,
+          paidDate,
           amount,
           check,
           particular,
@@ -70,7 +69,7 @@ module.exports = {
           chequeNumber,
         } = payment;
 
-        if (!incomeHeadOfAccount || !amount || !check) {
+        if (!incomeHeadOfAccount || !amount || !check || !paidDate) {
           return res
             .status(400)
             .json({ status: "error", message: "Invalid payment details" });
@@ -306,13 +305,25 @@ module.exports = {
       }
 
       if (req.body.paymentDetail) {
-        let paymentDetail = req.body.paymentDetail;
+        updateData.paymentDetail = req.body.paymentDetail.map((payment) => {
+          // For Cash payments, set bank and chequeNumber to null
+          if (payment.check === "Cash") {
+            return {
+              ...payment,
+              bank: null,
+              chequeNumber: null,
+            };
+          }
+          return payment;
+        });
+
         let transformedPaymentDetail = JSON.parse(
           JSON.stringify(sellerPurchaseIncome.paymentDetail)
         );
 
-        for (const payment of paymentDetail) {
+        for (const payment of updateData.paymentDetail) {
           const {
+            paidDate,
             incomeHeadOfAccount,
             particular,
             chequeNumber,
@@ -347,6 +358,7 @@ module.exports = {
                 particular,
                 amount: String(amount),
                 // paidDate: updateData.paidDate,
+                paidDate,
               };
               if (check === "Cash") {
                 await CashBookLedger.updateCashLedger(
@@ -399,7 +411,7 @@ module.exports = {
                 incomeHeadOfAccount,
                 particular,
                 amount,
-                updateData.paidDate,
+                paidDate,
                 id
               );
             } else if (check === "Bank") {
@@ -417,9 +429,10 @@ module.exports = {
                 incomeHeadOfAccount,
                 particular,
                 amount,
-                updateData.paidDate,
+                paidDate,
                 chequeNumber,
-                updateData.challanNo,
+                null,
+                paidDate,
                 id,
                 bank
               );
@@ -433,7 +446,7 @@ module.exports = {
               incomeHeadOfAccount,
               particular,
               amount,
-              updateData.paidDate,
+              paidDate,
               null,
               updateData.challanNo,
               id,
