@@ -106,12 +106,12 @@ module.exports = {
 
       allExpenses.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
-      if (allExpenses.length === 0) {
-        return res.status(404).json({
-          status: "error",
-          message: "No expenses found for the given expense type",
-        });
-      }
+      // if (allExpenses.length === 0) {
+      //   return res.status(404).json({
+      //     status: "error",
+      //     message: "No expenses found for the given expense type",
+      //   });
+      // }
 
       let filteredExpenses = allExpenses;
       if (search) {
