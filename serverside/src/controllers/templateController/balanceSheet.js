@@ -26,8 +26,8 @@ const _balanceSheetTemplateHtml = fs.readFileSync(
 module.exports = {
   generatePDF: async (req, res) => {
     try {
-      let { startDate, endDate } = req.query;
       let {
+        year, 
         reserve_fund,
         accumulated_surplus,
         share_deposit_money,
@@ -38,7 +38,7 @@ module.exports = {
         cost_of_land_developement,
         long_term_security_deposit,
         loan_and_advances,
-      } = req.body;
+      } = req.query;
 
       reserve_fund = Number(reserve_fund) || 0;
       accumulated_surplus = Number(accumulated_surplus) || 0;
@@ -51,21 +51,21 @@ module.exports = {
       long_term_security_deposit = Number(long_term_security_deposit) || 0;
       loan_and_advances = Number(loan_and_advances) || 0;
 
-      if (!startDate || !endDate) {
+      if (!year) {
         return res
           .status(400)
-          .json({ message: "Start Date and End Date are required." });
+          .json({ message: "Year is required." });
       }
 
       //////////////////////////////////////////////////////////////
 
-      startDate = new Date(startDate);
-      endDate = new Date(endDate);
+      let startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+      let endDate = new Date(year, 11, 31, 23, 59, 59, 999);
 
       if (isNaN(startDate) || isNaN(endDate)) {
         return res
           .status(400)
-          .json({ message: "Invalid Date provided" });
+          .json({ message: "Invalid Year provided" });
       }
 
       const formattedSDate = startDate
@@ -119,7 +119,7 @@ module.exports = {
 
       if (ledgerRecords.length === 0) {
         return res.status(404).json({
-          message: "No ledger records found for the specified date range.",
+          message: "Cannot create balance sheet because no ledger records found.",
         });
       }
 
