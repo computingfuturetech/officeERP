@@ -232,6 +232,8 @@ module.exports = {
       const totalNonCurrentAssets =
         totalAmount + intangible_assets + tpol + tde + ltsd;
 
+      // Current assets
+
       let tlaa = loan_and_advances;
 
       let cashLedger = await CashLedger.findOne({ date: endDate }).exec();
