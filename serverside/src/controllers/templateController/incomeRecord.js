@@ -309,7 +309,7 @@ module.exports = {
       res.writeHead(200, {
         "Content-Type": "application/pdf",
         "Content-Length": pdfBuffer.length,
-        "Content-Disposition": 'attachment; filename="bank-ledger.pdf"',
+        "Content-Disposition": 'attachment; filename="income-record.pdf"',
       });
       return res.end(pdfBuffer);
     } catch (error) {

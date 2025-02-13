@@ -1,6 +1,6 @@
 module.exports = function getDynamicTableHtml({ columns, data }) {
   let html = `
-    <table style="width: 100%; border-collapse: collapse; font-size: 13px">
+    <table style="table-layout: fixed; width: 100%; border-collapse: collapse; font-size: 13px">
       <thead style="background-color: #f3f1f1;"> 
         <tr>
           ${getTableHeaderCells()}
@@ -15,7 +15,7 @@ module.exports = function getDynamicTableHtml({ columns, data }) {
   function getTableHeaderCells() {
     let html = ``;
     for (const column of columns) {
-      html += `<th style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; white-space: ${
+      html += `<th style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; word-wrap: break-word; white-space: ${
         column.inSingleLine === true ? "nowrap;" : "unset;"
       }">${column.label}</th>`;
     }
@@ -36,7 +36,7 @@ module.exports = function getDynamicTableHtml({ columns, data }) {
       let html = ``;
       for (const column of columns) {
         html += `
-          <td style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; white-space: ${
+          <td style="border: 1px solid #d1d1d1; text-align: center; padding: 7px; word-wrap: break-word; white-space: ${
             column.inSingleLine === true ? "nowrap;" : "unset;"
           }">
             ${document[column.key] || document[column.key] === 0 ? document[column.key] : "-"}
