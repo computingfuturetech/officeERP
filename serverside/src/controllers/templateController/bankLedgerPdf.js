@@ -140,7 +140,6 @@ module.exports = {
             {
               label: "Voucher No.",
               key: "voucherNo",
-              inSingleLine: true,
             },
             {
               label: "Debit",
