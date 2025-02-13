@@ -11,12 +11,10 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 0px;
       }
       .ledger-table-container {
         margin-top: 1.5em;
       }
-
       @media print {
         .avoid-page-break-inside {
           page-break-inside: avoid;
@@ -25,7 +23,7 @@
     </style>
   </head>
   <body>
-    <h3 class="ledger-heading">{{ledgerHeading}}</h3>
+    <h3 class="ledger-heading" style="margin-top: 0px;">{{ledgerHeading}}</h3>
     <div class="ledger-detail">
       {{ledgerDetail}}
     </div>   

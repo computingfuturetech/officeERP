@@ -131,17 +131,19 @@ module.exports = {
             headOfAccount
           ));
       }
+
       let mainHOF;
       let subHOF;
-      let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
+      let incomeHOF;
 
       if (type === "income") {
+        incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
         headOfAccount = incomeHOF.headOfAccount;
       } else {
         mainHOF = await MainExpenseHeadOfAccount.findById(headOfAccount);
         if (!mainHOF) {
           subHOF = await SubExpenseHeadOfAccount.findById(headOfAccount);
-          headOfAccount = subHOF.headOfAccount;
+          if (subHOF) headOfAccount = subHOF.headOfAccount;
         } else headOfAccount = mainHOF.headOfAccount;
       }
 
@@ -221,7 +223,7 @@ module.exports = {
         date: {
           $gte: savedBankLedger.date,
         },
-        createdAt: { $gt: savedBankLedger.createdAt }
+        createdAt: { $gt: savedBankLedger.createdAt },
       })
         .sort({ date: 1 })
         .exec();

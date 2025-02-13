@@ -3,6 +3,8 @@ const GeneralLedger = require("../models/ledgerModels/generalLedger");
 const FixedAmount = require("../models/fixedAmountModel/fixedAmount");
 const CheckMainAndSubHeadOfAccount = require("../middleware/checkMainAndSubHeadOfAccount");
 const IncomeHeadOfAccount = require("../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
+const MainExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
+const SubExpenseHeadOfAccount = require("../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
 
 async function updateAddNextCashLedger(nextIds, type, difference) {
   try {
@@ -121,7 +123,20 @@ module.exports = {
           ));
       }
 
-      let incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
+      let mainHOF;
+      let subHOF;
+      let incomeHOF;
+
+      if (type === "income") {
+        incomeHOF = await IncomeHeadOfAccount.findById(headOfAccount).exec();
+        headOfAccount = incomeHOF.headOfAccount;
+      } else {
+        mainHOF = await MainExpenseHeadOfAccount.findById(headOfAccount);
+        if (!mainHOF) {
+          subHOF = await SubExpenseHeadOfAccount.findById(headOfAccount);
+          if (subHOF) headOfAccount = subHOF.headOfAccount;
+        } else headOfAccount = mainHOF.headOfAccount;
+      }
 
       const cashLedger = new CashBookLedger({
         date: date,
@@ -130,7 +145,7 @@ module.exports = {
         headOfAccount: headOfAccount,
         particular: particular,
         ...(type === "expense" ? { debit: amount } : { credit: amount }),
-        ...(type == "expense"
+        ...(type === "expense"
           ? {
               ...(main_head_id
                 ? { mainHeadOfAccount: main_head_id }
