@@ -23,13 +23,24 @@ const _incomeRecordTemplateHtml = fs.readFileSync(
 module.exports = {
   generatePDF: async (req, res) => {
     try {
-      let { startDate, endDate } = req.query;
-      let { taxation, accumulated_surplus_brought_forward } = req.body;
+      let { year, taxation, accumulated_surplus_brought_forward } = req.query;
       taxation = Number(taxation) || 0;
       accumulated_surplus_brought_forward =
         Number(accumulated_surplus_brought_forward) || 0;
-      startDate = new Date(startDate);
-      endDate = new Date(endDate);
+      let startDate = new Date(year, 0, 1, 0, 0, 0, 0);
+      let endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+
+      if (!year) {
+        return res
+          .status(400)
+          .json({ message: "Year is required." });
+      }
+
+      if (isNaN(startDate) || isNaN(endDate)) {
+        return res
+          .status(400)
+          .json({ message: "Invalid Year provided" });
+      }
 
       const liabilityAccounts = await LiabilitiesSchema.find(
         {},
@@ -61,16 +72,8 @@ module.exports = {
 
       if (ledgerRecords.length === 0) {
         return res.status(404).json({
-          message: "No ledger records found for the specified date range.",
+          message: "Can't create income record beacause no ledger records found.",
         });
-      }
-
-      if (isNaN(startDate)) {
-        startDate = ledgerRecords[0].date;
-      }
-
-      if (isNaN(endDate)) {
-        endDate = ledgerRecords[ledgerRecords.length - 1].date;
       }
 
       const formattedSDate = startDate
