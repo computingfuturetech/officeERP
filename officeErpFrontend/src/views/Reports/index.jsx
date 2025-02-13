@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardContent,
@@ -13,8 +13,7 @@ import {
   SelectValue,
 } from "@/components/components/ui/select";
 import { Button } from "@/components/components/ui/button";
-import { Input } from "@/components/components/ui/input";
-import { Calendar } from "lucide-react";
+import { Calendar as CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/components/lib/utils";
 import { Calendar as CalendarComponent } from "@/components/components/ui/calendar";
@@ -23,22 +22,142 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/components/ui/popover";
+import { getBanks } from "../../services/banks";
+import { Label } from "@/components/components/ui/label";
+import { useToast } from "@/components/hooks/use-toast";
+import {
+  getBankLedger,
+  getCashLedger,
+  getGeneralLedger,
+} from "../../services/reports";
+
+const DatePicker = ({ label, date, onChange }) => (
+  <div className="space-y-2">
+    <Label className="text-sm font-medium text-gray-700">{label}</Label>
+    <Popover>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          className={cn(
+            "w-full justify-start text-left font-normal",
+            !date && "text-muted-foreground"
+          )}
+        >
+          <CalendarIcon className="mr-2 h-4 w-4" />
+          {date ? format(date, "PPP") : "Pick a date"}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start">
+        <CalendarComponent
+          mode="single"
+          selected={date}
+          onSelect={onChange}
+          initialFocus
+        />
+      </PopoverContent>
+    </Popover>
+  </div>
+);
 
 const Reports = () => {
   const [reportType, setReportType] = useState("");
-  const [startDate, setStartDate] = useState();
-  const [endDate, setEndDate] = useState();
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [banks, setBanks] = useState([]);
+  const [selectedBank, setSelectedBank] = useState(null);
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const fetchBanks = async () => {
+      try {
+        const response = await getBanks(null);
+        setBanks(response?.data?.data || []);
+      } catch (error) {
+        console.error("Error fetching banks:", error);
+      }
+    };
+    fetchBanks();
+  }, []);
+
+  const handleSubmit = async () => {
+    if (!reportType) {
+      return toast({
+        title: "Report Type Required",
+        description: "Please select a report type to proceed.",
+        variant: "destructive",
+      });
+    }
+
+    const reportParams = {
+      startDate,
+      endDate,
+      ...(reportType === "bank-ledger" && { bank_account: selectedBank }),
+    };
+
+    if (!startDate || !endDate) {
+      return toast({
+        title: "Date Range Required",
+        description: "Please select a date range to generate the report.",
+        variant: "destructive",
+      });
+    }
+
+    if (reportType === "bank-ledger" && !selectedBank) {
+      return toast({
+        title: "Bank Required",
+        description: "Please select a bank to generate the report.",
+        variant: "destructive",
+      });
+    }
+
+    try {
+      const reportFunctions = {
+        "bank-ledger": getBankLedger,
+        "cash-ledger": getCashLedger,
+        "general-ledger": getGeneralLedger,
+      };
+      setIsLoading(true);
+      const response = await reportFunctions[reportType](reportParams);
+
+      // Download report
+      const url = window.URL.createObjectURL(response);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `${reportType}_report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      toast({
+        title: "Download Failed",
+        description: "Could not download the report. Please try again.",
+        variant: "destructive",
+      });
+      console.error("Error downloading report:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const reports = [
     { value: "bank-ledger", label: "Bank Ledger" },
-    { value: "cash-book", label: "Cash Book" },
-    { value: "income-statement", label: "Income Statement" },
+    { value: "general-ledger", label: "General Ledger" },
+    { value: "cash-ledger", label: "Cash Ledger" },
   ];
+
+  const resetForm = () => {
+    setReportType("");
+    setStartDate(null);
+    setEndDate(null);
+    setSelectedBank(null);
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
       <Card className="bg-white shadow-lg">
-        <CardHeader className="space-y-1">
+        <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">
             Financial Report Generator
           </CardTitle>
@@ -46,124 +165,68 @@ const Reports = () => {
         <CardContent className="space-y-6">
           {/* Report Type Selection */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-700">
-              Select Report Type
-            </label>
-            <Select onValueChange={setReportType} value={reportType}>
+            <Label>Select Report Type</Label>
+            <Select
+              onValueChange={(value) => {
+                resetForm();
+                setReportType(value);
+              }}
+              value={reportType}
+            >
               <SelectTrigger className="w-full">
                 <SelectValue placeholder="Choose a report type" />
               </SelectTrigger>
               <SelectContent>
-                {reports.map((report) => (
-                  <SelectItem key={report.value} value={report.value}>
-                    {report.label}
+                {reports.map(({ value, label }) => (
+                  <SelectItem key={value} value={value}>
+                    {label}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
 
-          {/* Date Range Selection */}
+          {/* Date Pickers */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Start Date
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !startDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {startDate ? format(startDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={startDate}
-                    onSelect={setStartDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                End Date
-              </label>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className={cn(
-                      "w-full justify-start text-left font-normal",
-                      !endDate && "text-muted-foreground"
-                    )}
-                  >
-                    <Calendar className="mr-2 h-4 w-4" />
-                    {endDate ? format(endDate, "PPP") : "Pick a date"}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={endDate}
-                    onSelect={setEndDate}
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
+            <DatePicker
+              label="Start Date"
+              date={startDate}
+              onChange={setStartDate}
+            />
+            <DatePicker label="End Date" date={endDate} onChange={setEndDate} />
           </div>
 
-          {/* Bank Name Field - Only shown for Bank Ledger */}
+          {/* Bank Selection (Only for Bank Ledger) */}
           {reportType === "bank-ledger" && (
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-700">
-                Bank Name
-              </label>
-              <Input
-                type="text"
-                placeholder="Enter bank name"
+              <Label>Bank Name</Label>
+              <Select
+                onValueChange={setSelectedBank}
+                value={selectedBank}
+                placeholder="Choose a bank"
                 className="w-full"
-              />
-            </div>
-          )}
-
-          {/* Income Statement Fields */}
-          {reportType === "income-statement" && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Taxation Amount
-                </label>
-                <Input
-                  type="number"
-                  placeholder="Enter taxation amount"
-                  className="w-full"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-gray-700">
-                  Accumulated Surplus
-                </label>
-                <Input
-                  type="number"
-                  placeholder="Enter accumulated surplus"
-                  className="w-full"
-                />
-              </div>
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a bank" />
+                </SelectTrigger>
+                <SelectContent>
+                  {banks.map(({ _id, bankName, accountNo }) => (
+                    <SelectItem key={_id} value={accountNo}>
+                      {bankName} - {accountNo}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           )}
 
           {/* Download Button */}
-          <Button className="w-full  text-white py-2 rounded-lg transition-colors">
-            Download Report
+          <Button
+            onClick={handleSubmit}
+            disabled={isLoading}
+            className="w-full"
+          >
+            {isLoading ? "Generating Report..." : "Download Report"}
           </Button>
         </CardContent>
       </Card>

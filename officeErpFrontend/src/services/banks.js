@@ -2,6 +2,9 @@ import api from "../core/api"
 
 export const getBanks = async (params) => {
     try {
+        if (!params) {
+            params = {};
+        }
         const cleanParams = Object.fromEntries(
             Object.entries(params).filter(([_, v]) => v != null)
         );
