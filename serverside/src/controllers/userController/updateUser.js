@@ -6,7 +6,9 @@ module.exports = {
   update: async (req, res) => {
     try {
       const { id } = req.query;
-      const { name, email, password, role } = req.body;
+      const { name, surname, email, password, role } = req.body;
+      const currentUserId = req.auth?.id;
+      const isSameUserRequesting = id === currentUserId;
 
       if (!id) {
         return res.status(400).json({
@@ -23,7 +25,7 @@ module.exports = {
         });
       }
 
-      if (email) {
+      if (!isSameUserRequesting && email) {
         const existingUser = await Admin.findOne({
           _id: { $ne: id, },
           email: email,
@@ -51,6 +53,9 @@ module.exports = {
       }
 
       admin.name = name || admin.name;
+      admin.surname = surname || admin.surname;
+
+      if (!isSameUserRequesting)
       admin.role = role || admin.role;
 
       const updatedAdmin = await admin.save();
@@ -61,6 +66,7 @@ module.exports = {
         data: {
           _id: updatedAdmin._id,
           name: updatedAdmin.name,
+          surname: updatedAdmin.surname,
           email: updatedAdmin.email,
           role: updatedAdmin.role,
         },

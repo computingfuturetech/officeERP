@@ -6,6 +6,12 @@ module.exports = {
       update: true,
       delete: true,
     },
+    staffUsers: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
     members: {
       create: true,
       read: true,
@@ -110,6 +116,12 @@ module.exports = {
       update: true,
       delete: true,
     },
+    staffUsers: {
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+    },
     members: {
       create: false,
       read: true,
@@ -124,7 +136,7 @@ module.exports = {
     },
     fixedAmount: {
       create: false,
-      read: true,
+      read: false,
       update: false,
       delete: false,
     },
