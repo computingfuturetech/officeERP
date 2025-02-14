@@ -6,6 +6,7 @@ const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
 const coreController = require("../../controllers/userController/create");
+const getUsersController = require("../../controllers/userController/getUsers");
 const loginController = require("../../controllers/userController/login");
 const forgetPassword = require("../../controllers/userController/forgetPassword");
 const otpVerify = require("../../controllers/userController/otpVerify");
@@ -21,12 +22,17 @@ const operatingFixedAmountController = require("../../controllers/operatingFixed
 
 const incomeStatement = require("../../controllers/incomeStatementController/incomeStatement");
 
-router.get("/hello", coreController.get);
 router.post(
   "/create",
   authenticateJWT,
   checkRole(["admin"]),
   coreController.create
+);
+router.get(
+  "/get",
+  authenticateJWT,
+  checkRole(["admin"]),
+  getUsersController.get
 );
 router.post("/login", loginController.login);
 router.post("/forgetPassword", forgetPassword.forgetPassword);
