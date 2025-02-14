@@ -19,7 +19,9 @@ import path from "path";
 const staticRoutes = [
   {
     path: "/",
-    element: <ProtectedRoute element={<Home />} />,
+    element: (
+      <ProtectedRoute element={<Home />} requiredPermission={"dasboard.read"} />
+    ),
   },
   {
     path: "/login",
@@ -27,35 +29,72 @@ const staticRoutes = [
   },
   {
     path: "/members",
-    element: <ProtectedRoute element={<Members />} />,
+    element: (
+      <ProtectedRoute
+        element={<Members />}
+        requiredPermission={"members.read"}
+      />
+    ),
   },
   {
     path: "/bank-profit",
-    element: <ProtectedRoute element={<BankProfit />} />,
+    element: (
+      <ProtectedRoute
+        element={<BankProfit />}
+        requiredPermission={"banks.read"}
+      />
+    ),
   },
   {
     path: "/water-maintenance",
-    element: <ProtectedRoute element={<WaterMaintenance />} />,
+    element: (
+      <ProtectedRoute
+        element={<WaterMaintenance />}
+        requiredPermission={"waterMaintenance.read"}
+      />
+    ),
   },
   {
     path: "/transfer-income",
-    element: <ProtectedRoute element={<TransferIncome />} />,
+    element: (
+      <ProtectedRoute
+        element={<TransferIncome />}
+        requiredPermission={"transferIncome.read"}
+      />
+    ),
   },
   {
     path: "/office-expense",
-    element: <ProtectedRoute element={<OfficeExpense />} />,
+    element: (
+      <ProtectedRoute
+        element={<OfficeExpense />}
+        requiredPermission={"officeExpense.read"}
+      />
+    ),
   },
   {
     path: "/site-expense",
-    element: <ProtectedRoute element={<SiteExpense />} />,
+    element: (
+      <ProtectedRoute
+        element={<SiteExpense />}
+        requiredPermission={"siteExpense.read"}
+      />
+    ),
   },
   {
     path: "/reports",
-    element: <ProtectedRoute element={<Reports />} />,
+    element: (
+      <ProtectedRoute
+        element={<Reports />}
+        requiredPermission={"reports.read"}
+      />
+    ),
   },
   {
     path: "/banks",
-    element: <ProtectedRoute element={<Banks />} />,
+    element: (
+      <ProtectedRoute element={<Banks />} requiredPermission={"banks.read"} />
+    ),
   },
   {
     path: "/api-tester",
@@ -63,7 +102,12 @@ const staticRoutes = [
   },
   {
     path: "/fixed-amount",
-    element: <ProtectedRoute element={<FixedAmount />} />,
+    element: (
+      <ProtectedRoute
+        element={<FixedAmount />}
+        requiredPermission={"fixedAmount.read"}
+      />
+    ),
   },
 ];
 
