@@ -7,6 +7,7 @@ const checkRole = require("../../middleware/checkRole");
 
 const coreController = require("../../controllers/userController/create");
 const getUsersController = require("../../controllers/userController/getUsers");
+const updateUserController = require("../../controllers/userController/updateUser");
 const loginController = require("../../controllers/userController/login");
 const forgetPassword = require("../../controllers/userController/forgetPassword");
 const otpVerify = require("../../controllers/userController/otpVerify");
@@ -33,6 +34,12 @@ router.get(
   authenticateJWT,
   checkRole(["admin"]),
   getUsersController.get
+);
+router.post(
+  "/update",
+  authenticateJWT,
+  checkRole(["admin"]),
+  updateUserController.update
 );
 router.post("/login", loginController.login);
 router.post("/forgetPassword", forgetPassword.forgetPassword);
