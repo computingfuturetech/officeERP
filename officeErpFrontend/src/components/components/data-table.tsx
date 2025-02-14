@@ -59,6 +59,7 @@ interface DataTableProps<TData, TValue> {
     filterableFieldLabel?: string;
     pageCount: number;
     pagination: PaginationState;
+    className?: string;
     onPaginationChange: (pagination: PaginationState) => void;
     resetFilters?: {
         onClick: () => void;
@@ -81,6 +82,7 @@ export function DataTable<TData, TValue>({
     pageCount,
     pagination,
     onPaginationChange,
+    className,
     resetFilters,
 }: DataTableProps<TData, TValue>) {
     const navigate = useNavigate()
@@ -182,7 +184,7 @@ export function DataTable<TData, TValue>({
     };
 
     return (
-        <div>
+        <div className={className}>
             {
                 enableFilters &&
                 <h2 className="text-2xl font-semibold mb-2">{heading}</h2>
@@ -279,13 +281,15 @@ export function DataTable<TData, TValue>({
                 </div>
             </div>
 
-            <div className="rounded-md border">
+            <div className="rounded-md border overflow-hidden">
                 <Table>
-                    <TableHeader>
+                    <TableHeader className="bg-[#cfcfcf] ">
                         {table.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                                 {headerGroup.headers.map((header) => (
-                                    <TableHead key={header.id}>
+                                    <TableHead
+                                        className="text-black"
+                                        key={header.id}>
                                         {header.isPlaceholder
                                             ? null
                                             : flexRender(
