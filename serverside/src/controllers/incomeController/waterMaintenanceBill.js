@@ -199,7 +199,7 @@ module.exports = {
 
       return res.status(200).json({
         status: "success",
-        message: "Water Maintenance Bill found",
+        message: waterMaintenaceBill.docs.length === 0 ? "Water Maintenance Bill not found" : "Water Maintenance Bill found",
         data: waterMaintenaceBill.docs,
         filters: {
           headOfAccount: listOfHeadOfAccount,

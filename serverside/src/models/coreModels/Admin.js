@@ -31,6 +31,7 @@ const adminSchema = new schema({
     role:{
         type:String,
         required:true,
+        enum: ["admin", "employee"]
     },
 
     salt:{

@@ -20,6 +20,14 @@ module.exports={
           message: "Email or password fields they don't have been entered.",
         });
     
+      if (!role) {
+        return res.status(400).json({
+          success: false,
+          result: null,
+          message: "Role is required.",
+        });
+      }
+
       const existingUser = await admin.findOne({
         email: email,
       });

@@ -29,7 +29,7 @@ module.exports = {
       }).exec();
 
       if (mainHeadAccounts.length === 0) {
-        return res.status(404).json({
+        return res.status(200).json({
           status: "error",
           message: "No Main Head of Account found for the given expense type",
         });
