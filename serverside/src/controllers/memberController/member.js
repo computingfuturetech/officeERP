@@ -201,16 +201,10 @@ module.exports = {
 
       const members = await MemberList.paginate(filter, options);
 
-      if (!members || members.docs.length === 0) {
-        return res.status(404).json({
-          status: "error",
-          message: "No members found with the provided criteria",
-        });
-      }
-
       return res.status(200).json({
         status: "success",
-        message: "Members found",
+        message:
+          members.docs.length === 0 ? "No members found" : "Members found",
         data: members.docs,
         pagination: {
           totalDocs: members.totalDocs,

@@ -182,7 +182,7 @@ module.exports = {
       );
 
       if (!headOfAccount.length) {
-        return res.status(404).json({
+        return res.status(200).json({
           status: "error",
           message: "No Head of Account found",
           data: [],

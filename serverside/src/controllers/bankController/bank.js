@@ -196,9 +196,10 @@ module.exports = {
           .populate("bankBalance", "balance")
           .exec();
         if (!bank) {
-          return res.status(404).json({
-            status: "error",
+          return res.status(200).json({
+            status: "success",
             message: "Bank not found",
+            data: []
           });
         }
         return res.status(200).json({
@@ -219,7 +220,7 @@ module.exports = {
 
       res.status(200).json({
         status: "success",
-        message: "Banks found",
+        message: bankList.docs.length === 0 ? "No banks found" : "Banks found",
         data: bankList.docs,
         pagination: {
           totalDocs: bankList.totalDocs,

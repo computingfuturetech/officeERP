@@ -245,7 +245,7 @@ module.exports = {
 
       res.status(200).json({
         status: "success",
-        message: "Bank Profits found",
+        message: bankProfits.docs.length === 0 ? "Bank Profits not found" : "Bank Profits found",
         data: bankProfits.docs,
         filters: {
           bankList: bankList,
