@@ -22,3 +22,5 @@ const fetchReport = async (endpoint, params) => {
 export const getBankLedger = (params) => fetchReport("bank-ledger", params);
 export const getCashLedger = (params) => fetchReport("cash-ledger", params);
 export const getGeneralLedger = (params) => fetchReport("general-ledger", params);
+export const getIncomeRecord = (params) => fetchReport("income-record", params);
+export const getBalanceSheet = (params) => fetchReport("balance-sheet", params);
