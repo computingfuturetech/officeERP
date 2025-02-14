@@ -14,7 +14,7 @@ module.exports = {
         .limit(limit)
         .select("-password -salt");
 
-      const totalDocs = users.length;
+      const totalDocs = await Admin.countDocuments(query);
       const totalPages = Math.ceil(totalDocs / limit);
       const currentPage = page;
       const hasNextPage = currentPage < totalPages;
