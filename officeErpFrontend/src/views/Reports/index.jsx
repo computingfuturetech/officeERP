@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -13,10 +13,10 @@ import {
   SelectValue,
 } from "@/components/components/ui/select";
 import { Button } from "@/components/components/ui/button";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { Calendar as CalendarIcon, Loader2Icon } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/components/lib/utils";
-import { Calendar as CalendarComponent } from "@/components/components/ui/calendar";
+import { Calendar } from "@/components/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
@@ -24,14 +24,41 @@ import {
 } from "@/components/components/ui/popover";
 import { getBanks } from "../../services/banks";
 import { Label } from "@/components/components/ui/label";
+import { Input } from "@/components/components/ui/input";
 import { useToast } from "@/components/hooks/use-toast";
 import {
   getBankLedger,
   getCashLedger,
   getGeneralLedger,
+  getIncomeRecord,
+  getBalanceSheet,
 } from "../../services/reports";
 
-const DatePicker = ({ label, date, onChange }) => (
+const REPORT_TYPES = {
+  BANK_LEDGER: "bank-ledger",
+  GENERAL_LEDGER: "general-ledger",
+  CASH_LEDGER: "cash-ledger",
+  INCOME_RECORD: "income-record",
+  BALANCE_SHEET: "balance-sheet",
+};
+
+const REPORTS = [
+  { value: REPORT_TYPES.BANK_LEDGER, label: "Bank Ledger" },
+  { value: REPORT_TYPES.GENERAL_LEDGER, label: "General Ledger" },
+  { value: REPORT_TYPES.CASH_LEDGER, label: "Cash Ledger" },
+  { value: REPORT_TYPES.INCOME_RECORD, label: "Income Record" },
+  { value: REPORT_TYPES.BALANCE_SHEET, label: "Balance Sheet" },
+];
+
+const REPORT_FUNCTIONS = {
+  [REPORT_TYPES.BANK_LEDGER]: getBankLedger,
+  [REPORT_TYPES.CASH_LEDGER]: getCashLedger,
+  [REPORT_TYPES.GENERAL_LEDGER]: getGeneralLedger,
+  [REPORT_TYPES.INCOME_RECORD]: getIncomeRecord,
+  [REPORT_TYPES.BALANCE_SHEET]: getBalanceSheet,
+};
+
+const DatePicker = React.memo(({ label, date, onChange }) => (
   <div className="space-y-2">
     <Label className="text-sm font-medium text-gray-700">{label}</Label>
     <Popover>
@@ -48,7 +75,7 @@ const DatePicker = ({ label, date, onChange }) => (
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="start">
-        <CalendarComponent
+        <Calendar
           mode="single"
           selected={date}
           onSelect={onChange}
@@ -57,16 +84,50 @@ const DatePicker = ({ label, date, onChange }) => (
       </PopoverContent>
     </Popover>
   </div>
-);
+));
+
+const FormInput = React.memo(({ label, value, onChange, placeholder }) => (
+  <div className="space-y-2">
+    <Label>{label}</Label>
+    <Input
+      type="number"
+      value={value}
+      placeholder={placeholder}
+      onChange={(e) => onChange(e.target.value)}
+    />
+  </div>
+));
 
 const Reports = () => {
-  const [reportType, setReportType] = useState("");
-  const [startDate, setStartDate] = useState(null);
-  const [endDate, setEndDate] = useState(null);
+  const useFormState = (initialState) => {
+    const [state, setState] = useState(initialState);
+    const resetState = () => setState(initialState);
+    return [state, setState, resetState];
+  };
+
+  const [reportType, setReportType, resetReportType] = useFormState("");
+  const [startDate, setStartDate, resetStartDate] = useFormState(null);
+  const [endDate, setEndDate, resetEndDate] = useFormState(null);
+  const [selectedBank, setSelectedBank, resetSelectedBank] = useFormState(null);
+  const [year, setYear] = useFormState(null);
   const [banks, setBanks] = useState([]);
-  const [selectedBank, setSelectedBank] = useState(null);
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+
+  const [financialData, setFinancialData] = useState({
+    accumulatedSurplusBrought: "",
+    taxation: "",
+    reserveFund: "",
+    shareDeposit: "",
+    tradePayable: "",
+    provisionForTax: "",
+    accumulatedSurplus: "",
+    intangibleAssets: "",
+    purchaseCostOfLand: "",
+    longTermSecurities: "",
+    loanAndAdvances: "",
+  });
+
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchBanks = async () => {
@@ -75,50 +136,102 @@ const Reports = () => {
         setBanks(response?.data?.data || []);
       } catch (error) {
         console.error("Error fetching banks:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch banks data",
+          variant: "destructive",
+        });
       }
     };
     fetchBanks();
-  }, []);
+  }, [toast]);
 
-  const handleSubmit = async () => {
+  // Form validation
+  const validateForm = useCallback(() => {
     if (!reportType) {
-      return toast({
+      toast({
         title: "Report Type Required",
         description: "Please select a report type to proceed.",
         variant: "destructive",
       });
+      return false;
     }
 
-    const reportParams = {
-      startDate,
-      endDate,
-      ...(reportType === "bank-ledger" && { bank_account: selectedBank }),
-    };
-
-    if (!startDate || !endDate) {
-      return toast({
+    if (
+      reportType !== REPORT_TYPES.INCOME_RECORD &&
+      reportType !== REPORT_TYPES.BALANCE_SHEET &&
+      (!startDate || !endDate)
+    ) {
+      toast({
         title: "Date Range Required",
         description: "Please select a date range to generate the report.",
         variant: "destructive",
       });
+      return false;
     }
 
-    if (reportType === "bank-ledger" && !selectedBank) {
-      return toast({
+    if (reportType === REPORT_TYPES.BANK_LEDGER && !selectedBank) {
+      toast({
         title: "Bank Required",
         description: "Please select a bank to generate the report.",
         variant: "destructive",
       });
+      return false;
+    }
+    if (reportType === REPORT_TYPES.INCOME_RECORD && !year) {
+      toast({
+        title: "Year Required",
+        description: "Please select a year to generate the report.",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (reportType === REPORT_TYPES.BALANCE_SHEET && !year) {
+      toast({
+        title: "Year Required",
+        description: "Please select a year to generate the report.",
+        variant: "destructive",
+      });
+      return;
     }
 
+    return true;
+  }, [reportType, startDate, endDate, selectedBank, toast, year]);
+
+  // Handle report generation
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    const reportParams = {
+      startDate,
+      endDate,
+      ...(reportType === REPORT_TYPES.BANK_LEDGER && {
+        bank_account: selectedBank,
+      }),
+      ...(reportType === REPORT_TYPES.INCOME_RECORD && {
+        year,
+        taxation: financialData.taxation,
+        accumulated_surplus_brought_forward:
+          financialData.accumulatedSurplusBrought,
+      }),
+      ...(reportType === REPORT_TYPES.BALANCE_SHEET && {
+        year,
+        reserve_fund: financialData.reserveFund,
+        accumulated_surplus: financialData.accumulatedSurplus,
+        share_deposit_money: financialData.shareDeposit,
+        trade_and_other_payable: financialData.tradePayable,
+        provision_for_taxation: financialData.provisionForTax,
+        intangible_assets: financialData.intangibleAssets,
+        purchase_cost_of_land_development: financialData.purchaseCostOfLand,
+        long_term_security_deposit: financialData.longTermSecurities,
+        loan_and_advances: financialData.loanAndAdvances,
+      }),
+    };
+
     try {
-      const reportFunctions = {
-        "bank-ledger": getBankLedger,
-        "cash-ledger": getCashLedger,
-        "general-ledger": getGeneralLedger,
-      };
       setIsLoading(true);
-      const response = await reportFunctions[reportType](reportParams);
+      const reportFunction = REPORT_FUNCTIONS[reportType];
+      const response = await reportFunction(reportParams);
 
       // Download report
       const url = window.URL.createObjectURL(response);
@@ -130,28 +243,44 @@ const Reports = () => {
       document.body.removeChild(a);
       window.URL.revokeObjectURL(url);
     } catch (error) {
+      console.error("Error downloading report:", error);
       toast({
         title: "Download Failed",
         description: "Could not download the report. Please try again.",
         variant: "destructive",
       });
-      console.error("Error downloading report:", error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const reports = [
-    { value: "bank-ledger", label: "Bank Ledger" },
-    { value: "general-ledger", label: "General Ledger" },
-    { value: "cash-ledger", label: "Cash Ledger" },
-  ];
+  // Reset form
+  const resetForm = useCallback(() => {
+    resetReportType();
+    resetStartDate();
+    resetEndDate();
+    resetSelectedBank();
+    setFinancialData({
+      accumulatedSurplusBrought: "",
+      taxation: "",
+      reserveFund: "",
+      shareDeposit: "",
+      tradePayable: "",
+      provisionForTax: "",
+      accumulatedSurplus: "",
+      intangibleAssets: "",
+      purchaseCostOfLand: "",
+      longTermSecurities: "",
+      loanAndAdvances: "",
+    });
+  }, [resetReportType, resetStartDate, resetEndDate, resetSelectedBank]);
 
-  const resetForm = () => {
-    setReportType("");
-    setStartDate(null);
-    setEndDate(null);
-    setSelectedBank(null);
+  // Handle financial data changes
+  const handleFinancialDataChange = (field) => (value) => {
+    setFinancialData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   return (
@@ -177,7 +306,7 @@ const Reports = () => {
                 <SelectValue placeholder="Choose a report type" />
               </SelectTrigger>
               <SelectContent>
-                {reports.map(({ value, label }) => (
+                {REPORTS.map(({ value, label }) => (
                   <SelectItem key={value} value={value}>
                     {label}
                   </SelectItem>
@@ -186,26 +315,103 @@ const Reports = () => {
             </Select>
           </div>
 
-          {/* Date Pickers */}
-          <div className="grid grid-cols-2 gap-4">
-            <DatePicker
-              label="Start Date"
-              date={startDate}
-              onChange={setStartDate}
-            />
-            <DatePicker label="End Date" date={endDate} onChange={setEndDate} />
-          </div>
+          {/* Date Range Selection */}
+          {reportType &&
+            ![REPORT_TYPES.INCOME_RECORD, REPORT_TYPES.BALANCE_SHEET].includes(
+              reportType
+            ) && (
+              <div className="grid grid-cols-2 gap-4">
+                <DatePicker
+                  label="Start Date"
+                  date={startDate}
+                  onChange={setStartDate}
+                />
+                <DatePicker
+                  label="End Date"
+                  date={endDate}
+                  onChange={setEndDate}
+                />
+              </div>
+            )}
+          {/* Year Selection */}
+          {[REPORT_TYPES.INCOME_RECORD, REPORT_TYPES.BALANCE_SHEET].includes(
+            reportType
+          ) && (
+            <div className="space-y-2">
+              <Label>Year</Label>
+              <Select
+                onValueChange={(value) => {
+                  setYear(value);
+                }}
+                value={year}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: 50 }, (_, i) => {
+                    const yearValue = new Date().getFullYear() - i;
+                    return (
+                      <SelectItem key={yearValue} value={yearValue}>
+                        {yearValue}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
 
-          {/* Bank Selection (Only for Bank Ledger) */}
-          {reportType === "bank-ledger" && (
+          {/* Income Record Fields */}
+          {reportType === REPORT_TYPES.INCOME_RECORD && (
+            <div className="grid grid-cols-2 gap-2">
+              <FormInput
+                label="Accumulated Surplus"
+                value={financialData.accumulatedSurplusBrought}
+                placeholder="Enter Accumulated Surplus"
+                onChange={handleFinancialDataChange(
+                  "accumulatedSurplusBrought"
+                )}
+              />
+              <FormInput
+                label="Taxation"
+                value={financialData.taxation}
+                placeholder="Enter Taxation"
+                onChange={handleFinancialDataChange("taxation")}
+              />
+            </div>
+          )}
+
+          {/* Balance Sheet Fields */}
+          {reportType === REPORT_TYPES.BALANCE_SHEET && (
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { key: "reserveFund", label: "Reserve Fund" },
+                { key: "shareDeposit", label: "Share Deposit" },
+                { key: "tradePayable", label: "Trade Payable" },
+                { key: "provisionForTax", label: "Provision for Tax" },
+                { key: "accumulatedSurplus", label: "Accumulated Surplus" },
+                { key: "intangibleAssets", label: "Intangible Assets" },
+                { key: "purchaseCostOfLand", label: "Purchase Cost of Land" },
+                { key: "longTermSecurities", label: "Long Term Securities" },
+                { key: "loanAndAdvances", label: "Loan and Advances" },
+              ].map(({ key, label }) => (
+                <FormInput
+                  key={key}
+                  label={label}
+                  placeholder={`Enter ${label}`}
+                  value={financialData[key]}
+                  onChange={handleFinancialDataChange(key)}
+                />
+              ))}
+            </div>
+          )}
+
+          {/* Bank Selection */}
+          {reportType === REPORT_TYPES.BANK_LEDGER && (
             <div className="space-y-2">
               <Label>Bank Name</Label>
-              <Select
-                onValueChange={setSelectedBank}
-                value={selectedBank}
-                placeholder="Choose a bank"
-                className="w-full"
-              >
+              <Select onValueChange={setSelectedBank} value={selectedBank}>
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose a bank" />
                 </SelectTrigger>
@@ -223,10 +429,17 @@ const Reports = () => {
           {/* Download Button */}
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
+            disabled={isLoading || !reportType}
             className="w-full"
           >
-            {isLoading ? "Generating Report..." : "Download Report"}
+            {isLoading ? (
+              <span className="flex items-center">
+                <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
+                Generating Report...
+              </span>
+            ) : (
+              "Download Report"
+            )}
           </Button>
         </CardContent>
       </Card>
