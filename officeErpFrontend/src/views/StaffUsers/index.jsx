@@ -16,17 +16,17 @@ import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { useToast } from "@/components/hooks/use-toast";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import {
-  createFixedAmount,
-  getFixedAmount,
-  updateFixedAmount,
-} from "../../services/fixedAmount";
+  getStaffUsers,
+  createStaffUser,
+  updateStaffUser,
+} from "../../services/staffUsers";
 
-export default function FixedAmount() {
+export default function StaffUsers() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
-  const [editingFixedAmount, setEditingFixedAmount] = useState(null);
-  const [viewingFixedAmount, setViewingFixedAmount] = useState(null);
+  const [editingStaffUser, setEditingStaffUser] = useState(null);
+  const [viewingStaffUser, setViewingStaffUser] = useState(null);
   const { toast, dismiss } = useToast();
   const [pagination, setPagination] = useState({
     pageIndex: parseInt(searchParams.get("page")) - 1 || 0,
@@ -45,31 +45,31 @@ export default function FixedAmount() {
   const [isLoading, setIsLoading] = useState(false);
 
   const formatDate = (dateString) => {
-    const options = { year: "numeric", month: "long", day: "numeric" };
-    return new Date(dateString).toLocaleDateString(undefined, options);
+    const date = new Date(dateString);
+    return new Intl.DateTimeFormat("en-PK", {
+      day: "2-digit",
+      month: "long",
+      year: "numeric",
+    }).format(date);
   };
 
   const handleEditSubmit = async (data) => {
     try {
-      const response = await updateFixedAmount(editingFixedAmount._id, data);
+      const response = await updateStaffUser(editingStaffUser._id, data);
 
       if (response.status === 200) {
         setData((prev) =>
-          prev.map((fixedAmount) =>
-            fixedAmount._id === editingFixedAmount._id
-              ? {
-                  ...fixedAmount,
-                  ...data,
-                  updatedAt: formatDate(response?.data?.data?.updatedAt),
-                }
-              : fixedAmount
+          prev.map((staff_user) =>
+            staff_user._id === editingStaffUser._id
+              ? { ...staff_user, ...data }
+              : staff_user
           )
         );
         toast({
-          title: "Fixed Amount updated",
-          description: "Fixed Amount has been successfully updated.",
+          title: "Staff User updated",
+          description: "Staff User has been successfully updated.",
         });
-        setEditingFixedAmount(null);
+        setEditingStaffUser(null);
       } else {
         toast({
           title: "Edit Failed",
@@ -90,13 +90,14 @@ export default function FixedAmount() {
   };
   const handleCreateSubmit = async (data) => {
     try {
-      const response = await createFixedAmount(data);
+      const response = await createStaffUser(data);
+      console.log("response", response);
 
-      if (response.status === 201) {
-        setData((prev) => [response?.data?.data, ...prev]);
+      if (response.status === 200) {
+        setData((prev) => [response?.data?.result, ...prev]);
         toast({
-          title: "Fixed Amount created",
-          description: "Fixed Amount has been successfully created.",
+          title: "Staff User created",
+          description: "Staff User has been successfully created.",
         });
         setIsCreateOpen(false);
         return true;
@@ -140,7 +141,7 @@ export default function FixedAmount() {
   }, [pagination, filters]);
 
   useEffect(() => {
-    fetchFixedAmount();
+    fetchStaffUsers();
   }, [pagination.pageIndex, pagination.pageSize, filters]);
 
   const handleFilterChange = (newFilters) => {
@@ -159,33 +160,66 @@ export default function FixedAmount() {
     }));
   };
 
-  const getFieldConfig = (fixedAmount) => [
+  const getFieldConfig = (staff_user) => [
     {
-      id: "bankOpeningBalance",
-      label: "Bank Opening Balance",
-      type: "number",
-      value: fixedAmount?.bankOpeningBalance || "",
+      id: "name",
+      label: "Name",
+      type: "text",
+      value: staff_user?.name || "",
       required: true,
-      placeholder: "Enter bank opening balance",
+      placeholder: "Enter name",
+      validate: (value) => {
+        if (value.length < 3) {
+          return "Name must be at least 3 characters long";
+        }
+        return null;
+      },
     },
     {
-      id: "cashOpeningBalance",
-      label: "Cash Opening Balance",
-      type: "number",
-      value: fixedAmount?.cashOpeningBalance || "",
-      placeholder: "Enter cash opening balance",
+      id: "surname",
+      label: "Surname",
+      type: "text",
+      value: staff_user?.surname || "",
+      placeholder: "Enter surname",
+      required: true,
+      validate: (value) => {
+        if (value.length < 3) {
+          return "Surname must be at least 3 characters long";
+        }
+        return null;
+      },
+    },
+    {
+      id: "email",
+      label: "Email",
+      type: "email",
+      value: staff_user?.email || "",
+      placeholder: "Enter email",
       required: true,
     },
     {
-      id: "shareCapital",
-      label: "Share Capital",
-      type: "number",
-      value: fixedAmount?.shareCapital || "",
-      placeholder: "Enter share capital",
+      id: "role",
+      label: "Role",
+      type: "select",
+      value: staff_user?.role?.toLowerCase() || "",
+      placeholder: "Enter Role",
+      options: [
+        { value: "admin", label: "Admin" },
+        { value: "employee", label: "Employee" },
+      ],
+      required: true,
+    },
+    {
+      id: "password",
+      label: "Password",
+      type: "password",
+      value: staff_user?.password || "",
+      placeholder: "Enter password",
+      required: staff_user ? false : true,
     },
   ];
 
-  const fetchFixedAmount = async () => {
+  const fetchStaffUsers = async () => {
     try {
       setIsLoading(true);
       const queryParams = {
@@ -194,19 +228,24 @@ export default function FixedAmount() {
         ...filters,
       };
 
-      const response = await getFixedAmount(queryParams);
-      const data = response?.data?.data ? [response?.data?.data] : [];
+      const response = await getStaffUsers(queryParams);
+      console.log("response", response);
 
-      const formattedData = data.map((item) => ({
-        ...item,
-        updatedAt: formatDate(item.updatedAt),
-      }));
-      setData(formattedData);
+      setData(
+        response?.data?.data.map((staff_user) => ({
+          ...staff_user,
+          role:
+            staff_user?.role.charAt(0).toUpperCase() +
+            staff_user?.role.slice(1),
+          created: formatDate(staff_user.created),
+        }))
+      );
+      setPageCount(response?.data?.pagination?.totalPages);
     } catch (error) {
-      console.error("Error fetching fixed amounts:", error);
+      console.error("Error fetching staff user:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch fixed amounts data",
+        description: "Failed to fetch staff user data",
         variant: "destructive",
       });
     } finally {
@@ -216,26 +255,30 @@ export default function FixedAmount() {
 
   const columns = [
     {
-      accessorKey: "bankOpeningBalance",
-      header: "Bank Opening Balance",
+      accessorKey: "name",
+      header: "Name",
     },
     {
-      accessorKey: "cashOpeningBalance",
-      header: "Cash Opening Balance",
+      accessorKey: "surname",
+      header: "Surname",
     },
     {
-      accessorKey: "shareCapital",
-      header: "Share Capital",
+      accessorKey: "email",
+      header: "Email",
     },
     {
-      accessorKey: "updatedAt",
-      header: "Last Updated",
+      accessorKey: "role",
+      header: "Role",
+    },
+    {
+      accessorKey: "created",
+      header: "Member Since",
     },
     {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
-        const fixedAmount = row.original;
+        const staff_user = row.original;
         return (
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
@@ -246,14 +289,10 @@ export default function FixedAmount() {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuItem
-                onClick={() => setEditingFixedAmount(fixedAmount)}
-              >
-                Edit Fixed Amount
+              <DropdownMenuItem onClick={() => setEditingStaffUser(staff_user)}>
+                Edit Staff User
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setViewingFixedAmount(fixedAmount)}
-              >
+              <DropdownMenuItem onClick={() => setViewingStaffUser(staff_user)}>
                 View Details
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -267,22 +306,24 @@ export default function FixedAmount() {
     <div>
       <div className="mt-4">
         <DataTable
-          heading="Fixed Amount"
+          heading="Staff Users"
           columns={columns}
           data={data}
+          enableFilters={true}
           enableColumnVisibility={true}
-          enableFilters={false}
-          createButton={
-            data.length === 0
-              ? {
-                  onClick: () => {
-                    dismiss();
-                    setIsCreateOpen(true);
-                  },
-                  label: "Create",
-                }
-              : null
-          }
+          filterableField="msNo"
+          filterableFieldLabel="Staff User No"
+          onFilterChange={handleFilterChange}
+          pagination={pagination}
+          pageCount={pageCount}
+          onPaginationChange={setPagination}
+          createButton={{
+            onClick: () => {
+              dismiss();
+              setIsCreateOpen(true);
+            },
+            label: "Create",
+          }}
           resetFilters={{
             onClick: handleResetFilters,
             disabled: Object.keys(filters).length === 0,
@@ -292,35 +333,35 @@ export default function FixedAmount() {
 
       <DynamicSheet
         mode="create"
-        title="Create Fixed Amount"
-        description="Add a new fixed amount to the system."
+        title="Create Staff User"
+        description="Add a new staff user to the system."
         fields={getFieldConfig()}
         onSubmit={handleCreateSubmit}
         open={isCreateOpen}
         onOpenChange={setIsCreateOpen}
       />
 
-      {editingFixedAmount && (
+      {editingStaffUser && (
         <DynamicSheet
           mode="edit"
-          title="Edit Fixed Amount"
-          description="Make changes to the fixed amount details."
-          fields={getFieldConfig(editingFixedAmount)}
+          title="Edit Staff User"
+          description="Make changes to the staff user details."
+          fields={getFieldConfig(editingStaffUser)}
           onSubmit={handleEditSubmit}
-          open={!!editingFixedAmount}
-          onOpenChange={(open) => !open && setEditingFixedAmount(null)}
+          open={!!editingStaffUser}
+          onOpenChange={(open) => !open && setEditingStaffUser(null)}
         />
       )}
 
-      {viewingFixedAmount && (
+      {viewingStaffUser && (
         <DynamicSheet
           mode="view"
-          title="View Fixed Amount"
-          description="View fixed amount details."
-          fields={getFieldConfig(viewingFixedAmount)}
+          title="View Staff User"
+          description="View staff user details."
+          fields={getFieldConfig(viewingStaffUser)}
           onSubmit={() => {}}
-          open={!!viewingFixedAmount}
-          onOpenChange={(open) => !open && setViewingFixedAmount(null)}
+          open={!!viewingStaffUser}
+          onOpenChange={(open) => !open && setViewingStaffUser(null)}
         />
       )}
     </div>

@@ -513,17 +513,17 @@ export default function TransferIncome() {
     },
   ];
   const filterConfig = [
-    {
-      id: "bank",
-      label: "Bank Name",
-      type: "select",
-      mode: "single",
-      options:
-        originalFilters?.bankList?.map((bank) => ({
-          value: bank._id,
-          label: bank.bankName + " - " + bank.accountNo,
-        })) || [],
-    },
+    // {
+    //   id: "bank",
+    //   label: "Bank Name",
+    //   type: "select",
+    //   mode: "single",
+    //   options:
+    //     originalFilters?.bankList?.map((bank) => ({
+    //       value: bank._id,
+    //       label: bank.bankName + " - " + bank.accountNo,
+    //     })) || [],
+    // },
   ];
   const handleFormValueChange = (values) => {
     setFormValues(values);
