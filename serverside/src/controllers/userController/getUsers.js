@@ -3,7 +3,7 @@ const Admin = require("../../models/coreModels/Admin");
 module.exports = {
   get: async (req, res) => {
     try {
-      let { id, page = 1, limit = 20 } = req.query;
+      let { id, page, limit } = req.query;
       page = Number(page) || 1;
       limit = Number(limit) || 20;
       const query = {};
