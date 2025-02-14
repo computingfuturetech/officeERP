@@ -1,10 +1,6 @@
-const mongoose= require('mongoose')
-const admin=require('../../models/coreModels/Admin')
-const bcrypt= require('bcryptjs');
-const {generate: uniqueId} = require('shortid')
-const jwt = require('jsonwebtoken');
-const express = require('express');  
-const dotenv = require('dotenv');
+const admin = require("../../models/coreModels/Admin");
+const jwt = require("jsonwebtoken");
+const userPermissions = require("../../config/userPermissions");
 
 module.exports = {
   login: async (req, res) => {
@@ -15,10 +11,9 @@ module.exports = {
     }
 
     try {
- 
       const user = await admin.findOne({ email });
 
-      if (!user) { 
+      if (!user) {
         return res.status(400).json({ message: "Invalid credentials" });
       }
 
@@ -29,7 +24,7 @@ module.exports = {
       }
 
       const token = jwt.sign(
-        { id: user._id, email: user.email },
+        { id: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
         { expiresIn: "30d" }
       );
@@ -40,10 +35,11 @@ module.exports = {
         email: user.email,
         role: user.role,
         token: token,
+        permissions: userPermissions[user.role],
       });
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Server error" });
     }
   },
-}
+};
