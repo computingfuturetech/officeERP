@@ -34,6 +34,7 @@ const data = {
     { title: "Members", url: "/members", icon: Users, permission: "members.read" },
     { title: "Banks", url: "/banks", icon: Building2Icon, permission: "banks.read" },
     { title: "Fixed Amount", url: "/fixed-amount", icon: Frame, permission: "fixedAmount.read" },
+    { title: "Staff Users", url: "/staff-users", icon: Users, permission: "staffUsers.read" },
     {
       title: "Income",
       icon: Banknote,
