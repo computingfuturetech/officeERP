@@ -1,13 +1,10 @@
 const express = require("express");
 require("./src/config/config");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const multer = require("multer");
-const dotenv = require("dotenv");
-const jwt = require("jsonwebtoken");
 const app = express();
 
-// New Routes
+// Routers
 const bankRouter = require("./src/routes/bankRoutes/bank");
 const bankBalanceRouter = require("./src/routes/bankBalanceRoutes/bankBalance");
 const auditExpenseRouter = require("./src/routes/auditExpenseRoutes/auditExpense");
@@ -24,9 +21,6 @@ const vehicleDisposalExpenseRouter = require("./src/routes/vehicleDisposalExpens
 const siteExpenseRouter = require("./src/routes/siteExpenseRoutes/siteExpense");
 const reportRouter = require("./src/routes/reportRoutes/report");
 const fixedAmountRouter = require("./src/routes/fixedAmountRoutes/fixedAmount");
-
-dotenv.config();
-
 const coreRouter = require("./src/routes/coreRoutes/coreApi");
 const incomeRouter = require("./src/routes/coreRoutes/incomeApi");
 const expenseRouter = require("./src/routes/coreRoutes/expenseApi");
