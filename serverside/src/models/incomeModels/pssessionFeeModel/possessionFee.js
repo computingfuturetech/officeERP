@@ -1,46 +1,50 @@
-const mongoose = require('mongoose')
-const Schema=mongoose.Schema
-const Member=require('../../memberModels/memberList')
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+const Member = require("../../memberModels/memberList");
 
-const possessionFeeSchema = new Schema({
-    paidDate:{
-        type: Date,
+const possessionFeeSchema = new Schema(
+  {
+    paidDate: {
+      type: Date,
     },
-    memberNo:{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MemberList',
-        required: true
+    memberNo: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "MemberList",
+      required: true,
     },
-    challanNo:{
-        type: Number,
+    challanNo: {
+      type: Number,
     },
-    address:{
-        type:String,
+    address: {
+      type: String,
     },
-    type:{
-        type: String,
+    type: {
+      type: String,
     },
     paymentDetail: {
-        type: Map,  
-        of: Number, 
+      type: Map,
+      of: Number,
     },
-    particular:{
-        type: String,
+    particular: {
+      type: String,
     },
-    chequeNo:{
-        type: Number,
+    chequeNo: {
+      type: Number,
     },
-    bankAccount:{
-        type: Number,
+    bankAccount: {
+      type: Number,
     },
-    check:{
-        type: String,
+    check: {
+      type: String,
     },
-},
-{
-    timestamps: true 
-}
-)
+  },
+  {
+    timestamps: true,
+  }
+);
 
-const PossessionFeeSchema = mongoose.model('PossessionFeeSchema',possessionFeeSchema)
-module.exports=PossessionFeeSchema;
+const PossessionFeeSchema = mongoose.model(
+  "PossessionFeeSchema",
+  possessionFeeSchema
+);
+module.exports = PossessionFeeSchema;

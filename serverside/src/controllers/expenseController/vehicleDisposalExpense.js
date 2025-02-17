@@ -1,11 +1,11 @@
 const VehicleDisposalExpense = require("../../models/expenseModel/vehicleDisposalExpense/vehicleDisposalExpense");
 const SubExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
 const MainHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
-const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const CashBookLedger = require("../../middleware/createCashBookLedger");
+const CheckMainAndSubHeadOfAccount = require("../../services/checkMainAndSubHeadOfAccount");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const CashBookLedger = require("../../services/createCashBookLedger");
 const headOfAccount = require("../expenseHeadOfAccountController/headOfAccount");
 
 module.exports = {

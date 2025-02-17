@@ -38,14 +38,13 @@ router.post("/login", loginController.login);
 router.post("/forgetPassword", forgetPassword.forgetPassword);
 router.post("/otpVerify", otpVerify.otpVerify);
 router.post("/newPasswordSet", newPasswordSet.newPasswordSet);
-
 router.post(
   "/createPayableVoucher",
   authenticateJWT,
   checkRole(["admin", "employee"]),
   createPayableVoucher.createPayableVoucher
 );
-router.get("/", threeTierchallanController.renderTemplate);
+router.get("/three-tier-challan", threeTierchallanController.renderTemplate);
 
 // router.post(
 //   "/addFixedAmount",
@@ -66,7 +65,6 @@ router.put(
   checkRole(["admin", "employee"]),
   operatingFixedAmountController.updateOperatingFixedAssets
 );
-
 router.post("/addIncomeStatement", incomeStatement.createIncomeStatement);
 
 module.exports = router;

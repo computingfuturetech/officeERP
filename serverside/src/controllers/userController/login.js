@@ -1,4 +1,4 @@
-const admin = require("../../models/coreModels/Admin");
+const Admin = require("../../models/coreModels/Admin");
 const jwt = require("jsonwebtoken");
 const userPermissions = require("../../config/userPermissions");
 
@@ -7,11 +7,11 @@ module.exports = {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Please add all fields" });
+      return res.status(400).json({ message: "Both email and password are required" });
     }
 
     try {
-      const user = await admin.findOne({ email });
+      const user = await Admin.findOne({ email });
 
       if (!user) {
         return res.status(400).json({ message: "Invalid credentials" });

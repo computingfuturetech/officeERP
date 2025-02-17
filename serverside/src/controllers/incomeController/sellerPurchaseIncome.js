@@ -1,10 +1,10 @@
 const Member = require("../../models/memberModels/memberList");
 const SellerPurchaseIncome = require("../../models/incomeModels/sellerPurchaseIncome/sellerPurchaseIncome");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const CashBookLedger = require("../../middleware/createCashBookLedger");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const CashBookLedger = require("../../services/createCashBookLedger");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
 const IncomeType = require("../../models/incomeModels/incomeHeadOfAccount/typeOfHeadOfAccount");
 const BankList = require("../../models/bankModel/bank");
 

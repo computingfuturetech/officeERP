@@ -1,9 +1,9 @@
 const OfficeUtilExpense = require("../../models/expenseModel/officeUtilExpense/officeutilExpense");
-const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const CashBookLedger = require("../../middleware/createCashBookLedger");
+const CheckMainAndSubHeadOfAccount = require("../../services/checkMainAndSubHeadOfAccount");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const CashBookLedger = require("../../services/createCashBookLedger");
 const BankList = require("../../models/bankModel/bank");
 const MainExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
 
