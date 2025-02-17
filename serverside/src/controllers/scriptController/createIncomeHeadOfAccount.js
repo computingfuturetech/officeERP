@@ -1,7 +1,7 @@
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 const TypesOfHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/typeOfHeadOfAccount");
 
-const incomeOfficeHeadsData = {
+const incomeHeadsData = {
   Seller: [
     "NOC Fee",
     "Masjid Fund",
