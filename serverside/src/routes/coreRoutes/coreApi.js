@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-router.use(express.json());
-router.use(express.urlencoded({ extended: true }));
 const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
@@ -12,15 +10,10 @@ const loginController = require("../../controllers/userController/login");
 const forgetPassword = require("../../controllers/userController/forgetPassword");
 const otpVerify = require("../../controllers/userController/otpVerify");
 const newPasswordSet = require("../../controllers/userController/newPasswordSet");
-
 const createPayableVoucher = require("../../controllers/payableVoucherController/createPayableVoucher");
-
 const threeTierchallanController = require("../../controllers/templateController/threeTierChallan");
-
 const fixedAmountController = require("../../controllers/fixedAmountController/fixedAmount");
-
 const operatingFixedAmountController = require("../../controllers/operatingFixedAssetsController/operatingFixedAssets");
-
 const incomeStatement = require("../../controllers/incomeStatementController/incomeStatement");
 
 router.post(
