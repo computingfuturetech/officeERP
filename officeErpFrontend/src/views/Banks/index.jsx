@@ -254,6 +254,10 @@ export default function Banks() {
       header: "Branch Code",
     },
     {
+      accessorKey: "bankBalance.balance",
+      header: "Balance",
+    },
+    {
       id: "actions",
       header: "Actions",
       cell: ({ row }) => {
