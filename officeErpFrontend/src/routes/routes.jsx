@@ -99,7 +99,12 @@ const staticRoutes = [
   },
   {
     path: "/api-tester",
-    element: <ProtectedRoute element={<ApiTester />} />,
+    element: (
+      <ProtectedRoute
+        element={<ApiTester />}
+        requiredPermission={"apiTester.read"}
+      />
+    ),
   },
   {
     path: "/fixed-amount",
