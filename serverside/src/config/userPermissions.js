@@ -108,6 +108,12 @@ module.exports = {
       update: true,
       delete: true,
     },
+    apiTester: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    }
   },
   "employee": {
     dasboard: {
@@ -218,5 +224,11 @@ module.exports = {
       update: true,
       delete: true,
     },
+    apiTester: {
+      create: false,
+      read: false,
+      update: false,
+      delete: false,
+    }
   }
 }
