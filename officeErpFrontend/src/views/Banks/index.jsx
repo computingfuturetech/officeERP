@@ -151,7 +151,13 @@ export default function Banks() {
       type: "text",
       value: bank?.bankName || "",
       required: true,
-      placeholder: "Enter bank name",
+      placeholder: "Enter bank name (abbreviation)",
+      validate: (value) => {
+        const regex = /\(.*\)$/;
+        if (!regex.test(value)) {
+          return "Bank name must end with '(abbreviation)'";
+        }
+      },
     },
     {
       id: "accountNo",
