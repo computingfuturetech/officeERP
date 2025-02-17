@@ -1,5 +1,3 @@
-const { expressjwt: expressJwt } = require("express-jwt");
-const secret = "my_super_secret_key";
 const admin = require("../models/coreModels/Admin");
 
 const checkRole = (roles) => {
@@ -10,9 +8,9 @@ const checkRole = (roles) => {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const userRole = await admin.findOne({ _id: userId });
+      const user = await admin.findOne({ _id: userId });
 
-      if (!roles.includes(userRole.role)) {
+      if (!roles.includes(user.role)) {
         return res
           .status(403)
           .json({
