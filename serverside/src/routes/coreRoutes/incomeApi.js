@@ -1,7 +1,5 @@
 const express = require("express");
 const router = express.Router();
-router.use(express.json());
-router.use(express.urlencoded({ extended: true }));
 const authenticateJWT = require("../../middleware/authenticateJWT");
 const checkRole = require("../../middleware/checkRole");
 
@@ -29,7 +27,6 @@ router.post(
   checkRole(["admin", "employee"]),
   possessionFee.updatePossessionFee
 );
-
 router.post(
   "/createIncomeHeadOfAccount",
   authenticateJWT,
@@ -54,7 +51,6 @@ router.post(
   checkRole(["admin", "employee"]),
   incomeHeadOfAccount.updateHeadOfAccount
 );
-
 router.get(
   "/getAllIncome",
   authenticateJWT,
@@ -67,7 +63,6 @@ router.get(
   checkRole(["admin", "employee"]),
   getAllIncome.getIncomeByHeadOfAccount
 );
-
 router.post(
   "/createIncomeRecord",
   authenticateJWT,

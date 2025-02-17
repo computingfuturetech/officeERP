@@ -2,12 +2,12 @@ const Member = require("../../models/memberModels/memberList");
 const BankChargesExpense = require("../../models/expenseModel/bankChargesExpense/bankChargesExpense");
 const SubExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/subHeadOfAccount");
 const MainHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
-const CheckMainAndSubHeadOfAccount = require("../../middleware/checkMainAndSubHeadOfAccount");
+const CheckMainAndSubHeadOfAccount = require("../../services/checkMainAndSubHeadOfAccount");
 const BankList = require("../../models/bankModel/bank");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const CheckBank = require("../../middleware/checkBank");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const CheckBank = require("../../services/checkBank");
 
 module.exports = {
   createBankChargesExpense: async (req, res) => {

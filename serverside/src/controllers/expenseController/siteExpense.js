@@ -1,8 +1,8 @@
 const SiteExpense = require("../../models/expenseModel/siteExpense/siteExpense");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const CashBookLedger = require("../../middleware/createCashBookLedger");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const CashBookLedger = require("../../services/createCashBookLedger");
 const BankList = require("../../models/bankModel/bank");
 
 module.exports = {

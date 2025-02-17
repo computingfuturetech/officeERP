@@ -10,7 +10,6 @@ module.exports = {
       const currentUserId = req.auth?.id;
       const isSameUserRequesting = id === currentUserId;
 
-
       if (!id) {
         return res.status(400).json({
           status: "error",

@@ -1,6 +1,6 @@
 const fs = require("fs");
 const BankLedger = require("../../models/ledgerModels/bankLedger");
-const CheckBank = require("../../middleware/checkBank");
+const CheckBank = require("../../services/checkBank");
 const BankBalance = require("../../models/bankModel/bankBalance");
 const path = require("path");
 const getDynamicGridHtml = require("../../utils/getDynamicGridHtml");

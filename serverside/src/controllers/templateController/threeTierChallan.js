@@ -12,7 +12,7 @@ exports.renderTemplate = (req, res) => {
         console.error("Error loading template:", err);
         return res.status(500).send("Error loading template");
       }
-      const data = ({
+      const {
         accountNo,
         bankName,
         branchName,
@@ -30,28 +30,26 @@ exports.renderTemplate = (req, res) => {
         masjidFund,
         miscellaneous,
         totalInWords,
-      } = req.body);
-
- 
+      } = req.body;
 
       let renderedHtml = html
-        .replace("{{accountNo}}", data.accountNo)
-        .replace("{{bankName}}", data.bankName)
-        .replace("{{branchName}}", data.branchName)
-        .replace("{{branchCode}}", data.branchCode)
-        .replace("{{challanNo}}", data.challanNo)
-        .replace("{{date}}", data.date)
-        .replace("{{pName}}", data.pName)
-        .replace("{{addressLine1}}", data.address)
-        .replace("{{membershipNo}}", data.membershipNo)
-        .replace("{{membershipFee}}", data.membershipFee)
-        .replace("{{developmentCharges}}", data.developmentCharges)
-        .replace("{{additionalDevelopemntCharges}}", data.additionalDevelopemntCharges)
-        .replace("{{landCost}}", data.landCost)
-        .replace("{{masjidFund}}", data.masjidFund)
-        .replace('{{transferFee}}', data.transferFee)
+        .replace("{{accountNo}}", accountNo)
+        .replace("{{bankName}}", bankName)
+        .replace("{{branchName}}", branchName)
+        .replace("{{branchCode}}", branchCode)
+        .replace("{{challanNo}}", challanNo)
+        .replace("{{date}}", date)
+        .replace("{{pName}}", pName)
+        .replace("{{addressLine1}}", address)
+        .replace("{{membershipNo}}", membershipNo)
+        .replace("{{membershipFee}}", membershipFee)
+        .replace("{{developmentCharges}}", developmentCharges)
+        .replace("{{additionalDevelopemntCharges}}", additionalDevelopemntCharges)
+        .replace("{{landCost}}", landCost)
+        .replace("{{masjidFund}}", masjidFund)
+        .replace('{{transferFee}}', transferFee)
         // .replace("{{total}}",total)
-        .replace("{{totalInWords}}", data.totalInWords)
+        .replace("{{totalInWords}}", totalInWords)
       res.send(renderedHtml);
     }
   );

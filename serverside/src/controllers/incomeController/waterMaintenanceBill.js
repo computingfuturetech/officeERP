@@ -1,10 +1,10 @@
 const Member = require("../../models/memberModels/memberList");
 const WaterMaintenancBill = require("../../models/incomeModels/waterMaintenanceBillModel/waterMaintenanceBill");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
-const CashBookLedger = require("../../middleware/createCashBookLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
+const CashBookLedger = require("../../services/createCashBookLedger");
 const mongoose = require("mongoose");
 const { stat } = require("fs");
 

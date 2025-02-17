@@ -1,9 +1,9 @@
 const BankList = require("../../models/bankModel/bank");
 const BankProfit = require("../../models/incomeModels/bankProfitModels/bankProfit");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
-const VoucherNo = require("../../middleware/generateVoucherNo");
-const GeneralLedger = require("../../middleware/createGeneralLedger");
-const BankLedger = require("../../middleware/createBankLedger");
+const VoucherNo = require("../../services/generateVoucherNo");
+const GeneralLedger = require("../../services/createGeneralLedger");
+const BankLedger = require("../../services/createBankLedger");
 
 module.exports = {
   createBankProfit: async (req, res) => {
