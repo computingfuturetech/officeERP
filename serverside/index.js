@@ -31,6 +31,7 @@ const officeExpenseRouter = require("./src/routes/officeExpenseRoutes/officeExpe
 const legalProfessionalExpenseRouter = require("./src/routes/legalProfessionalExpenseRoutes/legalProfessionalExpense");
 const miscellaneousExpenseRouter = require("./src/routes/miscellaneousExpenseRoutes/miscellaneousExpense");
 const electricityAndWaterConnectionExpenseRouter = require("./src/routes/electricityWaterRoutes/electricityWater");
+const scriptRouter = require("./src/routes/scriptRoutes/script");
 
 // attaching middlewares
 app.use(express.json());
@@ -70,6 +71,7 @@ app.use("/electricityWaterExpense", electricityAndWaterConnectionExpenseRouter);
 app.use("/siteExpense", siteExpenseRouter);
 app.use("/report", reportRouter);
 app.use("/fixedAmount", fixedAmountRouter);
+app.use("/script", scriptRouter);
 
 // starting the server
 const port = process.env.PORT;
