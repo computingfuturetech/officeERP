@@ -21,6 +21,29 @@ module.exports = {
         });
       }
 
+      const match = bankName.match(/\(([^)]+)\)/);
+      if (!match) {
+        return res.status(400).json({
+          status: "error",
+          message:
+            "Bank Name must include an abbreviation in parentheses. Example: 'Allied Bank (ABL)'",
+        });
+      }
+
+      const abbreviation = match[1]; // Extract abbreviation (e.g., "ABL" from "Allied Bank (ABL)")
+
+      // Check if a bank with the same abbreviation already exists
+      const existingBank = await BankList.findOne({
+        bankName: { $regex: `\\(${abbreviation}\\)`, $options: "i" },
+      });
+
+      if (existingBank) {
+        return res.status(400).json({
+          status: "error",
+          message: `A bank with abbreviation (${abbreviation}) already exists.`,
+        });
+      }
+
       if (!accountNo) {
         return res.status(400).json({
           status: "error",
@@ -95,10 +118,14 @@ module.exports = {
 
       await bank.save();
 
+      const createdBank = await BankList.findById(bank._id).populate(
+        "bankBalance"
+      );
+
       res.status(201).json({
         status: "success",
         message: "Bank created successfully",
-        data: bank,
+        data: createdBank,
       });
     } catch (err) {
       res.status(500).json({ message: err });
@@ -126,7 +153,31 @@ module.exports = {
       }
 
       if (bankName) {
-        bank.bankName = bankName;
+        const match = bankName.match(/\(([^)]+)\)/);
+        if (!match) {
+          return res.status(400).json({
+            status: "error",
+            message:
+              "Bank Name must include an abbreviation in parentheses. Example: 'Allied Bank (ABL)'",
+          });
+        }
+
+        const abbreviation = match[1]; // Extract abbreviation (e.g., "ABL" from "Allied Bank (ABL)")
+
+        // Exclude current bank from duplicate check using its ID
+        const existingBank = await BankList.findOne({
+          _id: { $ne: bank._id }, // Excludes the bank being updated
+          bankName: { $regex: `\\(${abbreviation}\\)`, $options: "i" },
+        });
+
+        if (existingBank) {
+          return res.status(400).json({
+            status: "error",
+            message: `A bank with abbreviation (${abbreviation}) already exists.`,
+          });
+        }
+
+        bank.bankName = bankName; // Update bank name
       }
 
       if (accountNo) {
@@ -199,7 +250,7 @@ module.exports = {
           return res.status(200).json({
             status: "success",
             message: "Bank not found",
-            data: []
+            data: [],
           });
         }
         return res.status(200).json({
