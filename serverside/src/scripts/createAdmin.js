@@ -36,7 +36,7 @@ module.exports = async function createAdmin() {
             await ScriptFlag.updateOne(
               { name: "create-admin-script" },
               { flag: true },
-              { upsert: true }
+              { upsert: true },
             );
 
             console.log(
