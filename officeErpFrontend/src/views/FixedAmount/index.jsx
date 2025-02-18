@@ -160,14 +160,14 @@ export default function FixedAmount() {
   };
 
   const getFieldConfig = (fixedAmount) => [
-    {
-      id: "bankOpeningBalance",
-      label: "Bank Opening Balance",
-      type: "number",
-      value: fixedAmount?.bankOpeningBalance || "",
-      required: true,
-      placeholder: "Enter bank opening balance",
-    },
+    // {
+    //   id: "bankOpeningBalance",
+    //   label: "Bank Opening Balance",
+    //   type: "number",
+    //   value: fixedAmount?.bankOpeningBalance || "",
+    //   required: true,
+    //   placeholder: "Enter bank opening balance",
+    // },
     {
       id: "cashOpeningBalance",
       label: "Cash Opening Balance",
@@ -215,10 +215,10 @@ export default function FixedAmount() {
   };
 
   const columns = [
-    {
-      accessorKey: "bankOpeningBalance",
-      header: "Bank Opening Balance",
-    },
+    // {
+    //   accessorKey: "bankOpeningBalance",
+    //   header: "Bank Opening Balance",
+    // },
     {
       accessorKey: "cashOpeningBalance",
       header: "Cash Opening Balance",

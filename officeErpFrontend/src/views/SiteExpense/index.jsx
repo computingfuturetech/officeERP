@@ -289,11 +289,11 @@ export default function SiteExpense() {
               if (field.name === "check") {
                 fields.push({
                   id: field.name,
-                  label: field.label || field.name,
+                  label: "Payment Type",
                   type: "select",
                   readOnly: true,
                   required: field.required || false,
-                  placeholder: `Select ${field.label || field.name}`,
+                  placeholder: `Select payment type`,
                   options: [
                     { value: "Bank", label: "Bank" },
                     { value: "Cash", label: "Cash" },
@@ -441,11 +441,11 @@ export default function SiteExpense() {
             if (field.name === "check") {
               fields.push({
                 id: field.name,
-                label: field.label || field.name,
+                label: "Payment Type",
                 type: "select",
                 required: field.required || false,
                 readOnly: true,
-                placeholder: `Select ${field.label || field.name}`,
+                placeholder: `Select payment type`,
                 options: [
                   { value: "Bank", label: "Bank" },
                   { value: "Cash", label: "Cash" },

@@ -91,7 +91,6 @@ export default function StaffUsers() {
   const handleCreateSubmit = async (data) => {
     try {
       const response = await createStaffUser(data);
-      console.log("response", response);
 
       if (response.status === 200) {
         setData((prev) => [response?.data?.result, ...prev]);
@@ -181,7 +180,7 @@ export default function StaffUsers() {
       type: "text",
       value: staff_user?.surname || "",
       placeholder: "Enter surname",
-      required: true,
+      // required: true,
       validate: (value) => {
         if (value.length < 3) {
           return "Surname must be at least 3 characters long";
@@ -229,14 +228,10 @@ export default function StaffUsers() {
       };
 
       const response = await getStaffUsers(queryParams);
-      console.log("response", response);
 
       setData(
         response?.data?.data.map((staff_user) => ({
           ...staff_user,
-          role:
-            staff_user?.role.charAt(0).toUpperCase() +
-            staff_user?.role.slice(1),
           created: formatDate(staff_user.created),
         }))
       );
@@ -309,7 +304,7 @@ export default function StaffUsers() {
           heading="Staff Users"
           columns={columns}
           data={data}
-          enableFilters={true}
+          enableFilters={false}
           enableColumnVisibility={true}
           filterableField="msNo"
           filterableFieldLabel="Staff User No"
