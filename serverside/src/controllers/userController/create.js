@@ -61,15 +61,13 @@ module.exports = {
         });
       }
 
+      const foundUser = await Admin.findById(result._id);
+
+      console.log(foundUser);
+
       return res.status(200).send({
         success: true,
-        result: {
-          _id: result._id,
-          email: result.email,
-          name: result.name,
-          surname: result.surname,
-          role: result.role,
-        },
+        result: foundUser,
         message: "User created successfully",
       });
     } catch (error) {

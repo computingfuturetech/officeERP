@@ -282,7 +282,7 @@ module.exports = {
     }
   },
   transferMembership: async (req, res) => {
-    const { purchaseName, address, cnicNo } = req.body;
+    const { purchaseName, address, cnicNo, guardianName } = req.body;
     const { id } = req.query;
     try {
       if (!id) {
@@ -304,6 +304,12 @@ module.exports = {
           message: "Purchase Name is required",
         });
       }
+      if (!guardianName) {
+        return res.status(400).json({
+          status: "error",
+          message: "Guardian Name is required",
+        });
+      }
       if (!address) {
         return res.status(400).json({
           status: "error",
@@ -314,6 +320,14 @@ module.exports = {
         return res.status(400).json({
           status: "error",
           message: "CNIC No is required",
+        });
+      }
+
+      const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
+      if (cnicNo.length !== 15 || !cnicRegex.test(cnicNo)) {
+        return res.status(400).json({
+          status: "error",
+          message: "Invalid CNIC number",
         });
       }
 
@@ -329,14 +343,8 @@ module.exports = {
       });
       await delistedMember.save();
 
-      const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-      if (cnicNo.length !== 15 || !cnicRegex.test(cnicNo)) {
-        return res.status(400).json({
-          status: "error",
-          message: "Invalid CNIC number",
-        });
-      }
       member.purchaseName = purchaseName;
+      member.guardianName = guardianName;
       member.address = address;
       member.cnicNo = cnicNo;
 
