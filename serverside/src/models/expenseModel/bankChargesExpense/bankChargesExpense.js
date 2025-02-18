@@ -50,10 +50,10 @@ const bankChargesExpenseSchema = new Schema(
       type: String,
     },
     chequeNumber: {
-      type: Number,
+      type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     check: {
       type: String,

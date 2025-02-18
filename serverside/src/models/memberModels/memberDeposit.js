@@ -10,7 +10,7 @@ const memberDepositSchema = new Schema({
     type: Date,
   },
   challanNo: {
-    type: Number,
+    type: String,
   },
   type: {
     type: String,

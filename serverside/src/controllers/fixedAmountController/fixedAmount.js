@@ -2,15 +2,15 @@ const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
 
 module.exports = {
   addFixedAmountOrUpdate: async (req, res) => {
-    const { shareCapital, bankOpeningBalance, cashOpeningBalance } = req.body;
+    const { shareCapital, cashOpeningBalance } = req.body;
 
     try {
       let fixedAmount = await FixedAmount.findOne();
 
       if (fixedAmount) {
         if (shareCapital) fixedAmount.shareCapital = shareCapital;
-        if (bankOpeningBalance)
-          fixedAmount.bankOpeningBalance = bankOpeningBalance;
+        // if (bankOpeningBalance)
+        //   fixedAmount.bankOpeningBalance = bankOpeningBalance;
         if (cashOpeningBalance)
           fixedAmount.cashOpeningBalance = cashOpeningBalance;
 
@@ -24,7 +24,7 @@ module.exports = {
 
       fixedAmount = new FixedAmount({
         shareCapital,
-        bankOpeningBalance,
+        // bankOpeningBalance,
         cashOpeningBalance,
       });
 

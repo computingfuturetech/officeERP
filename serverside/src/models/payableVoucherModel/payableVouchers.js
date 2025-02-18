@@ -18,10 +18,10 @@ const payableVoucherSchema = new Schema({
     trim: true,
   },
   chequeNo: {
-    type: Number,
+    type: String,
   },
   challanNo: {
-    type: Number,
+    type: String,
   },
   voucherNo: {
     type: Number,

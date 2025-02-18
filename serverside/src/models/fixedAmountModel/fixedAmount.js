@@ -6,9 +6,9 @@ const fixedAmountSchema = new schema(
     shareCapital: {
       type: Number,
     },
-    bankOpeningBalance: {
-      type: Number,
-    },
+    // bankOpeningBalance: {
+    //   type: Number,
+    // },
     cashOpeningBalance: {
       type: Number,
     },

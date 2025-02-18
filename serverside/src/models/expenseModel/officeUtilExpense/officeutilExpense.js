@@ -52,10 +52,10 @@ const officeUtilExpenseSchema = new Schema(
       type: Number,
     },
     chequeNumber: {
-      type: Number,
+      type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     bank: {
       type: mongoose.Schema.Types.ObjectId,
