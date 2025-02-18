@@ -13,6 +13,7 @@ const Reports = lazy(() => import("./Reports"));
 const ApiTester = lazy(() => import("./ApiTester"));
 const FixedAmount = lazy(() => import("./FixedAmount"));
 const StaffUsers = lazy(() => import("./StaffUsers"));
+const OperatingFixedAssets = lazy(() => import("./OperatingFixedAssets"));
 export {
   Home,
   LoginPage,
@@ -27,4 +28,5 @@ export {
   ApiTester,
   FixedAmount,
   StaffUsers,
+  OperatingFixedAssets,
 };

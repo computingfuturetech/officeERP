@@ -93,7 +93,13 @@ export default function StaffUsers() {
       const response = await createStaffUser(data);
 
       if (response.status === 200) {
-        setData((prev) => [response?.data?.result, ...prev]);
+        setData((prev) => [
+          {
+            ...response?.data?.result,
+            created: formatDate(response?.data?.result.created),
+          },
+          ...prev,
+        ]);
         toast({
           title: "Staff User created",
           description: "Staff User has been successfully created.",

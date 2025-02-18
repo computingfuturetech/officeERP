@@ -13,6 +13,7 @@ import {
   ApiTester,
   FixedAmount,
   StaffUsers,
+  OperatingFixedAssets,
 } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
 import path from "path";
@@ -112,6 +113,15 @@ const staticRoutes = [
       <ProtectedRoute
         element={<FixedAmount />}
         requiredPermission={"fixedAmount.read"}
+      />
+    ),
+  },
+  {
+    path: "/operating-fixed-assets",
+    element: (
+      <ProtectedRoute
+        element={<OperatingFixedAssets />}
+        requiredPermission={"operatingFixedAssets.read"}
       />
     ),
   },

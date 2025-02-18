@@ -191,6 +191,7 @@ const AddMultiple = ({
                 selected={entry[field.id]}
                 onSelect={handleDateSelect(index, field.id)}
                 initialFocus
+                disabled={(date) => date > new Date()}
               />
             </PopoverContent>
           </Popover>
