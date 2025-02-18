@@ -33,6 +33,7 @@ const legalProfessionalExpenseRouter = require("./src/routes/legalProfessionalEx
 const miscellaneousExpenseRouter = require("./src/routes/miscellaneousExpenseRoutes/miscellaneousExpense");
 const electricityAndWaterConnectionExpenseRouter = require("./src/routes/electricityWaterRoutes/electricityWater");
 const scriptRouter = require("./src/routes/scriptRoutes/script");
+const operatingFixedAssetsRouter = require("./src/routes/operatingFixedAssetsRoutes/operatingFixedAssets");
 
 // attaching middlewares
 app.use(express.json());
@@ -73,6 +74,7 @@ app.use("/siteExpense", siteExpenseRouter);
 app.use("/report", reportRouter);
 app.use("/fixedAmount", fixedAmountRouter);
 app.use("/script", scriptRouter);
+app.use("/operatingFixedAssets", operatingFixedAssetsRouter);
 
 // running the scripts
 createAdmin();

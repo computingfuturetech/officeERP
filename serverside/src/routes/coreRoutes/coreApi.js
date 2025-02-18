@@ -53,18 +53,18 @@ router.get("/three-tier-challan", threeTierchallanController.renderTemplate);
 //   fixedAmountController.addFixedAmount
 // );
 
-router.post(
-  "/addOperatingFixedAssets",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  operatingFixedAmountController.createOpertingFixedAssets
-);
-router.put(
-  "/updateOperatingFixedAssets",
-  authenticateJWT,
-  checkRole(["admin", "employee"]),
-  operatingFixedAmountController.updateOperatingFixedAssets
-);
+// router.post(
+//   "/addOperatingFixedAssets",
+//   authenticateJWT,
+//   checkRole(["admin", "employee"]),
+//   operatingFixedAmountController.createOpertingFixedAssets
+// );
+// router.put(
+//   "/updateOperatingFixedAssets",
+//   authenticateJWT,
+//   checkRole(["admin", "employee"]),
+//   operatingFixedAmountController.updateOperatingFixedAssets
+// );
 router.post("/addIncomeStatement", incomeStatement.createIncomeStatement);
 
 module.exports = router;

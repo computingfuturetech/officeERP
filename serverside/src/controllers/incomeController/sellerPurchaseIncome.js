@@ -385,7 +385,7 @@ module.exports = {
                 );
               }
 
-              await GeneralLedger.updateSellerPurchaserPossessionGeneralLedger(
+              await GeneralLedger.updateGeneralLedger(
                 req,
                 res,
                 id,

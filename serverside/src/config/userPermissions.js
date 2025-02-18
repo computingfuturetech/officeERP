@@ -1,5 +1,7 @@
+const operatingFixedAssets = require("../controllers/operatingFixedAssetsController/operatingFixedAssets");
+
 module.exports = {
-  "admin": {
+  admin: {
     dasboard: {
       create: true,
       read: true,
@@ -65,7 +67,7 @@ module.exports = {
       read: true,
       update: true,
       delete: true,
-    },    
+    },
     siteExpense: {
       create: true,
       read: true,
@@ -113,9 +115,15 @@ module.exports = {
       read: true,
       update: true,
       delete: true,
-    }
+    },
+    operatingFixedAssets: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
   },
-  "employee": {
+  employee: {
     dasboard: {
       create: true,
       read: true,
@@ -181,7 +189,7 @@ module.exports = {
       read: true,
       update: true,
       delete: true,
-    },    
+    },
     siteExpense: {
       create: true,
       read: true,
@@ -229,6 +237,12 @@ module.exports = {
       read: false,
       update: false,
       delete: false,
-    }
-  }
-}
+    },
+    operatingFixedAssets: {
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+    },
+  },
+};
