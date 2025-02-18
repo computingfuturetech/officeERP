@@ -1,3 +1,4 @@
+const createAdmin = require("./src/scripts/createAdmin");
 const express = require("express");
 require("./src/config/config");
 const cors = require("cors");
@@ -72,6 +73,9 @@ app.use("/siteExpense", siteExpenseRouter);
 app.use("/report", reportRouter);
 app.use("/fixedAmount", fixedAmountRouter);
 app.use("/script", scriptRouter);
+
+// running the scripts
+createAdmin();
 
 // starting the server
 const port = process.env.PORT;

@@ -14,7 +14,6 @@ const adminSchema = new schema({
   name: {
     type: String,
     trim: true,
-    required: true,
   },
 
   surname: {

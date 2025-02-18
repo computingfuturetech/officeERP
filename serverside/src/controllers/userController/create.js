@@ -14,14 +14,6 @@ module.exports = {
           message: "Both email and password are required",
         });
 
-      if (!name) {
-        return res.status(400).json({
-          success: false,
-          result: null,
-          message: "Name is required",
-        });
-      }
-
       if (!role) {
         return res.status(400).json({
           success: false,
