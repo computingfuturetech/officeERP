@@ -63,8 +63,6 @@ module.exports = {
 
       const foundUser = await Admin.findById(result._id);
 
-      console.log(foundUser);
-
       return res.status(200).send({
         success: true,
         result: foundUser,
