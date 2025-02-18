@@ -1,7 +1,8 @@
+const { get } = require("mongoose");
 const OperatingFixedAssets = require("../../models/operatingFixedAssetsModels/operatingFixedAssets");
 
 module.exports = {
-  createOpertingFixedAssets: async (req, res) => {
+  addOperatingFixedAssetsOrUpdate: async (req, res) => {
     const {
       building,
       waterTank,
@@ -9,136 +10,79 @@ module.exports = {
       furnitureAndFixture,
       officeEquipment,
       computerEquipment,
-      armsAndAmmuntion,
+      armsAndAmmunition,
       vehicles,
       tractorAndTrolly,
       transformer,
       machinery,
     } = req.body;
+
     try {
-      if (
-        !building ||
-        !waterTank ||
-        !tubeWell ||
-        !furnitureAndFixture ||
-        !officeEquipment ||
-        !computerEquipment ||
-        !armsAndAmmuntion ||
-        !vehicles ||
-        !tractorAndTrolly ||
-        !transformer ||
-        !machinery
-      ) {
-        return res.status(400).json({ message: "All fields are required" });
+      let operatingFixedAssets = await OperatingFixedAssets.findOne();
+
+      if (operatingFixedAssets) {
+        if (building) operatingFixedAssets.building = building;
+        if (waterTank) operatingFixedAssets.waterTank = waterTank;
+        if (tubeWell) operatingFixedAssets.tubeWell = tubeWell;
+        if (furnitureAndFixture)
+          operatingFixedAssets.furnitureAndFixture = furnitureAndFixture;
+        if (officeEquipment)
+          operatingFixedAssets.officeEquipment = officeEquipment;
+        if (computerEquipment)
+          operatingFixedAssets.computerEquipment = computerEquipment;
+        if (armsAndAmmunition)
+          operatingFixedAssets.armsAndAmmunition = armsAndAmmunition;
+        if (vehicles) operatingFixedAssets.vehicles = vehicles;
+        if (tractorAndTrolly)
+          operatingFixedAssets.tractorAndTrolly = tractorAndTrolly;
+        if (transformer) operatingFixedAssets.transformer = transformer;
+        if (machinery) operatingFixedAssets.machinery = machinery;
+
+        await operatingFixedAssets.save();
+        return res.status(200).json({
+          status: "success",
+          message: "Operating Fixed Assets updated successfully",
+          data: operatingFixedAssets,
+        });
       }
 
-      const operatingFixedAssets = new OperatingFixedAssets({
-        building: building,
-        waterTank: waterTank,
-        tubeWell: tubeWell,
-        furnitureAndFixture: furnitureAndFixture,
-        officeEquipment: officeEquipment,
-        computerEquipment: computerEquipment,
-        armsAndAmmuntion: armsAndAmmuntion,
-        vehicles: vehicles,
-        tractorAndTrolly: tractorAndTrolly,
-        transformer: transformer,
-        machinery: machinery,
-      });
-      await operatingFixedAssets.save();
-      res.status(200).json({
-        message: "Operating Fixed Assets created successfully",
-        operatingFixedAssets: operatingFixedAssets,
-      });
-    } catch (err) {
-      res.status(500).json({ message: err });
-    }
-  },
-  updateOperatingFixedAssets: async (req, res) => {
-    const id = req.query.id;
-    try {
-      if (!id) {
-        return res.status(400).json({ message: "ID is required" });
-      }
-
-      const {
+      operatingFixedAssets = new OperatingFixedAssets({
         building,
         waterTank,
         tubeWell,
         furnitureAndFixture,
         officeEquipment,
         computerEquipment,
-        armsAndAmmuntion,
+        armsAndAmmunition,
         vehicles,
         tractorAndTrolly,
         transformer,
         machinery,
-      } = req.body;
+      });
 
-      const operatingFixedAssets = await OperatingFixedAssets.findById(id);
-      if (!operatingFixedAssets) {
-        return res
-          .status(404)
-          .json({ message: "Operating Fixed Assets Record not found" });
-      }
-
-      if (building !== undefined) {
-        operatingFixedAssets.building =
-          (operatingFixedAssets.building || 0) + Number(building);
-      }
-      if (waterTank !== undefined) {
-        operatingFixedAssets.waterTank =
-          (operatingFixedAssets.waterTank || 0) + Number(waterTank);
-      }
-      if (tubeWell !== undefined) {
-        operatingFixedAssets.tubeWell =
-          (operatingFixedAssets.tubeWell || 0) + Number(tubeWell);
-      }
-      if (furnitureAndFixture !== undefined) {
-        operatingFixedAssets.furnitureAndFixture =
-          (operatingFixedAssets.furnitureAndFixture || 0) +
-          Number(furnitureAndFixture);
-      }
-      if (officeEquipment !== undefined) {
-        operatingFixedAssets.officeEquipment =
-          (operatingFixedAssets.officeEquipment || 0) +
-          Number(officeEquipment);
-      }
-      if (computerEquipment !== undefined) {
-        operatingFixedAssets.computerEquipment =
-          (operatingFixedAssets.computerEquipment || 0) +
-          Number(computerEquipment);
-      }
-      if (armsAndAmmuntion !== undefined) {
-        operatingFixedAssets.armsAndAmmuntion =
-          (operatingFixedAssets.armsAndAmmuntion || 0) +
-          Number(armsAndAmmuntion);
-      }
-      if (vehicles !== undefined) {
-        operatingFixedAssets.vehicles =
-          (operatingFixedAssets.vehicles || 0) + Number(vehicles);
-      }
-      if (tractorAndTrolly !== undefined) {
-        operatingFixedAssets.tractorAndTrolly =
-          (operatingFixedAssets.tractorAndTrolly || 0) +
-          Number(tractorAndTrolly);
-      }
-      if (transformer !== undefined) {
-        operatingFixedAssets.transformer =
-          (operatingFixedAssets.transformer || 0) +
-          Number(transformer);
-      }
-      if (machinery !== undefined) {
-        operatingFixedAssets.machinery =
-          (operatingFixedAssets.machinery || 0) + Number(machinery);
-      }
       await operatingFixedAssets.save();
-      res.status(200).json({
-        message: "Operating Fixed Assets record updated successfully",
-        operatingFixedAssets: operatingFixedAssets,
+      return res.status(201).json({
+        status: "success",
+        message: "Operating Fixed Assets created successfully",
+        data: operatingFixedAssets,
       });
     } catch (err) {
-      res.status(500).json({ message: err });
+      console.error("Error:", err);
+      return res.status(500).json({ status: "error", message: err.message });
+    }
+  },
+  getOperatingFixedAssets: async (req, res) => {
+    try {
+      const operatingFixedAssets = await OperatingFixedAssets.findOne();
+
+      return res.status(200).json({
+        status: "success",
+        message: "Operating Fixed Assets fetched successfully",
+        data: operatingFixedAssets,
+      });
+    } catch (err) {
+      console.error("Error:", err);
+      return res.status(500).json({ status: "error", message: err.message });
     }
   },
 };
