@@ -50,10 +50,10 @@ const officeExpenseSchema = new Schema(
       type: String,
     },
     chequeNumber: {
-      type: Number,
+      type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     bank: {
       type: mongoose.Schema.Types.ObjectId,

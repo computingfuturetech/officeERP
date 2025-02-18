@@ -13,7 +13,7 @@ const possessionFeeSchema = new Schema(
       required: true,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     address: {
       type: String,
@@ -29,7 +29,7 @@ const possessionFeeSchema = new Schema(
       type: String,
     },
     chequeNo: {
-      type: Number,
+      type: String,
     },
     bankAccount: {
       type: Number,

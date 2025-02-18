@@ -30,10 +30,10 @@ const generalLedgerSchema = new Schema(
       type: String,
     },
     chequeNo: {
-      type: Number,
+      type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     voucherNo: {
       type: String,

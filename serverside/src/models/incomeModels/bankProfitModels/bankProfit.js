@@ -46,10 +46,10 @@ const bankProfitSchema = new Schema(
       type: String,
     },
     chequeNumber: {
-      type: Number,
+      type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
   },
   {

@@ -37,7 +37,7 @@ const sellerPurchaseIncomeSchema = new Schema(
       required: true,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     address: {
       type: String,
@@ -69,7 +69,7 @@ const sellerPurchaseIncomeSchema = new Schema(
           default: null,
         },
         chequeNumber: {
-          type: Number,
+          type: String,
         },
       },
     ],

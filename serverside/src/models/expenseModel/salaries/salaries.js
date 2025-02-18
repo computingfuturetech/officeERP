@@ -54,7 +54,7 @@ const salariesSchema = new Schema(
       type: Date,
     },
     chequeNumber: {
-      type: Number,
+      type: String,
     },
     bank: {
       type: mongoose.Schema.Types.ObjectId,
@@ -64,7 +64,7 @@ const salariesSchema = new Schema(
       type: String,
     },
     challanNo: {
-      type: Number,
+      type: String,
     },
     check: {
       type: String,
