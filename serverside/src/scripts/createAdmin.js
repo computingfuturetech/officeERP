@@ -34,12 +34,14 @@ module.exports = async function createAdmin() {
             }).save();
 
             await ScriptFlag.updateOne(
-              { name: "create-admin-script"},
+              { name: "create-admin-script" },
               { flag: true },
-              { upsert: true }
+              { upsert: true },
             );
 
-            console.log("SUCCESS: create-admin-script: user created successfully");
+            console.log(
+              "SUCCESS: create-admin-script: user created successfully"
+            );
           } else {
             console.error(
               `FAILURE: create-admin-script: user with email ${email} already exists`
