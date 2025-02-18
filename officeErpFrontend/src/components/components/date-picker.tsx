@@ -11,10 +11,12 @@ export function DatePicker({
     value,
     onChange,
     disabled = false,
+    maxDate,
 }: {
     value: Date | undefined;
     onChange: (date: Date | undefined) => void;
     disabled?: boolean;
+    maxDate?: Date;
 }) {
     const [open, setOpen] = React.useState(false);
 
@@ -58,6 +60,7 @@ export function DatePicker({
                         selected={value}
                         onSelect={handleSelect}
                         initialFocus
+                        disabled={(date) => date > maxDate}
                     />
                 </PopoverContent>
             )}

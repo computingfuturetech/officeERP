@@ -269,6 +269,15 @@ export default function TransferIncome() {
           bank: currentValues?.[`paymentDetail.${hoaId}.bank`],
           chequeNumber: currentValues?.[`paymentDetail.${hoaId}.chequeNumber`],
         };
+        if (currentValues?.[`paymentDetail.${hoaId}.amount`] !== undefined) {
+          if (currentValues?.paymentDetail) {
+            currentValues.paymentDetail[hoaId].amount =
+              currentValues?.[`paymentDetail.${hoaId}.amount`];
+            currentPayment.amount =
+              currentValues?.[`paymentDetail.${hoaId}.amount`];
+          }
+        }
+
         const fields = [
           {
             id: `paymentDetail.${hoaId}.incomeHeadOfAccount`,
@@ -290,7 +299,7 @@ export default function TransferIncome() {
             type: "number",
             value: currentPayment.amount || existingPayment?.amount || "",
             placeholder: "Enter amount",
-            readOnly: existingPayment?.amount,
+            // readOnly: existingPayment?.amount,
           },
           {
             id: `paymentDetail.${hoaId}.check`,

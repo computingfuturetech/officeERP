@@ -192,6 +192,7 @@ export function DynamicSheet({
                             value={value ? new Date(value) : undefined}
                             onChange={(date) => handleValueChange(field.id, date?.toISOString() ?? "")}
                             disabled={isReadOnly || isViewMode}
+                            maxDate={new Date()}
                         />
                         {error && <p className="text-red-500 text-sm">{error}</p>}
                     </div>
@@ -304,7 +305,7 @@ export function DynamicSheet({
                                 </Button>
                             </SheetClose>
                         )}
-                        <Button type="submit" disabled={isViewMode || isSubmitting}>
+                        <Button type="submit" disabled={isSubmitting}>
                             {isSubmitting
                                 ? "Submitting..."
                                 : isCreateMode

@@ -148,11 +148,17 @@ export default function Members() {
     {
       id: "msNo",
       label: "Member No",
-      type: "text",
+      type: "number",
       value: member?.msNo || "",
       required: true,
       placeholder: "Enter member number",
       readOnly: true,
+      validate: (value) => {
+        if (value < 0) {
+          return "Member number must be a positive number";
+        }
+        return null;
+      },
     },
     {
       id: "purchaseName",
@@ -178,17 +184,27 @@ export default function Members() {
     {
       id: "phase",
       label: "Phase",
-      type: "text",
+      type: "select",
       value: member?.phase || "",
       placeholder: "Enter phase",
+      options: [
+        { value: "Phase 1", label: "Phase 1" },
+        { value: "Phase 2", label: "Phase 2" },
+      ],
       required: true,
     },
     {
       id: "plotNo",
       label: "Plot No",
-      type: "text",
+      type: "number",
       value: member?.plotNo || "",
       placeholder: "Enter plot number",
+      validate: (value) => {
+        if (value < 0) {
+          return "Plot number must be a positive number";
+        }
+        return null;
+      },
     },
     {
       id: "block",
@@ -230,6 +246,12 @@ export default function Members() {
       type: "number",
       value: member?.area || 0,
       placeholder: "Enter area",
+      validate: (value) => {
+        if (value < 0) {
+          return "Area must be a positive number";
+        }
+        return null;
+      },
     },
   ];
 

@@ -353,7 +353,7 @@ const Reports = () => {
                     const yearValue = new Date().getFullYear() - i;
                     return (
                       <SelectItem key={yearValue} value={yearValue}>
-                        {yearValue}
+                        FY-{yearValue - 1}-{String(yearValue).slice(-2)}
                       </SelectItem>
                     );
                   })}
