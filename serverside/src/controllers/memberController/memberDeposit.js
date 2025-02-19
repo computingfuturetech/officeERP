@@ -112,8 +112,8 @@ module.exports = {
         message: "Member deposit successfully",
         data: memberDeposit,
       });
-    } catch (err) {
-      res.status(500).json({ message: err?.message || "Internal server error" });
+    } catch (error) {
+      res.status(500).json({ message: error?.message || "Internal server error" });
     }
   },
 };
