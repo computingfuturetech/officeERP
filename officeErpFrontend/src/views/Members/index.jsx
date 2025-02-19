@@ -14,7 +14,12 @@ import DailyTransactionDisplay from "@/components/components/transaction-card";
 import { Button } from "@/components/components/ui/button";
 import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { useToast } from "@/components/hooks/use-toast";
-import { createMember, getMembers, updateMember } from "../../services/members";
+import {
+  createMember,
+  getMembers,
+  transferMembership,
+  updateMember,
+} from "../../services/members";
 import { useNavigate, useSearchParams } from "react-router-dom";
 
 export default function Members() {
@@ -22,6 +27,7 @@ export default function Members() {
   const [data, setData] = useState([]);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingMember, setEditingMember] = useState(null);
+  const [transferMember, setTransferMember] = useState(null);
   const [viewingMember, setViewingMember] = useState(null);
   const { toast, dismiss } = useToast();
   const [pagination, setPagination] = useState({
@@ -180,6 +186,7 @@ export default function Members() {
       type: "text",
       value: member?.guardianName || "",
       placeholder: "Enter guardian name",
+      required: true,
     },
     {
       id: "phase",
@@ -255,6 +262,43 @@ export default function Members() {
     },
   ];
 
+  const transferMemberFields = [
+    {
+      id: "purchaseName",
+      label: "Name",
+      type: "text",
+      placeholder: "Enter member name",
+      required: true,
+      validate: (value) => {
+        if (value.length < 3) {
+          return "Name must be at least 3 characters long";
+        }
+        return null;
+      },
+    },
+    {
+      id: "guardianName",
+      label: "Guardian Name",
+      type: "text",
+      placeholder: "Enter guardian name",
+      required: true,
+    },
+    {
+      id: "address",
+      label: "Address",
+      type: "text",
+      placeholder: "Enter address",
+      required: true,
+    },
+    {
+      id: "cnicNo",
+      label: "CNIC No",
+      type: "cnic",
+      placeholder: "Enter CNIC number",
+      required: true,
+    },
+  ];
+
   const fetchMembers = async () => {
     try {
       setIsLoading(true);
@@ -277,6 +321,40 @@ export default function Members() {
       });
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const transferMembers = async (data) => {
+    try {
+      const response = await transferMembership(transferMember._id, data);
+
+      if (response.status === 200) {
+        setData((prev) =>
+          prev.map((member) =>
+            member._id === transferMember._id ? { ...member, ...data } : member
+          )
+        );
+        toast({
+          title: "Member transferred",
+          description: "Membership has been successfully transferred.",
+        });
+        setTransferMember(null);
+      } else {
+        toast({
+          title: "Transfer Failed",
+          description:
+            response?.data?.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      console.error("Transfer submission error:", error);
+      toast({
+        title: "Transfer Failed",
+        description:
+          error?.response?.data?.message || "An unexpected error occurred.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -326,6 +404,9 @@ export default function Members() {
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem onClick={() => setEditingMember(member)}>
                 Edit Member
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setTransferMember(member)}>
+                Transfer Membership
               </DropdownMenuItem>
               <DropdownMenuItem onClick={() => setViewingMember(member)}>
                 View Details
@@ -385,6 +466,18 @@ export default function Members() {
           onSubmit={handleEditSubmit}
           open={!!editingMember}
           onOpenChange={(open) => !open && setEditingMember(null)}
+        />
+      )}
+
+      {transferMember && (
+        <DynamicSheet
+          mode="transfer"
+          title="Transfer Membership"
+          description="Transfer membership to another person."
+          fields={transferMemberFields}
+          onSubmit={transferMembers}
+          open={!!transferMember}
+          onOpenChange={(open) => !open && setTransferMember(null)}
         />
       )}
 
