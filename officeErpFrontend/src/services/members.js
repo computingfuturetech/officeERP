@@ -32,3 +32,12 @@ export const updateMember = async (id, data) => {
         console.error("Error updating member:", error);
     }
 }
+
+export const transferMembership = async (id, data) => {
+    try {
+        const response = api.post(`/member/transferMembership?id=${id}`, data);
+        return response;
+    } catch (error) {
+        console.error("Error transferring member:", error);
+    }
+}
