@@ -14,6 +14,7 @@ import {
   FixedAmount,
   StaffUsers,
   OperatingFixedAssets,
+  DelistedMembers,
 } from "../views";
 import ProtectedRoute from "@/components/components/protected-route";
 import path from "path";
@@ -35,6 +36,15 @@ const staticRoutes = [
       <ProtectedRoute
         element={<Members />}
         requiredPermission={"members.read"}
+      />
+    ),
+  },
+  {
+    path: "/delisted-members",
+    element: (
+      <ProtectedRoute
+        element={<DelistedMembers />}
+        requiredPermission={"delistedMembers.read"}
       />
     ),
   },

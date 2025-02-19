@@ -14,6 +14,20 @@ export const getMembers = async (params) => {
         console.error("Error fetching members:", error);
     }
 }
+export const getDelistedMembers = async (params) => {
+    try {
+        const cleanParams = Object.fromEntries(
+            Object.entries(params).filter(([_, v]) => v != null)
+        );
+
+        const queryString = new URLSearchParams(cleanParams).toString();
+
+        const response = api.get(`/member/getDelistedMemberList?${queryString}`);
+        return response;
+    } catch (error) {
+        console.error("Error fetching members:", error);
+    }
+}
 
 export const createMember = async (data) => {
     try {

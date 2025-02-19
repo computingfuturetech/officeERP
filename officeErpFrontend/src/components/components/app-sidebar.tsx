@@ -16,6 +16,7 @@ import {
   Factory,
   ChartNoAxesCombined,
   PanelTopClose,
+  UserRoundMinusIcon,
 } from "lucide-react";
 import { NavMain } from "@/components/components/nav-main";
 import {
@@ -32,6 +33,7 @@ const data = {
   navMain: [
     { title: "Dashboard", url: "/", icon: LayoutDashboard, permission: "dasboard.read" },
     { title: "Members", url: "/members", icon: Users, permission: "members.read" },
+    { title: "Delisted Members", url: "/delisted-members", icon: UserRoundMinusIcon, permission: "delistedMembers.read" },
     { title: "Banks", url: "/banks", icon: Building2Icon, permission: "banks.read" },
     { title: "Fixed Amount", url: "/fixed-amount", icon: Frame, permission: "fixedAmount.read" },
     { title: "Operating Fixed Assets", url: "/operating-fixed-assets", icon: Frame, permission: "operatingFixedAssets.read" },
