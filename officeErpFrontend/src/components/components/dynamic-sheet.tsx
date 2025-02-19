@@ -165,7 +165,7 @@ export function DynamicSheet({
         try {
             setIsSubmitting(true);
             const result = await onSubmit(formValues);
-            if (result !== false) {
+            if (result !== undefined && result !== false) {
                 onOpenChange?.(false);
             }
         } catch (error) {
@@ -293,27 +293,28 @@ export function DynamicSheet({
                         {fields.map(renderField)}
                     </div>
                     <SheetFooter>
-                        {!isViewMode && (
-                            <SheetClose asChild>
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    onClick={onCancel}
-                                    className="mr-2"
-                                >
-                                    Cancel
-                                </Button>
-                            </SheetClose>
-                        )}
-                        <Button type="submit" disabled={isSubmitting}>
-                            {isSubmitting
-                                ? "Submitting..."
-                                : isCreateMode
-                                    ? "Create"
-                                    : isViewMode
-                                        ? "Close"
-                                        : "Save changes"}
-                        </Button>
+                        <SheetClose asChild>
+                            <Button
+                                type="button"
+                                variant="outline"
+                                onClick={onCancel}
+                                className="mr-2"
+                            >
+                                {isViewMode ? "Close" : "Cancel"}
+                            </Button>
+                        </SheetClose>
+                        {
+                            !isViewMode && (
+                                <Button type="submit" disabled={isSubmitting}>
+                                    {isSubmitting
+                                        ? "Submitting..."
+                                        : isCreateMode
+                                            ? "Create"
+                                            : isViewMode
+                                                ? "Close"
+                                                : "Save changes"}
+                                </Button>)
+                        }
                     </SheetFooter>
                 </form>
             </SheetContent>

@@ -270,12 +270,13 @@ export default function TransferIncome() {
           chequeNumber: currentValues?.[`paymentDetail.${hoaId}.chequeNumber`],
         };
         if (currentValues?.[`paymentDetail.${hoaId}.amount`] !== undefined) {
-          if (currentValues?.paymentDetail) {
-            currentValues.paymentDetail[hoaId].amount =
-              currentValues?.[`paymentDetail.${hoaId}.amount`];
-            currentPayment.amount =
-              currentValues?.[`paymentDetail.${hoaId}.amount`];
-          }
+          if (currentValues?.paymentDetail)
+            if (currentValues?.paymentDetail[hoaId]) {
+              currentValues.paymentDetail[hoaId].amount =
+                currentValues?.[`paymentDetail.${hoaId}.amount`];
+              currentPayment.amount =
+                currentValues?.[`paymentDetail.${hoaId}.amount`];
+            }
         }
 
         const fields = [
