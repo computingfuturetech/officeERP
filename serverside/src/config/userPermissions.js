@@ -122,6 +122,12 @@ module.exports = {
       update: true,
       delete: true,
     },
+    delistedMembers: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
   },
   employee: {
     dasboard: {
@@ -239,6 +245,12 @@ module.exports = {
       delete: false,
     },
     operatingFixedAssets: {
+      create: true,
+      read: true,
+      update: true,
+      delete: false,
+    },
+    delistedMembers: {
       create: true,
       read: true,
       update: true,
