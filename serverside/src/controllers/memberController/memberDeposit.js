@@ -105,7 +105,7 @@ module.exports = {
           .then(() => console.log("Member Deposit Saved"));
         await generalLedger
           .save()
-          .then(() => console.log("General Ledger Saved"));
+          .then(() => console.log("General Ledger Saved successfully"));
       } else console.log("Not found");
       res.status(200).json({
         status: "success",
