@@ -254,12 +254,12 @@ module.exports = {
 
       const members = await DelistedMemberList.paginate(filter, options);
 
-      if (!members || members.docs.length === 0) {
-        return res.status(404).json({
-          status: "error",
-          message: "No delisted members found with the provided criteria",
-        });
-      }
+      // if (!members || members.docs.length === 0) {
+      //   return res.status(404).json({
+      //     status: "error",
+      //     message: "No delisted members found with the provided criteria",
+      //   });
+      // }
 
       return res.status(200).json({
         status: "success",
