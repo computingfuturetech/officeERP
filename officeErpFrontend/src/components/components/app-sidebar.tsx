@@ -31,7 +31,7 @@ import { Button } from "./ui/button";
 
 const data = {
   navMain: [
-    { title: "Dashboards", url: "/", icon: LayoutDashboard, permission: "dasboard.read" },
+    { title: "Dashboard", url: "/", icon: LayoutDashboard, permission: "dasboard.read" },
     { title: "Members", url: "/members", icon: Users, permission: "members.read" },
     { title: "Delisted Members", url: "/delisted-members", icon: UserRoundMinusIcon, permission: "delistedMembers.read" },
     { title: "Banks", url: "/banks", icon: Building2Icon, permission: "banks.read" },
