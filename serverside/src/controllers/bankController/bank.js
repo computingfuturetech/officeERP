@@ -228,10 +228,12 @@ module.exports = {
 
       await bank.save();
 
+      const updatedBank = await BankList.findById(id).populate("bankBalance");
+
       res.status(200).json({
         status: "success",
         message: "Bank updated successfully",
-        data: bank,
+        data: updatedBank,
       });
     } catch (err) {
       console.log(err.message);
