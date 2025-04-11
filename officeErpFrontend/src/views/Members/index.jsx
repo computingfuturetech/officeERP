@@ -225,7 +225,7 @@ export default function Members() {
       label: "CNIC No",
       type: "cnic",
       value: member?.cnicNo || "",
-      placeholder: "Enter CNIC number",
+      placeholder: "xxxxx-xxxxxxx-x",
       required: true,
     },
     {
@@ -294,7 +294,7 @@ export default function Members() {
       id: "cnicNo",
       label: "CNIC No",
       type: "cnic",
-      placeholder: "Enter CNIC number",
+      placeholder: "xxxxx-xxxxxxx-x",
       required: true,
     },
   ];
