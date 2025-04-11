@@ -54,11 +54,40 @@ module.exports = {
 
       const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
 
-      if (cnicNo.length !== 15 || !cnicRegex.test(cnicNo)) {
+      // Split by comma, trim spaces, and validate each
+      const cnicList = cnicNo.split(",").map((c) => c.trim());
+
+      const invalidCnic = cnicList.find((cnic) => !cnicRegex.test(cnic));
+
+      if (invalidCnic) {
         return res.status(400).json({
           status: "error",
-          message: "Invalid CNIC number",
+          message: `Invalid CNIC number: ${invalidCnic}`,
         });
+      }
+
+      if (plotNo) {
+        if (!block || !category || !phase) {
+          return res.status(400).json({
+            status: "error",
+            message:
+              "Block, Category and Phase are required when Plot No is provided",
+          });
+        }
+        const existingPlot = await MemberList.findOne({
+          plotNo: plotNo,
+          phase: phase,
+          block: block,
+          category: category,
+        });
+
+        if (existingPlot) {
+          return res.status(409).json({
+            status: "error",
+            message:
+              "This plot (with same phase, block, and category) already exists.",
+          });
+        }
       }
 
       const memberList = await MemberList.findOne({ msNo: msNo });
@@ -139,15 +168,52 @@ module.exports = {
       }
       if (cnicNo) {
         const cnicRegex = /^\d{5}-\d{7}-\d{1}$/;
-        if (cnicNo.length !== 15 || !cnicRegex.test(cnicNo)) {
+
+        const cnicList = cnicNo.split(",").map((c) => c.trim());
+
+        const invalidCnic = cnicList.find((cnic) => !cnicRegex.test(cnic));
+
+        if (invalidCnic) {
           return res.status(400).json({
             status: "error",
-            message: "Invalid CNIC number",
+            message: `Invalid CNIC number: ${invalidCnic}`,
           });
         }
         memberFound.cnicNo = cnicNo;
       }
-      if (plotNo) {
+      if (
+        (plotNo && plotNo !== memberFound.plotNo) ||
+        (block && block !== memberFound.block) ||
+        (category && category !== memberFound.category)
+      ) {
+        const updatedPhase = phase || memberFound.phase;
+        const updatedBlock = block || memberFound.block;
+        const updatedCategory = category || memberFound.category;
+
+        if (!updatedBlock || !updatedCategory || !updatedPhase) {
+          return res.status(400).json({
+            status: "error",
+            message:
+              "Block, Category, and Phase are required when updating Plot No",
+          });
+        }
+
+        const existingPlot = await MemberList.findOne({
+          plotNo: plotNo,
+          phase: updatedPhase,
+          block: updatedBlock,
+          category: updatedCategory,
+          _id: { $ne: memberFound._id },
+        });
+
+        if (existingPlot) {
+          return res.status(409).json({
+            status: "error",
+            message:
+              "This plot (with same phase, block, and category) already exists.",
+          });
+        }
+
         memberFound.plotNo = plotNo;
       }
       if (block) {
