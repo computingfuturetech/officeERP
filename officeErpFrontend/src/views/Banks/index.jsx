@@ -47,7 +47,9 @@ export default function Banks() {
       if (response.status === 200) {
         setData((prev) =>
           prev.map((bank) =>
-            bank._id === editingBank._id ? { ...bank, ...data } : bank
+            bank._id === editingBank._id
+              ? { ...bank, ...response?.data?.data }
+              : bank
           )
         );
         toast({

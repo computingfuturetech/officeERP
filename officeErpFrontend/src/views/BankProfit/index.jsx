@@ -347,7 +347,7 @@ export default function BankProfit() {
       <DynamicSheet
         mode="create"
         title="Create Bank Profit"
-        description="Add a new bak profit to the system."
+        description="Add a new bank profit to the system."
         fields={getFieldConfig()}
         onSubmit={handleCreateSubmit}
         open={isCreateOpen}
