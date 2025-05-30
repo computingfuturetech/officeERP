@@ -7,6 +7,7 @@ const coreController = require("../../controllers/userController/create");
 const getUsersController = require("../../controllers/userController/getUsers");
 const updateUserController = require("../../controllers/userController/updateUser");
 const loginController = require("../../controllers/userController/login");
+const refreshTokenController = require("../../controllers/userController/refresh");
 const forgetPassword = require("../../controllers/userController/forgetPassword");
 const otpVerify = require("../../controllers/userController/otpVerify");
 const newPasswordSet = require("../../controllers/userController/newPasswordSet");
@@ -35,6 +36,7 @@ router.post(
   updateUserController.update
 );
 router.post("/login", loginController.login);
+router.get("/refresh-token", refreshTokenController.refresh);
 router.post("/forgetPassword", forgetPassword.forgetPassword);
 router.post("/otpVerify", otpVerify.otpVerify);
 router.post("/newPasswordSet", newPasswordSet.newPasswordSet);

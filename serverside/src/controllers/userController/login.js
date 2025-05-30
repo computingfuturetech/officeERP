@@ -7,7 +7,9 @@ module.exports = {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      return res.status(400).json({ message: "Both email and password are required" });
+      return res
+        .status(400)
+        .json({ message: "Both email and password are required" });
     }
 
     try {
@@ -26,8 +28,21 @@ module.exports = {
       const token = jwt.sign(
         { id: user._id, email: user.email, role: user.role },
         process.env.JWT_SECRET,
-        { expiresIn: "30d" }
+        { expiresIn: "10s" }
       );
+
+      const refreshToken = jwt.sign(
+        { id: user._id},
+        process.env.JWT_SECRET,
+        { expiresIn: "7d" }
+      );
+
+      res.cookie("jwt", refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
 
       res.json({
         _id: user._id,
