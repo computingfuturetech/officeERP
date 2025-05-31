@@ -1,10 +1,12 @@
 import axios from "axios";
 import store from "../redux/store";
 import { toast } from "@/components/hooks/use-toast";
+import { refreshToken, removeUser } from "../redux/user/user";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const api = axios.create({
     baseURL: API_BASE_URL,
+    withCredentials: true
 });
 
 api.interceptors.request.use(
@@ -24,20 +26,30 @@ api.interceptors.response.use(
     (response) => {
         return response;
     },
-    (error) => {
-        if (error.response) {
-            toast({
-                title: "Error",
-                description: error?.response?.data?.message || "An unexpected error occurred.",
-                variant: "destructive",
-            });
-        } else {
-            toast({
-                title: "Error",
-                description: "An unexpected error occurred.",
-                variant: "destructive",
-            });
+    async (error) => {
+        const originalRequest = error.config;
+        const noRetryUrls = ["/user/login", "/user/refresh-token"];
+
+        if (
+            !noRetryUrls.includes(originalRequest.url) && 
+            error.response?.status === 401 &&
+            !originalRequest._retry
+        ) {
+            originalRequest._retry = true;
+
+            try {
+                const { data } = await api.get("/user/refresh-token");
+                store.dispatch(refreshToken(data));
+
+                originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
+                return api(originalRequest);
+
+            } catch (refreshError) {
+                store.dispatch(removeUser());
+                return Promise.reject(refreshError);
+            }
         }
+
         return Promise.reject(error);
     }
 );

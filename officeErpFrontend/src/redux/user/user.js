@@ -26,8 +26,11 @@ const userSlice = createSlice({
             state.token = null;
             state.permissions = [];
         },
+        refreshToken: (state, action) => {
+            state.token = action?.payload?.role ?? null;
+        }
     },
 });
 
-export const { setUser, removeUser } = userSlice.actions;
+export const { setUser, removeUser, refreshToken } = userSlice.actions;
 export default userSlice.reducer;

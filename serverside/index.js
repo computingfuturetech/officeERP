@@ -3,6 +3,7 @@ const express = require("express");
 require("./src/config/config");
 const cors = require("cors");
 const multer = require("multer");
+const cookieParser = require('cookie-parser');
 const upload = multer();
 const app = express();
 
@@ -37,7 +38,12 @@ const operatingFixedAssetsRouter = require("./src/routes/operatingFixedAssetsRou
 
 // attaching middlewares
 app.use(express.json());
-app.use(cors());
+app.use(cookieParser());
+app.use(cors({
+  origin: "http://localhost:5173",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  credentials: true
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(upload.none());
 app.use((req, res, next) => {
