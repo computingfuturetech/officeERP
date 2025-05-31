@@ -27,21 +27,21 @@ module.exports = {
 
       const token = jwt.sign(
         { id: user._id, email: user.email, role: user.role },
-        process.env.JWT_SECRET,
-        { expiresIn: "10s" }
+        process.env.JWT_ACCESS_SECRET,
+        { expiresIn: process.env.JWT_ACCESS_EXPIRES_IN_MS }
       );
 
       const refreshToken = jwt.sign(
         { id: user._id},
-        process.env.JWT_SECRET,
-        { expiresIn: "7d" }
+        process.env.JWT_REFRESH_SECRET,
+        { expiresIn: process.env.JWT_REFRESH_EXPIRES_IN_MS }
       );
 
-      res.cookie("jwt", refreshToken, {
+      res.cookie("refreshToken", refreshToken, {
         httpOnly: true,
         secure: true,
         sameSite: "None",
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        maxAge: Number(process.env.JWT_REFRESH_EXPIRES_IN_MS)
       });
 
       res.json({

@@ -1,5 +1,5 @@
 const { expressjwt: expressJwt } = require('express-jwt');
-const secret = process.env.JWT_SECRET; 
+const secret = process.env.JWT_ACCESS_SECRET; 
 
 const authenticateJWT = expressJwt({
   secret: secret,
