@@ -30,6 +30,12 @@ api.interceptors.response.use(
         const originalRequest = error.config;
         const noRetryUrls = ["/user/login", "/user/refresh-token"];
 
+        toast({
+            title: "Error",
+            description: error?.response?.data?.message || "An unexpected error occurred.",
+            variant: "destructive",
+        });
+
         if (
             !noRetryUrls.includes(originalRequest.url) && 
             error.response?.status === 401 &&
