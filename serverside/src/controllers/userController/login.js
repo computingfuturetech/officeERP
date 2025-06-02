@@ -16,13 +16,13 @@ module.exports = {
       const user = await Admin.findOne({ email });
 
       if (!user) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const isMatch = user.validPassword(user.salt, password);
 
       if (!isMatch) {
-        return res.status(400).json({ message: "Invalid credentials" });
+        return res.status(401).json({ message: "Invalid credentials" });
       }
 
       const token = jwt.sign(
