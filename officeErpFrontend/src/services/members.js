@@ -1,5 +1,4 @@
 import api from "../core/api"
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export const getMembers = async (params) => {
     try {
