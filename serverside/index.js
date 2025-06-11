@@ -3,9 +3,10 @@ const express = require("express");
 require("./src/config/config");
 const cors = require("cors");
 const multer = require("multer");
-const cookieParser = require('cookie-parser');
+const cookieParser = require("cookie-parser");
 const upload = multer();
 const app = express();
+const path = require("path");
 
 // importing routers
 const bankRouter = require("./src/routes/bankRoutes/bank");
@@ -35,16 +36,25 @@ const miscellaneousExpenseRouter = require("./src/routes/miscellaneousExpenseRou
 const electricityAndWaterConnectionExpenseRouter = require("./src/routes/electricityWaterRoutes/electricityWater");
 const scriptRouter = require("./src/routes/scriptRoutes/script");
 const operatingFixedAssetsRouter = require("./src/routes/operatingFixedAssetsRoutes/operatingFixedAssets");
+const memberBulkUploadRouter = require("./src/routes/memberRoutes/multerRoute");
 
 // attaching middlewares
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors({
-  origin: process.env.CORS_ORIGIN,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  credentials: true
-}));
+app.use(
+  cors({
+    origin: process.env.CORS_ORIGIN,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+    credentials: true,
+  })
+);
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.use(express.urlencoded({ extended: true }));
+
+// multer routes
+app.use("/member", memberBulkUploadRouter);
+
 app.use(upload.none());
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
