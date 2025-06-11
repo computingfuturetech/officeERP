@@ -30,7 +30,7 @@ import {
 import {
     MultiSelect,
 } from "./ui/multi-selector"
-import { Plus, RefreshCw } from "lucide-react"
+import { Import, Plus, RefreshCw } from "lucide-react"
 
 export interface PaginationState {
     pageIndex: number;
@@ -65,6 +65,10 @@ interface DataTableProps<TData, TValue> {
         onClick: () => void;
         disabled: boolean;
     };
+    importButton?: {
+        onClick: () => void;
+        disabled: boolean;
+    };
 }
 
 export function DataTable<TData, TValue>({
@@ -84,6 +88,7 @@ export function DataTable<TData, TValue>({
     onPaginationChange,
     className,
     resetFilters,
+    importButton,
 }: DataTableProps<TData, TValue>) {
     const navigate = useNavigate()
     const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([])
@@ -259,6 +264,18 @@ export function DataTable<TData, TValue>({
                             </DropdownMenuContent>
                         </DropdownMenu>
                     )}
+                    {
+                        importButton && (
+                            <Button
+                                variant="outline"
+                                onClick={importButton.onClick}
+                                disabled={importButton.disabled}
+                            >
+                                <Import className="h-4 w-4 mr-2" />
+                                Import
+                            </Button>
+                        )
+                    }
                     {
                         createButton && (
                             <Button

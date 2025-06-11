@@ -21,6 +21,7 @@ import {
   updateMember,
 } from "../../services/members";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import ImportModal from "@/components/components/import-modal";
 
 export default function Members() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -45,6 +46,10 @@ export default function Members() {
     return initialFilters;
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [fileData, setFileData] = useState(null);
+  const [importModalOpen, setImportModalOpen] = useState(false);
+  const [importFileData, setImportFileData] = useState(null);
 
   const handleEditSubmit = async (data) => {
     try {
@@ -418,6 +423,19 @@ export default function Members() {
     },
   ];
 
+  const importMembers = () => {
+    // Implement export functionality here
+    toast({
+      title: "Export",
+      description: "Export functionality is not implemented yet.",
+    });
+  };
+
+  const handleFileImport = (fileData) => {
+    setImportFileData(fileData);
+    setImportModalOpen(true);
+  };
+
   return (
     <div>
       <div className="mt-4">
@@ -443,6 +461,17 @@ export default function Members() {
           resetFilters={{
             onClick: handleResetFilters,
             disabled: Object.keys(filters).length === 0,
+          }}
+          importButton={{
+            onClick: () => {
+              dismiss();
+              setImportModalOpen(true);
+            },
+            label: "Import",
+          }}
+          exportButton={{
+            onClick: importMembers,
+            label: "Export",
           }}
         />
       </div>
@@ -492,6 +521,11 @@ export default function Members() {
           onOpenChange={(open) => !open && setViewingMember(null)}
         />
       )}
+      <ImportModal
+        open={importModalOpen}
+        onOpenChange={setImportModalOpen}
+        onSuccess={fetchMembers} // Add this line to pass the refresh function
+      />
     </div>
   );
 }
