@@ -52,14 +52,15 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 app.use(express.urlencoded({ extended: true }));
 
-// multer routes
-app.use("/member", memberBulkUploadRouter);
-
-app.use(upload.none());
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`);
   next();
 });
+
+// multer routes
+app.use("/member", memberBulkUploadRouter);
+
+app.use(upload.none());
 
 // attaching routers
 app.use("/user", coreRouter);
