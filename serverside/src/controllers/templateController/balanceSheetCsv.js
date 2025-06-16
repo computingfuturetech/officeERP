@@ -1,27 +1,11 @@
-const PDFDocument = require("pdfkit");
-const fs = require("fs");
 const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
 const IncomeStatement = require("../../models/incomeStatementModel/incomeStatement");
 const LiabilitiesSchema = require("../../models/incomeModels/libility/libility");
 const GeneralLedger = require("../../models/ledgerModels/generalLedger");
 const IncomeHeadOfAccount = require("../../models/incomeModels/incomeHeadOfAccount/incomeHeadOfAccount");
 const OperatingFixedAssets = require("../../models/operatingFixedAssetsModels/operatingFixedAssets");
-const MainExpenseHeadOfAccount = require("../../models/expenseModel/expenseHeadOfAccount/mainHeadOfAccount");
 const CashLedger = require("../../models/ledgerModels/cashBookLedger");
 const BankLedger = require("../../models/ledgerModels/bankLedger");
-
-const path = require("path");
-const getDynamicGridHtml = require("../../utils/getDynamicGridHtml");
-const getDynamicTableHtml = require("../../utils/getDynamicTableHtml");
-const generatePdf = require("../../utils/generatePdf");
-const balanceSheetTemplatePath = path.join(
-  __dirname,
-  "../../views/balanceSheetTemplate.html"
-);
-const _balanceSheetTemplateHtml = fs.readFileSync(
-  balanceSheetTemplatePath,
-  "utf-8"
-);
 const generateCsv = require("../../utils/generateCsv"); // assuming it exists
 
 module.exports = {

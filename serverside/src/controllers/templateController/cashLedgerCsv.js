@@ -1,6 +1,4 @@
 const CashLedger = require("../../models/ledgerModels/cashBookLedger");
-const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
-const generateCsv = require("../../utils/generateCsv"); // assuming same helper you used in bankLedger
 
 module.exports = {
   generateCSV: async (req, res) => {

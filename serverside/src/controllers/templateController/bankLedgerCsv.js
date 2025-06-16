@@ -1,8 +1,6 @@
 const BankLedger = require("../../models/ledgerModels/bankLedger");
 const CheckBank = require("../../services/checkBank");
 const BankBalance = require("../../models/bankModel/bankBalance");
-const path = require("path");
-const generateCsv = require("../../utils/generateCsv");
 
 module.exports = {
   generateCSV: async (req, res) => {

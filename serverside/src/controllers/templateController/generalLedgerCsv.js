@@ -1,7 +1,5 @@
 const GeneralLedger = require("../../models/ledgerModels/generalLedger");
-const FixedAmount = require("../../models/fixedAmountModel/fixedAmount");
-const BankBalance = require("../../models/bankModel/bankBalance");
-const generateCsv = require("../../utils/generateCsv"); // assuming this exists
+const generateCsv = require("../../utils/generateCsv");
 
 module.exports = {
   generateCSV: async (req, res) => {
