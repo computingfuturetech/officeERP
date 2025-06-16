@@ -5,15 +5,16 @@ module.exports = {
   generateCSV: async (req, res) => {
     try {
       let { startDate, endDate } = req.query;
-      startDate = new Date(startDate);
-      endDate = new Date(endDate);
+
+      startDate = startDate ? new Date(startDate) : null;
+      endDate = endDate ? new Date(endDate) : null;
 
       const generalLedgerData = await GeneralLedger.find({
-        ...(!isNaN(startDate) || !isNaN(endDate)
+        ...(startDate || endDate
           ? {
               date: {
-                ...(!isNaN(startDate) ? { $gte: startDate } : {}),
-                ...(!isNaN(endDate) ? { $lte: endDate } : {}),
+                ...(startDate ? { $gte: startDate } : {}),
+                ...(endDate ? { $lte: endDate } : {}),
               },
             }
           : {}),
@@ -23,12 +24,15 @@ module.exports = {
         .populate("incomeHeadOfAccount", "headOfAccount")
         .sort({ date: 1 });
 
+      if (!generalLedgerData.length) {
+        return res.status(400).json({ message: "No data found" });
+      }
+
       const firstEntry = generalLedgerData[0];
       const lastEntry = generalLedgerData[generalLedgerData.length - 1];
 
-      if (!lastEntry) {
-        return res.status(400).json({ message: "No data found" });
-      }
+      const startingBalance = firstEntry?.previousBalance || 0;
+      const closingBalance = lastEntry?.balance || 0;
 
       const formattedData = generalLedgerData.map((doc) => ({
         date: doc.date?.toLocaleDateString("en-GB").replace(/\//g, "-"),
@@ -70,11 +74,39 @@ module.exports = {
         Balance: "balance",
       };
 
-      const csv = await generateCsv(fields, fieldsKeyMapping, formattedData);
+      // Generate CSV body from ledger data
+      const csvBody = await generateCsv(
+        fields,
+        fieldsKeyMapping,
+        formattedData
+      );
+
+      // Add metadata rows at the top
+      const metadataRows = [
+        [
+          `START DATE`,
+          (startDate || firstEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
+        ],
+        [
+          `END DATE`,
+          (endDate || lastEntry.date)
+            .toLocaleDateString("en-GB")
+            .replace(/\//g, "-"),
+        ],
+        [`STARTING BALANCE`, startingBalance.toString()],
+        [`CLOSING BALANCE`, closingBalance.toString()],
+        [], // empty row for separation
+      ]
+        .map((row) => row.join(","))
+        .join("\n");
+
+      const finalCsv = `${metadataRows}\n${csvBody}`;
 
       res.header("Content-Type", "text/csv");
       res.attachment("generalLedger.csv");
-      res.send(csv);
+      res.send(finalCsv);
     } catch (error) {
       console.error("Error generating CSV:", error);
       res.status(500).send("Failed to generate CSV");
