@@ -32,7 +32,7 @@ const memberListSchema = new Schema({
     type: String,
   },
   area: {
-    type: Number,
+    type: String,
   },
   phase: {
     type: String,

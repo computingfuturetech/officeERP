@@ -58,6 +58,11 @@ const REPORT_FUNCTIONS = {
   [REPORT_TYPES.BALANCE_SHEET]: getBalanceSheet,
 };
 
+const REPORT_FORMATS = [
+  { value: "pdf", label: "PDF" },
+  { value: "csv", label: "CSV" },
+];
+
 const DatePicker = React.memo(({ label, date, onChange }) => (
   <div className="space-y-2">
     <Label className="text-sm font-medium text-gray-700">{label}</Label>
@@ -110,6 +115,8 @@ const Reports = () => {
   const [endDate, setEndDate, resetEndDate] = useFormState(null);
   const [selectedBank, setSelectedBank, resetSelectedBank] = useFormState(null);
   const [year, setYear] = useFormState(null);
+  const [reportFormat, setReportFormat, resetReportFormat] =
+    useFormState("csv");
   const [banks, setBanks] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -152,6 +159,24 @@ const Reports = () => {
       toast({
         title: "Report Type Required",
         description: "Please select a report type to proceed.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!reportFormat) {
+      toast({
+        title: "Report Format Required",
+        description: "Please select a report format to proceed.",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    if (!REPORT_FORMATS.map((f) => f.value).includes(reportFormat)) {
+      toast({
+        title: "Invalid Report Format",
+        description: "Please select a valid report format.",
         variant: "destructive",
       });
       return false;
@@ -231,13 +256,13 @@ const Reports = () => {
     try {
       setIsLoading(true);
       const reportFunction = REPORT_FUNCTIONS[reportType];
-      const response = await reportFunction(reportParams);
+      const response = await reportFunction(reportParams, reportFormat);
 
       // Download report
       const url = window.URL.createObjectURL(response);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `${reportType}_report.pdf`;
+      a.download = `${reportType}_report.${reportFormat}`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
@@ -292,27 +317,51 @@ const Reports = () => {
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Report Type Selection */}
-          <div className="space-y-2">
-            <Label>Select Report Type</Label>
-            <Select
-              onValueChange={(value) => {
-                resetForm();
-                setReportType(value);
-              }}
-              value={reportType}
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Choose a report type" />
-              </SelectTrigger>
-              <SelectContent>
-                {REPORTS.map(({ value, label }) => (
-                  <SelectItem key={value} value={value}>
-                    {label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-[3fr_1fr] gap-4">
+            {/* Report Type Selection */}
+            <div>
+              <Label>Select Report Type</Label>
+              <Select
+                onValueChange={(value) => {
+                  resetForm();
+                  setReportType(value);
+                }}
+                value={reportType}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a report type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORTS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Report Format Selection */}
+            <div>
+              <Label>Select Report Format</Label>
+              <Select
+                onValueChange={(value) => {
+                  setReportFormat(value);
+                }}
+                value={reportFormat}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Choose a report format" />
+                </SelectTrigger>
+                <SelectContent>
+                  {REPORT_FORMATS.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {/* Date Range Selection */}

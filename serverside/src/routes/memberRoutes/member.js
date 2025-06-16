@@ -9,6 +9,8 @@ const memberDeposit = require("../../controllers/memberController/memberDeposit"
 
 const memberController = require("../../controllers/memberController/member");
 
+const memberBulkUpload = require("../../controllers/memberController/memberBulkUpload");
+
 router.post(
   "/create",
   authenticateJWT,
