@@ -4,10 +4,10 @@ const cleanParams = (params) => {
     return Object.fromEntries(Object.entries(params || {}).filter(([_, v]) => v != null));
 };
 
-const fetchReport = async (endpoint, params) => {
+const fetchReport = async (endpoint, params, reportFormat) => {
     try {
         const queryString = new URLSearchParams(cleanParams(params)).toString();
-        const response = await api.get(`/report/${endpoint}?${queryString}`, {
+        const response = await api.get(`/report/${endpoint}/${reportFormat}?${queryString}`, {
             responseType: "blob",
         });
 
@@ -19,8 +19,8 @@ const fetchReport = async (endpoint, params) => {
     }
 };
 
-export const getBankLedger = (params) => fetchReport("bank-ledger", params);
-export const getCashLedger = (params) => fetchReport("cash-ledger", params);
-export const getGeneralLedger = (params) => fetchReport("general-ledger", params);
-export const getIncomeRecord = (params) => fetchReport("income-record", params);
-export const getBalanceSheet = (params) => fetchReport("balance-sheet", params);
+export const getBankLedger = (params, reportFormat) => fetchReport("bank-ledger", params, reportFormat);
+export const getCashLedger = (params, reportFormat) => fetchReport("cash-ledger", params, reportFormat);
+export const getGeneralLedger = (params, reportFormat) => fetchReport("general-ledger", params, reportFormat);
+export const getIncomeRecord = (params, reportFormat) => fetchReport("income-record", params, reportFormat);
+export const getBalanceSheet = (params, reportFormat) => fetchReport("balance-sheet", params, reportFormat);
