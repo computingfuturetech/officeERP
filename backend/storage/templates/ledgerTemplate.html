@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>{{pageTitle}}</title>
+    <style>
+      html {
+        background-color: rgba(243, 244, 246, 0.27);
+      }
+      body {
+        font-family: sans-serif;
+        font-size: 13px;
+      }
+      .ledger-heading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      .ledger-table-container {
+        margin-top: 1.5em;
+      }
+      @media print {
+        .avoid-page-break-inside {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h3 class="ledger-heading" style="margin-top: 0px">{{ledgerHeading}}</h3>
+    <div class="ledger-detail">{{ledgerDetail}}</div>
+    <div class="ledger-table-container">{{ledgerTable}}</div>
+  </body>
+</html>
