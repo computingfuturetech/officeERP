@@ -86,7 +86,6 @@ export const uploadMemberPlotRecordsFile = async (file, onUploadProgress) => {
     });
 
     onUploadProgress?.(100); // Ensure completion
-    console.log("File uploaded successfully:", response.data);
     return response;
   } catch (error) {
     console.error("Error uploading members file:", error);
@@ -103,11 +102,6 @@ export const downloadMemberPlotRecordsErrorFile = async (fileUrl) => {
         Accept: "application/octet-stream",
       },
     });
-
-    // Log response details for debugging
-    console.log("Response status:", response.status);
-    console.log("Response headers:", response.headers);
-    console.log("Response data type:", response.data?.type);
 
     // Check if response data is a valid blob
     if (!response.data || !(response.data instanceof Blob)) {

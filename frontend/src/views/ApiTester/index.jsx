@@ -42,8 +42,6 @@ const ApiTester = () => {
         }
       }
 
-      console.log("parsedBody", parsedBody);
-
       let result;
       switch (method) {
         case "GET":

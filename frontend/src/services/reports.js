@@ -13,7 +13,6 @@ const fetchReport = async (endpoint, params) => {
       responseType: "blob",
     });
 
-    console.log(`${endpoint} Response: `, response);
     return response.data;
   } catch (error) {
     console.error(`Error fetching ${endpoint}:`, error);

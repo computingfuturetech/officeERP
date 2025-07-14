@@ -1,17 +1,5 @@
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/components/ui/dropdown-menu";
-import { MoreHorizontal, MoreVertical, Plus } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { DataTable } from "@/components/components/data-table";
-import RevenueCard from "@/components/components/revenue-card";
-import DailyTransactionDisplay from "@/components/components/transaction-card";
-import { Button } from "@/components/components/ui/button";
 import { DynamicSheet } from "@/components/components/dynamic-sheet";
 import { getMemberPlotRecords } from "../../services/memberPlotRecords";
 

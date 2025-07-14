@@ -178,8 +178,6 @@ const ImportModal = ({ open, onOpenChange, onSuccess }) => {
   const handleDownloadError = async () => {
     try {
       const filePath = uploadResults.invalidRecordsCSVUrl;
-      console.log("Attempting to download:", filePath);
-
       const blob = await downloadMemberPlotRecordsErrorFile(filePath);
 
       // Ensure the blob type is set to CSV

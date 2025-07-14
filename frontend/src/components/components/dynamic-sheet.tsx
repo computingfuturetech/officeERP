@@ -94,16 +94,6 @@ export function DynamicSheet({
   const isViewMode = mode === "view";
   const isCreateMode = mode === "create";
 
-  // console.log("\n\x1b[32m++++++ DynamicSheet rendered +++++++");
-  // console.log("mode:", mode);
-  // console.log("open:", open);
-  // console.log("fields:", fields);
-  // console.log("isSubmitting:", isSubmitting);
-  // console.log("validationErrors:", validationErrors);
-  // console.log("formValues:", formValues);
-  // console.log("formRef:", formRef.current);
-  // console.log("initialized:", initialized);
-
   const setNestedValue = (obj: any, path: string, value: any) => {
     const keys = path.split(".");
     let current = obj;
