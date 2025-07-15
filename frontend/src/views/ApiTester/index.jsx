@@ -14,7 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/components/ui/card";
-import { Textarea } from "@/components/components/ui/textareas";
+import { Textarea } from "@/components/components/ui/textarea";
 import { AlertCircle, Send } from "lucide-react";
 import { Alert, AlertDescription } from "@/components/components/ui/alert";
 import { useToast } from "@/components/hooks/use-toast";
