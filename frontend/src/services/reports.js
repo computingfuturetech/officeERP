@@ -1,12 +1,7 @@
+import { cleanParams } from "@/utils/commonUtils";
 import api from "../core/api";
 
-const cleanParams = (params) => {
-  return Object.fromEntries(
-    Object.entries(params || {}).filter(([_, v]) => v != null)
-  );
-};
-
-const fetchReport = async (endpoint, params) => {
+const fetchReport = async (endpoint, params = {}) => {
   try {
     const queryString = new URLSearchParams(cleanParams(params)).toString();
     const response = await api.get(`/reports/${endpoint}?${queryString}`, {
@@ -20,9 +15,9 @@ const fetchReport = async (endpoint, params) => {
   }
 };
 
-export const getGeneralLedger = (params, reportFormat) =>
+export const getGeneralLedger = (params) =>
   fetchReport("general-ledger", params);
-export const getIncomeStatement = (params, reportFormat) =>
+export const getIncomeStatement = (params) =>
   fetchReport("income-statement", params);
-export const getBalanceSheet = (params, reportFormat) =>
+export const getBalanceSheet = (params) =>
   fetchReport("balance-sheet", params);

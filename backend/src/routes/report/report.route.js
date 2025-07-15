@@ -7,24 +7,23 @@ const router = Router();
 
 router.get(
   "/general-ledger",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin", "Admin", "Employee"]),
   reportController.getGeneralLedger
 );
 
 router.get(
   "/income-statement",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin", "Admin", "Employee"]),
   reportController.getIncomeStatement
 );
 
 router.get(
   "/balance-sheet",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin", "Admin", "Employee"]),
   reportController.getBalanceSheet
 );
-
 
 module.exports = router;

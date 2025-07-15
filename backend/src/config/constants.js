@@ -37,7 +37,7 @@ module.exports = {
     "Journal Voucher": "JV",
   },
   VOUCHER_STATUSES: ["Pending", "Approved", "Rejected", "Posted"],
-  STAFF_USER_ROLES: ["Admin", "Employee"],
+  STAFF_USER_ROLES: ["Super Admin", "Admin", "Employee"],
   PLOT_CATEGORIES: ["Residential", "Commercial", "Amenity"],
   PLOT_AREA_UNITS: [
     "sq ft",

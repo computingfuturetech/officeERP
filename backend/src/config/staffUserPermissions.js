@@ -1,5 +1,5 @@
 module.exports = {
-  Admin: {
+  "Super Admin": {
     dasboard: {
       create: true,
       read: true,
@@ -24,25 +24,45 @@ module.exports = {
       update: true,
       delete: true,
     },
-    generalLedger: {
+    chartOfAccounts: {
       create: true,
       read: true,
       update: true,
       delete: true,
     },
-    incomeStatement: {
-      create: true,
-      read: true,
-      update: true,
-      delete: true,
-    },
-    balanceSheet: {
+    vouchers: {
       create: true,
       read: true,
       update: true,
       delete: true,
     },
     apiTester: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+  },
+  Admin: {
+    dasboard: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+    staffUsers: {
+      create: false,
+      read: true,
+      update: false,
+      delete: false,
+    },
+    memberPlotRecords: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+    reports: {
       create: true,
       read: true,
       update: true,
@@ -55,6 +75,12 @@ module.exports = {
       delete: true,
     },
     vouchers: {
+      create: true,
+      read: true,
+      update: true,
+      delete: true,
+    },
+    apiTester: {
       create: true,
       read: true,
       update: true,
@@ -86,24 +112,6 @@ module.exports = {
       update: true,
       delete: true,
     },
-    generalLedger: {
-      create: true,
-      read: true,
-      update: true,
-      delete: true,
-    },
-    incomeStatement: {
-      create: true,
-      read: true,
-      update: true,
-      delete: true,
-    },
-    balanceSheet: {
-      create: true,
-      read: true,
-      update: true,
-      delete: true,
-    },
     apiTester: {
       create: false,
       read: false,
@@ -111,16 +119,16 @@ module.exports = {
       delete: false,
     },
     chartOfAccounts: {
-      create: true,
+      create: false,
       read: true,
-      update: true,
-      delete: true,
+      update: false,
+      delete: false,
     },
     vouchers: {
-      create: true,
+      create: false,
       read: true,
-      update: true,
-      delete: true,
+      update: false,
+      delete: false,
     },
   },
 };

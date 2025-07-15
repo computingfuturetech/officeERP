@@ -1,15 +1,8 @@
+import { cleanParams } from "@/utils/commonUtils";
 import api from "../core/api";
 
-export const getAccounts = async (params) => {
-  if (!params) {
-    params = {};
-  }
-  const cleanParams = Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v != null)
-  );
-
-  const queryString = new URLSearchParams(cleanParams).toString();
-
+export const getAccounts = async (params = {}) => {
+  const queryString = new URLSearchParams(cleanParams(params)).toString();
   const response = await api.get(`/accounts?${queryString}`);
   return response;
 };

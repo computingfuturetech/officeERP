@@ -1,4 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -29,9 +30,9 @@ import {
   getIncomeStatement,
   getBalanceSheet,
 } from "../../services/reports";
-import { getAccounts } from "../../services/chartOfAccount";
+import { getAccounts } from "../../services/chartOfAccounts";
 
-// Report types
+// Constants
 const REPORT_TYPES = {
   GENERAL_LEDGER: "general-ledger",
   INCOME_STATEMENT: "income-statement",
@@ -55,7 +56,16 @@ const REPORT_FORMATS = [
   { value: "csv", label: "CSV" },
 ];
 
-const DatePicker = React.memo(({ label, date, onChange }) => (
+const INITIAL_FORM_STATE = {
+  reportType: "",
+  startDate: null,
+  endDate: null,
+  selectedAccount: "",
+  reportFormat: "csv",
+};
+
+// DatePicker Component
+const DatePicker = ({ label, date, onChange }) => (
   <div className="space-y-2">
     <Label className="text-sm font-medium text-gray-700">{label}</Label>
     <Popover>
@@ -81,42 +91,36 @@ const DatePicker = React.memo(({ label, date, onChange }) => (
       </PopoverContent>
     </Popover>
   </div>
-));
+);
+
+// Memoized to prevent unnecessary re-renders
+const MemoizedDatePicker = React.memo(DatePicker);
 
 const Reports = () => {
-  const useFormState = (initialState) => {
-    const [state, setState] = useState(initialState);
-    const resetState = () => setState(initialState);
-    return [state, setState, resetState];
-  };
-
-  const [reportType, setReportType, resetReportType] = useFormState("");
-  const [startDate, setStartDate, resetStartDate] = useFormState(null);
-  const [endDate, setEndDate, resetEndDate] = useFormState(null);
-  const [selectedAccount, setSelectedAccount, resetSelectedAccount] = useFormState("");
-  const [reportFormat, setReportFormat, resetReportFormat] = useFormState("csv");
+  const { toast } = useToast();
+  const [formState, setFormState] = useState(INITIAL_FORM_STATE);
   const [accounts, setAccounts] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchAccounts = async () => {
-      try {
-        const response = await getAccounts({ pagination: false });
-        setAccounts(response?.data?.data || []);
-      } catch (error) {
-        console.error("Error fetching accounts:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch accounts",
-          variant: "destructive",
-        });
-      }
-    };
-    fetchAccounts();
+  // Fetch accounts
+  const fetchAccounts = useCallback(async () => {
+    try {
+      const response = await getAccounts({ pagination: false });
+      setAccounts(response?.data?.data || []);
+    } catch (error) {
+      console.error("Error fetching accounts:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch accounts.",
+        variant: "destructive",
+      });
+    }
   }, [toast]);
 
+  // Form validation
   const validateForm = useCallback(() => {
+    const { reportType, reportFormat, selectedAccount } = formState;
+
     if (!reportType) {
       toast({
         title: "Report Type Required",
@@ -135,28 +139,32 @@ const Reports = () => {
       return false;
     }
 
-    // if (!startDate || !endDate) {
-    //   toast({
-    //     title: "Date Range Required",
-    //     description: "Please select a date range to generate the report.",
-    //     variant: "destructive",
-    //   });
-    //   return false;
-    // }
+    if (reportType === REPORT_TYPES.GENERAL_LEDGER && !selectedAccount) {
+      toast({
+        title: "Account Required",
+        description: "Please select an account for General Ledger report.",
+        variant: "destructive",
+      });
+      return false;
+    }
 
     return true;
-  }, [reportType, reportFormat, startDate, endDate, selectedAccount, toast]);
+  }, [formState, toast]);
 
-  const handleSubmit = async () => {
+  // Handle form submission
+  const handleSubmit = useCallback(async () => {
     if (!validateForm()) return;
 
+    const { reportType, reportFormat, startDate, endDate, selectedAccount } =
+      formState;
     const reportParams = {
       format: reportFormat,
-      startDate,
-      endDate,
-      ...(reportType === REPORT_TYPES.GENERAL_LEDGER && {
-        accountId: selectedAccount,
-      }),
+      ...(startDate && { startDate }),
+      ...(endDate && { endDate }),
+      ...(reportType === REPORT_TYPES.GENERAL_LEDGER &&
+        selectedAccount && {
+          accountId: selectedAccount,
+        }),
     };
 
     try {
@@ -176,20 +184,44 @@ const Reports = () => {
       console.error("Error downloading report:", error);
       toast({
         title: "Download Failed",
-        description: "Could not download the report. Please try again.",
+        description:
+          error?.response?.data?.message || "Could not download the report. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [formState, validateForm, toast]);
 
+  // Reset form
   const resetForm = useCallback(() => {
-    resetReportType();
-    resetStartDate();
-    resetEndDate();
-    resetSelectedAccount();
-  }, [resetReportType, resetStartDate, resetEndDate, resetSelectedAccount]);
+    setFormState(INITIAL_FORM_STATE);
+  }, []);
+
+  // Handle form field changes
+  const handleFieldChange = useCallback((field, value) => {
+    setFormState((prev) => ({
+      ...prev,
+      [field]: value,
+      // Reset account when switching report types
+      ...(field === "reportType" && { selectedAccount: "" }),
+    }));
+  }, []);
+
+  // Fetch accounts on mount
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
+
+  // Memoized account options
+  const accountOptions = useMemo(
+    () =>
+      accounts.map(({ _id, name, code }) => ({
+        value: _id,
+        label: `${code} ${name}`,
+      })),
+    [accounts]
+  );
 
   return (
     <div className="w-full max-w-2xl mx-auto p-4">
@@ -204,11 +236,10 @@ const Reports = () => {
             <div>
               <Label>Select Report Type</Label>
               <Select
-                onValueChange={(value) => {
-                  resetForm();
-                  setReportType(value);
-                }}
-                value={reportType}
+                onValueChange={(value) =>
+                  handleFieldChange("reportType", value)
+                }
+                value={formState.reportType}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose a report type" />
@@ -226,8 +257,10 @@ const Reports = () => {
             <div>
               <Label>Select Report Format</Label>
               <Select
-                onValueChange={setReportFormat}
-                value={reportFormat}
+                onValueChange={(value) =>
+                  handleFieldChange("reportFormat", value)
+                }
+                value={formState.reportFormat}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose a report format" />
@@ -243,29 +276,37 @@ const Reports = () => {
             </div>
           </div>
 
-          {/* Date Range Selection */}
-          {reportType && (
+          {formState.reportType && (
             <div className="grid grid-cols-2 gap-4">
-              <DatePicker label="Start Date" date={startDate} onChange={setStartDate} />
-              <DatePicker label="End Date" date={endDate} onChange={setEndDate} />
+              <MemoizedDatePicker
+                label="Start Date"
+                date={formState.startDate}
+                onChange={(date) => handleFieldChange("startDate", date)}
+              />
+              <MemoizedDatePicker
+                label="End Date"
+                date={formState.endDate}
+                onChange={(date) => handleFieldChange("endDate", date)}
+              />
             </div>
           )}
 
-          {/* Account Selection for General Ledger */}
-          {reportType === REPORT_TYPES.GENERAL_LEDGER && (
+          {formState.reportType === REPORT_TYPES.GENERAL_LEDGER && (
             <div className="space-y-2">
               <Label>Account</Label>
               <Select
-                onValueChange={setSelectedAccount}
-                value={selectedAccount}
+                onValueChange={(value) =>
+                  handleFieldChange("selectedAccount", value)
+                }
+                value={formState.selectedAccount}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder="Choose an account" />
                 </SelectTrigger>
                 <SelectContent>
-                  {accounts.map(({ _id, name, code }) => (
-                    <SelectItem key={_id} value={_id}>
-                      {`${code} ${name}`}
+                  {accountOptions.map(({ value, label }) => (
+                    <SelectItem key={value} value={value}>
+                      {label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -275,7 +316,7 @@ const Reports = () => {
 
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || !reportType}
+            disabled={isLoading || !formState.reportType}
             className="w-full"
           >
             {isLoading ? (

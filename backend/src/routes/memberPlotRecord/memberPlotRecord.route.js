@@ -12,51 +12,51 @@ const router = Router();
 
 router.get(
   "/",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin", "Employee"]),
   memberPlotRecordController.getMemberPlotRecords
 );
 
 router.post(
   "/",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   memberPlotRecordController.createMemberPlotRecord
 );
 
 router.patch(
   "/:id",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   memberPlotRecordController.updateMemberPlotRecord
 );
 
 router.delete(
   "/:id",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   memberPlotRecordController.deleteMemberPlotRecord
 );
 
 router.post(
   "/transfer",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   memberPlotRecordController.transferPlot
 );
 
 router.post(
   "/bulk/validate",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   upload.single("file"),
   memberPlotRecordController.bulkValidateMemberPlotRecords
 );
 
 router.post(
   "/bulk/upload",
-  // authenticate,
-  // authorize(["Admin", "Employee"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   upload.single("file"),
   memberPlotRecordController.bulkUploadMemberPlotRecords
 );

@@ -6,3 +6,9 @@ export const formatDate = (dateString) => {
     year: "numeric",
   }).format(date);
 };
+
+export const cleanParams = (params = {}) => {
+  return Object.fromEntries(
+    Object.entries(params).filter(([_, v]) => v != null)
+  );
+};

@@ -267,7 +267,7 @@ const ImportModal = ({ open, onOpenChange, onSuccess }) => {
         </DialogHeader>
 
         <div className="flex flex-col space-y-4 min-h-fit">
-          {!fileData && !isValidating && !isUploading  ? (
+          {!fileData && !isValidating && !isUploading ? (
             <div
               onDragOver={(e) => {
                 e.preventDefault();
@@ -291,24 +291,24 @@ const ImportModal = ({ open, onOpenChange, onSuccess }) => {
                 type="file"
                 id="file-upload"
                 className="hidden"
-                accept=".csv,.xlsx,.xls"
+                accept=".csv"
                 onChange={handleFileSelect}
               />
               <Upload className="h-10 w-10 mx-auto mb-4 text-gray-400" />
               <p className="text-sm text-gray-600">
                 Drag and drop your file here, or click to select
               </p>
-              <p className="text-xs text-gray-500 mt-2">
-                Supports: CSV, Excel files
-              </p>
+              <p className="text-xs text-gray-500 mt-2">Supports: CSV files</p>
             </div>
           ) : (
             <div className="space-y-4">
               {/* Show spin loading during validation */}
-              {isValidating && renderSpinLoading(`Validating: ${selectedFileName}`)}
+              {isValidating &&
+                renderSpinLoading(`Validating: ${selectedFileName}`)}
 
               {/* Show spin loading during import */}
-              {isUploading && renderSpinLoading(`Importing: ${selectedFileName}`)}
+              {isUploading &&
+                renderSpinLoading(`Importing: ${selectedFileName}`)}
 
               {error && (
                 <Alert variant="destructive">
@@ -318,58 +318,55 @@ const ImportModal = ({ open, onOpenChange, onSuccess }) => {
               )}
 
               {/* Show validation results after validation is complete */}
-              {validationDetails &&
-                !isValidating &&
-                !isUploading &&
-                !uploadResults && (
-                  <>
-                    <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
-                      <h4 className="font-medium">Validation Results</h4>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                          <CheckCircle className="h-4 w-4 text-green-500" />
-                          <span>
-                            Valid: {validationDetails.summary.validRecordsCount}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
-                          <XCircle className="h-4 w-4 text-red-500" />
-                          <span>
-                            Invalid:{" "}
-                            {validationDetails.summary.invalidRecordsCount}
-                          </span>
-                        </div>
+              {validationDetails && !uploadResults && (
+                <>
+                  <div className="space-y-4 p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-medium">Validation Results</h4>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
+                        <CheckCircle className="h-4 w-4 text-green-500" />
+                        <span>
+                          Valid: {validationDetails.summary.validRecordsCount}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2 p-3 bg-red-50 rounded-lg">
+                        <XCircle className="h-4 w-4 text-red-500" />
+                        <span>
+                          Invalid:{" "}
+                          {validationDetails.summary.invalidRecordsCount}
+                        </span>
                       </div>
                     </div>
+                  </div>
 
-                    {renderValidationDetails()}
+                  {renderValidationDetails()}
 
-                    <div className="flex justify-end gap-2 pt-4">
-                      <Button
-                        variant="outline"
-                        onClick={() => onOpenChange(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button
-                        onClick={handleImport}
-                        disabled={
-                          isUploading ||
-                          validationDetails.summary.totalRecordsCount === 0
-                        }
-                        className="relative"
-                      >
-                        {isUploading && (
-                          <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                        )}
-                        Import File
-                      </Button>
-                    </div>
-                  </>
-                )}
+                  <div className="flex justify-end gap-2 pt-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => onOpenChange(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button
+                      onClick={handleImport}
+                      disabled={
+                        isUploading ||
+                        validationDetails.summary.totalRecordsCount === 0
+                      }
+                      className="relative"
+                    >
+                      {isUploading && (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      )}
+                      Import File
+                    </Button>
+                  </div>
+                </>
+              )}
 
               {/* Show upload results after import is complete */}
-              {uploadResults && !isUploading && renderUploadResults()}
+              {uploadResults && renderUploadResults()}
             </div>
           )}
         </div>

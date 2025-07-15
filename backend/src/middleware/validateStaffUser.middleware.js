@@ -6,7 +6,7 @@ const { STAFF_USER_ROLES, EMAIL_REGEX } = require("../config/constants");
 async function validateStaffUserOnCreate(req, res, next) {
   try {
     const data = req.body;
-    
+
     // validate email
     if (!data.email || typeof data.email !== "string" || !data.email.trim()) {
       throw new ApiError(400, "Email is required");
@@ -23,7 +23,7 @@ async function validateStaffUserOnCreate(req, res, next) {
         `Staff user with email "${data.email.trim()}" already exists`
       );
     }
-    
+
     // validate firstName
     if (
       !data.firstName ||
@@ -32,18 +32,18 @@ async function validateStaffUserOnCreate(req, res, next) {
     ) {
       throw new ApiError(400, "First name is required");
     }
-    
+
     // validate password
     if (!data.password || typeof data.password !== "string") {
       throw new ApiError(400, "Password is required");
     }
-    if (data.password.trim().length < 8) {
+    if (data.password.length < 8) {
       throw new ApiError(
         400,
         "The password needs to be at least 8 characters long"
       );
     }
-    
+
     // validate role
     if (!STAFF_USER_ROLES.includes(data.role)) {
       throw new ApiError(400, "Invalid role");
@@ -58,7 +58,7 @@ async function validateStaffUserOnUpdate(req, res, next) {
   try {
     const updateData = req.body;
     const id = req.params.id;
-    
+
     // validate email
     if (updateData.email !== undefined) {
       if (!EMAIL_REGEX.test(updateData.email)) {
@@ -75,7 +75,7 @@ async function validateStaffUserOnUpdate(req, res, next) {
         );
       }
     }
-    
+
     // validate first name
     if (
       updateData.firstName !== undefined &&
@@ -84,7 +84,7 @@ async function validateStaffUserOnUpdate(req, res, next) {
     ) {
       throw new ApiError(400, "First name is required");
     }
-    
+
     // validate password
     if (
       updateData.password !== undefined &&
@@ -92,14 +92,22 @@ async function validateStaffUserOnUpdate(req, res, next) {
     ) {
       throw new ApiError(400, "Password is required");
     }
-    if (updateData.password && updateData.password.trim().length < 8) {
+    if (updateData.password && updateData.password.length < 8) {
       throw new ApiError(
         400,
         "The password needs to be at least 8 characters long"
       );
     }
-    
+
     // validate role
+    if (
+      req.user?.role === "Super Admin" &&
+      id === req.user?._id.toString() &&
+      updateData.role !== undefined &&
+      updateData.role !== "Super Admin"
+    ) {
+      throw new ApiError(400, "Super admin can't change its role");
+    }
     if (updateData.role !== undefined) {
       if (!STAFF_USER_ROLES.includes(updateData.role)) {
         throw new ApiError(400, "Invalid role");

@@ -8,52 +8,46 @@ const router = Router();
 
 router.post(
   "/",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin"]),
   validateStaffUserOnCreate,
   staffUserController.createStaffUser
 );
 
 router.patch(
   "/:id",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin"]),
   validateStaffUserOnUpdate,
   staffUserController.updateStaffUser
 );
 
 router.get(
   "/",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin", "Admin"]),
   staffUserController.getStaffUsers
 );
 
 router.delete(
   "/:id",
-  // authenticate,
-  // authorize(["Admin"]),
+  authenticate,
+  authorize(["Super Admin"]),
   staffUserController.deleteStaffUser
 );
 
 router.post(
   "/login",
-  // authenticate,
-  // authorize(["Admin"]),
   staffUserController.loginStaffUser
 );
 
 router.post(
   "/logout",
-  // authenticate,
-  // authorize(["Admin"]),
   staffUserController.logoutStaffUser
 );
 
 router.post(
   "/refresh-token",
-  // authenticate,
-  // authorize(["Admin"]),
   staffUserController.staffUserRefreshToken
 );
 

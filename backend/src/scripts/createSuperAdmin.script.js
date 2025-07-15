@@ -2,20 +2,20 @@ const ScriptFlag = require("../models/scriptFlag/scriptFlag");
 const StaffUser = require("../models/staffUser/staffUser.model");
 const { generateHashedPassword } = require("../utils/pass.util");
 
-module.exports = async function createFirstAdmin() {
+module.exports = async function createSuperAdmin() {
   try {
-    const createFirstAdminScriptFlag = await ScriptFlag.findOne({
-      name: "create-first-admin-script",
+    const createSuperAdminScriptFlag = await ScriptFlag.findOne({
+      name: "create-super-admin-script",
     });
-    if (!createFirstAdminScriptFlag?.flag) {
-      const email = process.env.FIRST_ADMIN_EMAIL;
-      const password = process.env.FIRST_ADMIN_PASS;
-      const firstName = process.env.FIRST_ADMIN_FIRST_NAME || "Admin";
+    if (!createSuperAdminScriptFlag?.flag) {
+      const email = process.env.SUPER_ADMIN_EMAIL;
+      const password = process.env.SUPER_ADMIN_PASS;
+      const firstName = process.env.SUPER_ADMIN_FIRST_NAME || "Admin";
 
       if (email && password) {
         if (password.length < 8) {
           console.error(
-            `FAILURE: create-first-admin-script: password must be at least 8 characters long`
+            `FAILURE: create-super-admin-script: password must be at least 8 characters long`
           );
         } else {
           const existingUser = await StaffUser.findOne({
@@ -29,31 +29,31 @@ module.exports = async function createFirstAdmin() {
               firstName,
               email,
               hashedPassword,
-              role: "Admin",
+              role: "Super Admin",
             }).save();
 
             await ScriptFlag.updateOne(
-              { name: "create-first-admin-script" },
+              { name: "create-super-admin-script" },
               { flag: true },
               { upsert: true },
             );
 
             console.log(
-              "SUCCESS: create-first-admin-script: user created successfully"
+              "SUCCESS: create-super-admin-script: user created successfully"
             );
           } else {
             console.error(
-              `FAILURE: create-first-admin-script: user with email ${email} already exists`
+              `FAILURE: create-super-admin-script: user with email ${email} already exists`
             );
           }
         }
       } else {
         console.error(
-          `FAILURE: create-first-admin-script: email or password not provided`
+          `FAILURE: create-super-admin-script: email or password not provided`
         );
       }
     }
   } catch (error) {
-    console.error(`FAILURE: create-first-admin-script: ${error}`);
+    console.error(`FAILURE: create-super-admin-script: ${error}`);
   }
 };

@@ -5,7 +5,7 @@ import store from "../../redux/store";
 
 const ProtectedRoute = ({ element, requiredPermission }) => {
     const permissions = useSelector((state: any) => state?.user?.permissions);
-    const token = store?.getState()?.user?.token ?? null;
+    const token = store.getState()?.user?.token ?? null;
     const isAuthenticated = !!token;
 
     const [module, action] = requiredPermission.split(".");

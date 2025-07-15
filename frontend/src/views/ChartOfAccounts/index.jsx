@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { Button } from "@/components/components/ui/button";
 import {
@@ -15,9 +15,65 @@ import {
   createAccount,
   updateAccount,
   deleteAccount,
-} from "../../services/chartOfAccount";
+} from "@/services/chartOfAccounts";
 import TreeNode from "./TreeNode";
-import { buildHierarchy } from "@/utils/chartOfAccount";
+import { buildHierarchy } from "@/utils/chartOfAccounts";
+
+// Constants
+const ACCOUNT_TYPES = [
+  { label: "Asset", value: "Asset" },
+  { label: "Liability", value: "Liability" },
+  { label: "Equity", value: "Equity" },
+  { label: "Revenue", value: "Revenue" },
+  { label: "Expense", value: "Expense" },
+];
+
+// Field configuration for create/edit/view modes
+const getFieldConfig = (
+  account = null,
+  parentForNewAccount = null,
+  allAccounts = []
+) => [
+  {
+    id: "name",
+    label: "Name",
+    type: "text",
+    value: account?.name || "",
+    required: true,
+    placeholder: "Enter account name",
+  },
+  {
+    id: "type",
+    label: "Type",
+    type: "select",
+    value: account?.type || parentForNewAccount?.type || "",
+    readOnly: (!account && !!parentForNewAccount) || !!account,
+    options: ACCOUNT_TYPES,
+    placeholder: "Select account type",
+    required: true,
+  },
+  {
+    id: "parent",
+    label: "Parent Account",
+    type: "select",
+    value: account?.parent || parentForNewAccount?._id || "",
+    readOnly: (!account && !!parentForNewAccount) || !!account,
+    options: allAccounts.map((acc) => ({
+      label: `${acc.code} - ${acc.name}`,
+      value: acc._id,
+    })),
+    placeholder: "Select parent account (optional)",
+    required: false,
+  },
+  {
+    id: "description",
+    label: "Description",
+    type: "textarea",
+    value: account?.description || "",
+    required: false,
+    placeholder: "Enter account description",
+  },
+];
 
 const ChartOfAccountsTree = () => {
   const { toast } = useToast();
@@ -32,38 +88,28 @@ const ChartOfAccountsTree = () => {
   const [deletingAccount, setDeletingAccount] = useState(null);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
 
-  const fetchAccounts = async () => {
+  // Fetch accounts
+  const fetchAccounts = useCallback(async () => {
+    setIsLoading(true);
     try {
-      setIsLoading(true);
       const response = await getAccounts({ pagination: false });
-
-      if (response?.data?.data) {
-        const accounts = response.data.data;
-        setAllAccounts(accounts);
-
-        const hierarchicalData = buildHierarchy(accounts);
-        setAccountsData(hierarchicalData);
-
-        // const rootNodes = hierarchicalData.map((node) => node._id);
-        // setExpandedNodes(new Set(rootNodes));
-      }
+      const accounts = response?.data?.data || [];
+      setAllAccounts(accounts);
+      setAccountsData(buildHierarchy(accounts));
     } catch (error) {
       console.error("Error fetching accounts:", error);
       toast({
         title: "Error",
-        description: "Failed to fetch accounts",
+        description: "Failed to fetch accounts.",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [toast]);
 
-  useEffect(() => {
-    fetchAccounts();
-  }, []);
-
-  const handleToggleExpand = (nodeId) => {
+  // Toggle node expansion
+  const handleToggleExpand = useCallback((nodeId) => {
     setExpandedNodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(nodeId)) {
@@ -73,200 +119,134 @@ const ChartOfAccountsTree = () => {
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const handleExpandAll = () => {
-    const getAllNodeIds = (nodes) => {
-      const ids = [];
-      nodes.forEach((node) => {
+  // Expand all nodes
+  const handleExpandAll = useCallback(() => {
+    const getAllNodeIds = (nodes) =>
+      nodes.reduce((ids, node) => {
         ids.push(node._id);
-        if (node.children && node.children.length > 0) {
+        if (node.children?.length) {
           ids.push(...getAllNodeIds(node.children));
         }
-      });
-      return ids;
-    };
-
+        return ids;
+      }, []);
     setExpandedNodes(new Set(getAllNodeIds(accountsData)));
-  };
+  }, [accountsData]);
 
-  const handleCollapseAll = () => {
+  // Collapse all nodes
+  const handleCollapseAll = useCallback(() => {
     setExpandedNodes(new Set());
-  };
+  }, []);
 
-  const handleEdit = (account) => {
-    setEditingAccount(account);
-  };
-
-  const handleView = (account) => {
-    setViewingAccount(account);
-  };
-
-  const handleAddChild = (parentAccount) => {
-    setParentForNewAccount(parentAccount);
-    setIsCreateOpen(true);
-  };
-
-  const handleAddRoot = () => {
-    setParentForNewAccount(null);
-    setIsCreateOpen(true);
-  };
-
-  const handleDelete = async (account) => {
-    try {
-      setIsDeleteLoading(true);
-      const response = await deleteAccount(account._id);
-
-      if (response.status === 200) {
-        toast({
-          title: "Account deleted",
-          description: "Account has been successfully deleted.",
+  // Handle create account
+  const handleCreateSubmit = useCallback(
+    async (data) => {
+      try {
+        const response = await createAccount({
+          ...data,
+          parent: data.parent || null,
         });
-        setDeletingAccount(null);
-        await fetchAccounts();
-      } else {
-        toast({
-          title: "Deletion Failed",
-          description:
-            response?.data?.message || "An unexpected error occurred.",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error("Delete submission error:", error);
-      toast({
-        title: "Deletion Failed",
-        description:
-          error?.response?.data?.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleteLoading(false);
-    }
-  };
-
-  const getFieldConfig = (account = null) => {
-    const parentOptions = allAccounts.map((acc) => ({
-      label: `${acc.code} - ${acc.name}`,
-      value: acc._id,
-    }));
-
-    return [
-      {
-        id: "name",
-        label: "Name",
-        type: "text",
-        value: account?.name || "",
-        required: true,
-        placeholder: "Enter account name",
-      },
-      {
-        id: "type",
-        label: "Type",
-        type: "select",
-        value: account?.type || parentForNewAccount?.type || "",
-        readOnly: (!account && !!parentForNewAccount) || !!editingAccount,
-        options: [
-          { label: "Asset", value: "Asset" },
-          { label: "Liability", value: "Liability" },
-          { label: "Equity", value: "Equity" },
-          { label: "Revenue", value: "Revenue" },
-          { label: "Expense", value: "Expense" },
-        ],
-        placeholder: "Select account type",
-        required: true,
-      },
-      {
-        id: "parent",
-        label: "Parent Account",
-        type: "select",
-        value: account?.parent || parentForNewAccount?._id || "",
-        readOnly: (!account && !!parentForNewAccount) || !!editingAccount,
-        options: parentOptions,
-        placeholder: "Select parent account (optional)",
-        required: false,
-      },
-      {
-        id: "description",
-        label: "Description",
-        type: "textarea",
-        value: account?.description || "",
-        required: false,
-        placeholder: "Enter account description",
-      },
-    ];
-  };
-
-  const handleCreateSubmit = async (data) => {
-    try {
-      if (!data.parent) data.parent = null;
-
-      const response = await createAccount(data);
-
-      if (response.status === 201) {
-        toast({
-          title: "Account created",
-          description: "Account has been successfully created.",
-        });
-        setIsCreateOpen(false);
-        setParentForNewAccount(null);
-        await fetchAccounts();
-        return true;
-      } else {
+        if (response.status === 201) {
+          toast({
+            title: "Account Created",
+            description: "Account has been successfully created.",
+          });
+          setIsCreateOpen(false);
+          setParentForNewAccount(null);
+          await fetchAccounts();
+          return true;
+        }
+        throw new Error(response?.data?.message || "Creation failed.");
+      } catch (error) {
+        console.error("Create submission error:", error);
         toast({
           title: "Creation Failed",
-          description:
-            response?.data?.message || "An unexpected error occurred.",
+          description: error.message || "An unexpected error occurred.",
           variant: "destructive",
         });
         return false;
       }
-    } catch (error) {
-      console.error("Create submission error:", error);
-      toast({
-        title: "Creation Failed",
-        description:
-          error?.response?.data?.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
+    },
+    [fetchAccounts, toast]
+  );
 
-  const handleEditSubmit = async (data) => {
-    try {
-      if (!data.parent) data.parent = null;
-
-      const response = await updateAccount(editingAccount._id, data);
-
-      if (response.status === 200) {
-        toast({
-          title: "Account updated",
-          description: "Account has been successfully updated.",
+  // Handle update account
+  const handleEditSubmit = useCallback(
+    async (data) => {
+      try {
+        const response = await updateAccount(editingAccount._id, {
+          ...data,
+          parent: data.parent || null,
         });
-        setEditingAccount(null);
-        await fetchAccounts();
-        return true;
-      } else {
+        if (response.status === 200) {
+          toast({
+            title: "Account Updated",
+            description: "Account has been successfully updated.",
+          });
+          setEditingAccount(null);
+          await fetchAccounts();
+          return true;
+        }
+        throw new Error(response?.data?.message || "Update failed.");
+      } catch (error) {
+        console.error("Edit submission error:", error);
         toast({
           title: "Update Failed",
-          description:
-            response?.data?.message || "An unexpected error occurred.",
+          description: error.message || "An unexpected error occurred.",
           variant: "destructive",
         });
         return false;
       }
-    } catch (error) {
-      console.error("Edit submission error:", error);
-      toast({
-        title: "Update Failed",
-        description:
-          error?.response?.data?.message || "An unexpected error occurred.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  };
+    },
+    [editingAccount, fetchAccounts, toast]
+  );
+
+  // Handle delete account
+  const handleDelete = useCallback(
+    async (account) => {
+      setIsDeleteLoading(true);
+      try {
+        const response = await deleteAccount(account._id);
+        if (response.status === 200) {
+          toast({
+            title: "Account Deleted",
+            description: "Account has been successfully deleted.",
+          });
+          setDeletingAccount(null);
+          await fetchAccounts();
+        } else {
+          throw new Error(response?.data?.message || "Deletion failed.");
+        }
+      } catch (error) {
+        console.error("Delete submission error:", error);
+        toast({
+          title: "Deletion Failed",
+          description: error.message || "An unexpected error occurred.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsDeleteLoading(false);
+      }
+    },
+    [fetchAccounts, toast]
+  );
+
+  // Memoized field configuration
+  const fieldConfig = useMemo(
+    () =>
+      getFieldConfig(
+        editingAccount || viewingAccount,
+        parentForNewAccount,
+        allAccounts
+      ),
+    [editingAccount, viewingAccount, parentForNewAccount, allAccounts]
+  );
+
+  // Fetch accounts on mount
+  useEffect(() => {
+    fetchAccounts();
+  }, [fetchAccounts]);
 
   if (isLoading) {
     return (
@@ -302,7 +282,11 @@ const ChartOfAccountsTree = () => {
               >
                 Collapse All
               </Button>
-              <Button size="sm" onClick={handleAddRoot} className="text-sm">
+              <Button
+                size="sm"
+                onClick={() => setIsCreateOpen(true)}
+                className="text-sm"
+              >
                 <Plus className="mr-2 h-4 w-4" />
                 Add Account
               </Button>
@@ -322,10 +306,13 @@ const ChartOfAccountsTree = () => {
                   key={rootNode._id}
                   node={rootNode}
                   level={0}
-                  onEdit={handleEdit}
-                  onView={handleView}
-                  onAddChild={handleAddChild}
-                  onDelete={(node) => setDeletingAccount(node)}
+                  onEdit={setEditingAccount}
+                  onView={setViewingAccount}
+                  onAddChild={(parentAccount) => {
+                    setParentForNewAccount(parentAccount);
+                    setIsCreateOpen(true);
+                  }}
+                  onDelete={setDeletingAccount}
                   expandedNodes={expandedNodes}
                   onToggleExpand={handleToggleExpand}
                   allAccounts={allAccounts}
@@ -348,14 +335,12 @@ const ChartOfAccountsTree = () => {
             ? `Add a new child account under ${parentForNewAccount.code} - ${parentForNewAccount.name}`
             : "Add a new account to the chart of accounts."
         }
-        fields={getFieldConfig()}
+        fields={fieldConfig}
         onSubmit={handleCreateSubmit}
         open={isCreateOpen}
         onOpenChange={(open) => {
           setIsCreateOpen(open);
-          if (!open) {
-            setParentForNewAccount(null);
-          }
+          if (!open) setParentForNewAccount(null);
         }}
       />
 
@@ -364,14 +349,10 @@ const ChartOfAccountsTree = () => {
           mode="edit"
           title="Edit Account"
           description="Make changes to the account details."
-          fields={getFieldConfig(editingAccount)}
+          fields={fieldConfig}
           onSubmit={handleEditSubmit}
           open={!!editingAccount}
-          onOpenChange={(open) => {
-            if (!open) {
-              setEditingAccount(null);
-            }
-          }}
+          onOpenChange={(open) => !open && setEditingAccount(null)}
         />
       )}
 
@@ -380,14 +361,10 @@ const ChartOfAccountsTree = () => {
           mode="view"
           title="View Account"
           description="View account details."
-          fields={getFieldConfig(viewingAccount)}
+          fields={fieldConfig}
           onSubmit={() => {}}
           open={!!viewingAccount}
-          onOpenChange={(open) => {
-            if (!open) {
-              setViewingAccount(null);
-            }
-          }}
+          onOpenChange={(open) => !open && setViewingAccount(null)}
         />
       )}
 
@@ -396,11 +373,9 @@ const ChartOfAccountsTree = () => {
           open={!!deletingAccount}
           onOpenChange={(open) => !open && setDeletingAccount(null)}
           title={`Delete ${deletingAccount.name}`}
-          description={`Are you sure you want to delete the account "${deletingAccount.code} - ${deletingAccount.name}"? All descendant accounts and all related vouchers will also be deleted. This action cannot be undone.`}
+          description={`Are you sure you want to delete the account "${deletingAccount.code} - ${deletingAccount.name}"? All descendant accounts and related vouchers will also be deleted. This action cannot be undone.`}
           onConfirm={() => handleDelete(deletingAccount)}
-          onCancel={() => {
-            setDeletingAccount(null);
-          }}
+          onCancel={() => setDeletingAccount(null)}
           isLoading={isDeleteLoading}
         />
       )}

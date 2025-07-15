@@ -1,11 +1,8 @@
+import { cleanParams } from "@/utils/commonUtils";
 import api from "../core/api";
 
-export const getStaffUsers = async (params) => {
-  const cleanParams = Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v != null)
-  );
-  const queryString = new URLSearchParams(cleanParams).toString();
-
+export const getStaffUsers = async (params = {}) => {
+  const queryString = new URLSearchParams(cleanParams(params)).toString();
   const response = api.get(`/staff-users?${queryString}`);
   return response;
 };

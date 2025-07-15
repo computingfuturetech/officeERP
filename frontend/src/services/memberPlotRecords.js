@@ -1,13 +1,10 @@
+import { cleanParams } from "@/utils/commonUtils";
 import api from "../core/api";
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 import axios from "axios";
 
-export const getMemberPlotRecords = async (params) => {
-  const cleanParams = Object.fromEntries(
-    Object.entries(params).filter(([_, v]) => v != null)
-  );
-  const queryString = new URLSearchParams(cleanParams).toString();
-
+export const getMemberPlotRecords = async (params = {}) => {
+  const queryString = new URLSearchParams(cleanParams(params)).toString();
   const response = api.get(`/member-plot-records?${queryString}`);
   return response;
 };
@@ -35,22 +32,26 @@ export const validateMemberPlotRecordsFile = async (file, onUploadProgress) => {
     // Initialize progress
     onUploadProgress?.(0);
 
-    const response = await api.post("/member-plot-records/bulk/validate", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.loaded && progressEvent.total) {
-          const realProgress = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onUploadProgress?.(realProgress);
-        } else {
-          // Fallback if total is undefined
-          onUploadProgress?.(50); // Arbitrary value to indicate progress is happening
-        }
-      },
-    });
+    const response = await api.post(
+      "/member-plot-records/bulk/validate",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.loaded && progressEvent.total) {
+            const realProgress = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onUploadProgress?.(realProgress);
+          } else {
+            // Fallback if total is undefined
+            onUploadProgress?.(50); // Arbitrary value to indicate progress is happening
+          }
+        },
+      }
+    );
 
     // Ensure 100% progress on completion
     onUploadProgress?.(100);
@@ -69,21 +70,25 @@ export const uploadMemberPlotRecordsFile = async (file, onUploadProgress) => {
 
     onUploadProgress?.(0); // Initialize progress
 
-    const response = await api.post("/member-plot-records/bulk/upload", formData, {
-      headers: {
-        "Content-Type": "multipart/form-data",
-      },
-      onUploadProgress: (progressEvent) => {
-        if (progressEvent.loaded && progressEvent.total) {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / progressEvent.total
-          );
-          onUploadProgress?.(percentCompleted);
-        } else {
-          onUploadProgress?.(50); // Fallback
-        }
-      },
-    });
+    const response = await api.post(
+      "/member-plot-records/bulk/upload",
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.loaded && progressEvent.total) {
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
+            onUploadProgress?.(percentCompleted);
+          } else {
+            onUploadProgress?.(50); // Fallback
+          }
+        },
+      }
+    );
 
     onUploadProgress?.(100); // Ensure completion
     return response;

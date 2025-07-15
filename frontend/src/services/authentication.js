@@ -7,6 +7,6 @@ export const login = async (email, password) => {
     email,
     password,
   });
-  store?.dispatch(setUser(response?.data?.data));
+  store.dispatch(setUser(response?.data?.data));
   return response;
 };

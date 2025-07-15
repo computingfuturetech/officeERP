@@ -5,15 +5,11 @@ import { removeUser } from "../../redux/user/user";
 import {
   LayoutDashboard,
   Users,
-  UserRoundMinus,
-  Building2,
-  Frame,
-  Banknote,
-  CircleDollarSign,
   FileText,
   Receipt,
   BarChart2,
   LogOut,
+  User
 } from "lucide-react";
 import { NavMain } from "@/components/components/nav-main";
 import {
@@ -38,7 +34,7 @@ const data = {
     {
       title: "Staff Users",
       url: "/staff-users",
-      icon: Users,
+      icon: User,
       permission: "staffUsers.read",
     },
     {
@@ -51,11 +47,13 @@ const data = {
       title: "Chart Of Accounts",
       icon: FileText,
       url: "/chart-of-accounts",
+      permission: "chartOfAccounts.read",
     },
     {
       title: "Vouchers",
       icon: Receipt,
       url: "/vouchers",
+      permission: "vouchers.read",
     },
     {
       title: "Reports",
