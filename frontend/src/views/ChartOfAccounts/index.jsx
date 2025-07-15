@@ -162,7 +162,10 @@ const ChartOfAccountsTree = () => {
         console.error("Create submission error:", error);
         toast({
           title: "Creation Failed",
-          description: error.message || "An unexpected error occurred.",
+          description:
+            error?.response?.data?.message ||
+            error.message ||
+            "An unexpected error occurred.",
           variant: "destructive",
         });
         return false;
@@ -193,7 +196,10 @@ const ChartOfAccountsTree = () => {
         console.error("Edit submission error:", error);
         toast({
           title: "Update Failed",
-          description: error.message || "An unexpected error occurred.",
+          description:
+            error?.response?.data?.message ||
+            error.message ||
+            "An unexpected error occurred.",
           variant: "destructive",
         });
         return false;
