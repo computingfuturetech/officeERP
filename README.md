@@ -6,7 +6,7 @@ This is a complete software system built for **High Court Society (Pakistan)** t
 
 ## Main Features
 
-### 👤 Member & Plot Management
+### Member & Plot Management
 - Add and manage society members
 - Keep records of plots (size, category, block, etc.)
 - Track plot status (active, transferred, etc.)

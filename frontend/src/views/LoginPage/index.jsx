@@ -32,7 +32,9 @@ const LoginPage = () => {
         toast({
           title: "Login Failed",
           description:
-            error.message || "Invalid credentials. Please try again.",
+            error?.response?.data?.message ||
+            error?.message ||
+            "Invalid credentials. Please try again.",
           variant: "destructive",
         });
       } finally {
