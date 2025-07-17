@@ -5,7 +5,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/components/ui/dropdown-menu";
-import { MoreVertical, Plus } from "lucide-react";
+import { MoreVertical, Plus, ChevronDown } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { DataTable } from "@/components/components/data-table";
 import { Button } from "@/components/components/ui/button";
@@ -160,11 +160,14 @@ const getFieldConfig = (voucher = {}, accounts = [], isEditing = false) => [
   },
 ];
 
-// Table columns configuration
+// Enhanced table columns with expandable entries
 const getColumns = (
   setEditingVoucher,
   setViewingVoucher,
-  setDeletingVoucher
+  setDeletingVoucher,
+  accounts,
+  allExpanded,
+  setAllExpanded
 ) => [
   { accessorKey: "voucherType", header: "Voucher Type" },
   { accessorKey: "voucherNumber", header: "Voucher Number" },
@@ -172,6 +175,41 @@ const getColumns = (
   { accessorKey: "amount", header: "Amount" },
   { accessorKey: "status", header: "Status" },
   { accessorKey: "referenceNumber", header: "Reference Number" },
+  {
+    id: "voucherEntries",
+    header: "Entries",
+    cell: ({ row }) => {
+      const [isExpanded, setIsExpanded] = useState(allExpanded);
+      useEffect(() => {
+        setIsExpanded(allExpanded);
+      }, [allExpanded]);
+      return (
+        <div>
+          <Button
+            variant="ghost"
+            className="h-8 w-8 p-0"
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
+            <ChevronDown
+              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+            />
+          </Button>
+          {isExpanded && (
+            <div className="mt-2 space-y-2">
+              {row.original.voucherEntries.map((entry, index) => (
+                <div key={index} className="border rounded p-2 bg-gray-50">
+                  <p>Account: {accounts.find(a => a._id === entry.account)?.name || "N/A"}</p>
+                  <p>Debit: {entry.debitAmount}</p>
+                  <p>Credit: {entry.creditAmount}</p>
+                  <p>Particulars: {entry.particulars}</p>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      );
+    },
+  },
   {
     id: "actions",
     header: "Actions",
@@ -230,11 +268,12 @@ export default function Vouchers() {
   });
   const [isLoading, setIsLoading] = useState(false);
   const [isDeleteLoading, setIsDeleteLoading] = useState(false);
+  const [allExpanded, setAllExpanded] = useState(false);
 
-  // Memoized columns to prevent unnecessary re-renders
+  // Memoized columns with account names and expand state
   const columns = useMemo(
-    () => getColumns(setEditingVoucher, setViewingVoucher, setDeletingVoucher),
-    []
+    () => getColumns(setEditingVoucher, setViewingVoucher, setDeletingVoucher, accounts, allExpanded, setAllExpanded),
+    [accounts, allExpanded]
   );
 
   // Fetch accounts
@@ -426,6 +465,7 @@ export default function Vouchers() {
 
   return (
     <div className="mt-4">
+
       <DataTable
         heading="Vouchers"
         columns={columns}
@@ -451,6 +491,13 @@ export default function Vouchers() {
           onClick: handleResetFilters,
           disabled: Object.keys(filters).length === 0,
         }}
+        customButtons={[
+          {
+            className: "ml-2",
+            onClick: () => setAllExpanded(!allExpanded),
+            content: allExpanded ? "Collapse All" : "Expand All"
+          }
+        ]}
       />
 
       <DynamicSheet
