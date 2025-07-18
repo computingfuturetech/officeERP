@@ -110,8 +110,11 @@ const Reports = () => {
     } catch (error) {
       console.error("Error fetching accounts:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch accounts.",
+        title: "Failed to Fetch Accounts",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -185,7 +188,8 @@ const Reports = () => {
       toast({
         title: "Download Failed",
         description:
-          error?.response?.data?.message || "Could not download the report. Please try again.",
+          error?.response?.data?.message ||
+          "Could not download the report. Please try again.",
         variant: "destructive",
       });
     } finally {

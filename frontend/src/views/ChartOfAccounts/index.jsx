@@ -99,8 +99,11 @@ const ChartOfAccountsTree = () => {
     } catch (error) {
       console.error("Error fetching accounts:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch accounts.",
+        title: "Failed to Fetch Accounts",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -228,7 +231,10 @@ const ChartOfAccountsTree = () => {
         console.error("Delete submission error:", error);
         toast({
           title: "Deletion Failed",
-          description: error.message || "An unexpected error occurred.",
+          description:
+            error?.response?.data?.message ||
+            error.message ||
+            "An unexpected error occurred.",
           variant: "destructive",
         });
       } finally {

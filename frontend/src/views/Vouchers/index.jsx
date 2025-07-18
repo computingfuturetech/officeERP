@@ -191,14 +191,20 @@ const getColumns = (
             onClick={() => setIsExpanded(!isExpanded)}
           >
             <ChevronDown
-              className={`h-4 w-4 transition-transform ${isExpanded ? "rotate-180" : ""}`}
+              className={`h-4 w-4 transition-transform ${
+                isExpanded ? "rotate-180" : ""
+              }`}
             />
           </Button>
           {isExpanded && (
             <div className="mt-2 space-y-2">
               {row.original.voucherEntries.map((entry, index) => (
                 <div key={index} className="border rounded p-2 bg-gray-50">
-                  <p>Account: {accounts.find(a => a._id === entry.account)?.name || "N/A"}</p>
+                  <p>
+                    Account:{" "}
+                    {accounts.find((a) => a._id === entry.account)?.name ||
+                      "N/A"}
+                  </p>
                   <p>Debit: {entry.debitAmount}</p>
                   <p>Credit: {entry.creditAmount}</p>
                   <p>Particulars: {entry.particulars}</p>
@@ -272,7 +278,15 @@ export default function Vouchers() {
 
   // Memoized columns with account names and expand state
   const columns = useMemo(
-    () => getColumns(setEditingVoucher, setViewingVoucher, setDeletingVoucher, accounts, allExpanded, setAllExpanded),
+    () =>
+      getColumns(
+        setEditingVoucher,
+        setViewingVoucher,
+        setDeletingVoucher,
+        accounts,
+        allExpanded,
+        setAllExpanded
+      ),
     [accounts, allExpanded]
   );
 
@@ -284,8 +298,11 @@ export default function Vouchers() {
     } catch (error) {
       console.error("Error fetching accounts:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch accounts.",
+        title: "Failed to Fetch Accounts",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     }
@@ -310,8 +327,11 @@ export default function Vouchers() {
     } catch (error) {
       console.error("Error fetching vouchers:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch vouchers.",
+        title: "Failed to Fetch Vouchers",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -407,7 +427,10 @@ export default function Vouchers() {
       console.error("Delete submission error:", error);
       toast({
         title: "Deletion Failed",
-        description: error.message || "An unexpected error occurred.",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -465,7 +488,6 @@ export default function Vouchers() {
 
   return (
     <div className="mt-4">
-
       <DataTable
         heading="Vouchers"
         columns={columns}
@@ -495,8 +517,8 @@ export default function Vouchers() {
           {
             className: "ml-2",
             onClick: () => setAllExpanded(!allExpanded),
-            content: allExpanded ? "Collapse All" : "Expand All"
-          }
+            content: allExpanded ? "Collapse All" : "Expand All",
+          },
         ]}
       />
 

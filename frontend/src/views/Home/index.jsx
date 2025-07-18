@@ -32,8 +32,11 @@ const Home = () => {
     } catch (error) {
       console.error("Error fetching member plot records:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch member plot records.",
+        title: "Failed to Fetch Records",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {

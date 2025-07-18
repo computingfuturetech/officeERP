@@ -280,8 +280,11 @@ export default function MemberPlotRecords() {
     } catch (error) {
       console.error("Error fetching records:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch member plot records.",
+        title: "Failed to Fetch Records",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
@@ -378,7 +381,10 @@ export default function MemberPlotRecords() {
       console.error("Transfer submission error:", error);
       toast({
         title: "Transfer Failed",
-        description: error.message || "An unexpected error occurred.",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     }

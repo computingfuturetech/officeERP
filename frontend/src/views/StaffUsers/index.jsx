@@ -166,8 +166,11 @@ export default function StaffUsers() {
     } catch (error) {
       console.error("Error fetching staff users:", error);
       toast({
-        title: "Error",
-        description: "Failed to fetch staff users.",
+        title: "Failed to Fetch Staff Users",
+        description:
+          error?.response?.data?.message ||
+          error.message ||
+          "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
