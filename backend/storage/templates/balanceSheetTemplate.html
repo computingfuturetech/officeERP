@@ -1,0 +1,38 @@
+<html>
+  <head>
+    <title>Balance Sheet</title>
+    <style>
+      body {
+        font-family: sans-serif;
+        font-size: 13px;
+        margin: 10px;
+      }
+      .balance-sheet-heading {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      th,
+      td {
+        width: 50%;
+      }
+      .balance-sheet-tables h3 {
+        margin: 20px 0px 10px 0px;
+        text-align: center;
+        text-decoration: underline;
+      }
+      @media print {
+        .avoid-page-break-inside {
+          page-break-inside: avoid;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <h3 class="balance-sheet-heading" style="margin-top: 0px">
+      {{balanceSheetHeading}}
+    </h3>
+    <div class="balance-sheet-detail">{{balanceSheetDetail}}</div>
+    <div class="balance-sheet-tables">{{balanceSheetTables}}</div>
+  </body>
+</html>
